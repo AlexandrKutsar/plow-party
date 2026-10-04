@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unity status:*)",
+      "Bash(unity list:*)",
+      "Bash(unity recompile:*)",
+      "Bash(unity test:*)",
+      "Bash(unity command:*)",
+      "Bash(unity cmd:*)"
+    ],
+    "deny": [
+      "Bash(unity command delete_asset:*)",
+      "Bash(unity cmd delete_asset:*)"
+    ]
+  }
+}
