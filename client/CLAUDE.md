@@ -19,7 +19,9 @@ The Unity Editor must be open on `client/` (the `com.unity.pipeline` package ser
 1. `unity recompile --project-path client` — must report zero errors. Fix and repeat.
 2. `unity test client --mode EditMode --output client/Logs/test-results.xml` — add `--filter <TestClass>` while iterating, run the full suite before committing.
 
-If the Editor is closed, `unity status` shows nothing connected: ask the user to open the project rather than running batch mode against a project the user may open concurrently. The `unity-cli` skill covers the remaining commands (scenes, prefabs, play mode, console logs).
+If the Editor is closed, `unity status` shows nothing connected: open it with `unity open client` (the project root is `client/`, never the repo root), or ask the user. Avoid batch mode while the user may have the Editor open.
+
+`unity command` arguments are flags: `unity command --project-path client eval_file --file <path>`. Package changes in `manifest.json` reach an unfocused Editor only after `unity command --project-path client package_resolve`. The `unity-cli` skill covers the remaining commands (scenes, prefabs, play mode, console logs).
 
 ## Unity gotchas
 

@@ -4,7 +4,7 @@ Composition root: the only module that references every other module. It owns th
 
 ## Entry points
 
-- `RootLifetimeScope` — app-wide scope. Its prefab is assigned as the root in the `VContainerSettings` asset, so VContainer creates it before any scene scope. Registers configs and Infrastructure services.
+- `RootLifetimeScope` — app-wide scope. `RootLifetimeScope.prefab` is assigned as the root in `VContainerSettings.asset` (both in this folder; the settings asset sits in PlayerSettings → Preloaded Assets), so VContainer instantiates it before any scene scope. Registers configs and Infrastructure services.
 - `MenuScope`, `MatchScope` — planned, one per scene, children of the root.
 
 ## Rules
