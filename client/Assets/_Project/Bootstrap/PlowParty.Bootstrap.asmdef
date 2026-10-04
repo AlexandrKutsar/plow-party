@@ -1,0 +1,10 @@
+{
+    "name": "PlowParty.Bootstrap",
+    "rootNamespace": "PlowParty.Bootstrap",
+    "references": [
+        "VContainer",
+        "UniTask",
+        "PlowParty.Infrastructure"
+    ],
+    "autoReferenced": false
+}

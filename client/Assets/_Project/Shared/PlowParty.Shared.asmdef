@@ -1,0 +1,6 @@
+{
+    "name": "PlowParty.Shared",
+    "rootNamespace": "PlowParty.Shared",
+    "references": [],
+    "autoReferenced": false
+}

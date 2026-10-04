@@ -1,0 +1,8 @@
+{
+    "name": "PlowParty.Infrastructure",
+    "rootNamespace": "PlowParty.Infrastructure",
+    "references": [
+        "UniTask"
+    ],
+    "autoReferenced": false
+}
