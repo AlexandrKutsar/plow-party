@@ -1,0 +1,3 @@
+# Photon Fusion 2 in host mode
+
+Multiplayer runs on Photon Fusion 2 in host mode: one Player's device is the authoritative simulation, the others predict and reconcile. Host mode gives tick-based prediction and rollback without paying for or operating dedicated servers inside a two-week scope. The cost is that the Host is an untrusted client, so match results can be forged; the backend mitigates this with pre-registration, majority voting across clients, and plausibility checks (GDD 9.3), and the README says so honestly. Host migration is out of MVP; a Match whose Host leaves is recorded as aborted. A dedicated server is the post-MVP path.

@@ -1,0 +1,9 @@
+{
+    "name": "PlowParty.Shared",
+    "rootNamespace": "PlowParty.Shared",
+    "references": [],
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "noEngineReferences": false
+}

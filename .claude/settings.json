@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unity status:*)",
+      "Bash(unity list:*)",
+      "Bash(unity recompile:*)",
+      "Bash(unity test:*)",
+      "Bash(unity command:*)",
+      "Bash(unity cmd:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run pyright:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run python scripts/:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv add:*)",
+      "Bash(uv run alembic:*)"
+    ],
+    "deny": [
+      "Bash(unity command delete_asset:*)",
+      "Bash(unity cmd delete_asset:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_python.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
