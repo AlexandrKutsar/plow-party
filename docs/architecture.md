@@ -88,7 +88,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
 | Match | `_Project/Gameplay/Match/` | planned | Match state machine Countdown → Playing → Results, timer, scoring table (GDD 3.2) |
-| Vehicle | `_Project/Gameplay/Vehicle/` | planned | Kinematics, collisions, ramming, input source (GDD 5) |
+| Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | planned | Snow grid, regrowth, blizzard waves, snow piles (GDD 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | planned | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
 | DropOff | `_Project/Gameplay/DropOff/` | planned | Drop-off zone, unloading, multipliers (GDD 4.2) |

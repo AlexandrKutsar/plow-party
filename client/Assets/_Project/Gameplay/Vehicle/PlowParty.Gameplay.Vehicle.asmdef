@@ -1,0 +1,6 @@
+{
+    "name": "PlowParty.Gameplay.Vehicle",
+    "rootNamespace": "PlowParty.Gameplay.Vehicle",
+    "references": [],
+    "autoReferenced": false
+}
