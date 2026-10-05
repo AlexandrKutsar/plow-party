@@ -7,14 +7,15 @@ Mobile (Android) top-down multiplayer arcade: animals on snowplows collect snow 
 | Path | What | Agent context |
 |---|---|---|
 | `client/` | Unity 6 project (URP, Photon Fusion 2 host mode, VContainer, UniTask) | `client/CLAUDE.md` |
-| `backend/` | Tournament API (FastAPI + PostgreSQL, Docker) — not started | `backend/CLAUDE.md` once created |
-| `.github/workflows/` | CI/CD — not started | |
-| `docs/` | GDD, architecture, standards, ADRs | |
+| `backend/` | Tournament API (FastAPI + PostgreSQL, uv, Docker) | `backend/CLAUDE.md` |
+| `.github/workflows/` | CI: `backend.yml` checks; no deploy yet | |
+| `docs/` | GDD, architecture, standards, ADRs, `api/openapi.json` | |
 
 ## Read before changing code
 
-- **Architecture** — `docs/architecture.md`: layers, lifetime scopes, Gameplay/Meta boundary, and the **feature index**. Read before adding a feature or crossing a module boundary.
-- **Standards** — `docs/coding-standards.md`: binding rules for C#; `/code-review` checks against it.
+- **Architecture** — `docs/architecture.md` (client) and `docs/backend-architecture.md` (backend): layers, boundaries, and each side's **feature index**. Read before adding a feature or crossing a module boundary.
+- **Contract** — `docs/api/openapi.json`: the HTTP API both sides build against; regenerate it from the backend, never edit it by hand.
+- **Standards** — `docs/coding-standards.md` (C#) and `backend/CLAUDE.md` (Python): binding rules; `/code-review` checks against them.
 - **Glossary** — `GLOSSARY.md`: code names for every game concept. Name types, tests, and issues with these terms.
 - **Decisions** — `docs/adr/`: read the ADRs touching the area you change; flag any contradiction explicitly.
 
