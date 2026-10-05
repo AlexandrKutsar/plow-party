@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PlowParty.Gameplay.Vehicle.Simulation
@@ -9,6 +10,8 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
         private readonly VehicleState[] _vehicles;
         private readonly VehicleInput[] _inputs;
         private readonly VehicleModifiers[] _modifiers;
+        private readonly float[] _ramCooldowns;
+        private readonly List<RamEvent> _rams = new List<RamEvent>();
 
         public VehicleWorld(VehicleSettings settings, VehicleArena arena, int capacity)
         {
@@ -17,9 +20,12 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             _vehicles = new VehicleState[capacity];
             _inputs = new VehicleInput[capacity];
             _modifiers = new VehicleModifiers[capacity];
+            _ramCooldowns = new float[capacity * (capacity - 1) / 2];
         }
 
         public int Count { get; private set; }
+
+        public IReadOnlyList<RamEvent> Rams => _rams;
 
         public int Add(VehicleState state)
         {
@@ -47,8 +53,24 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             _modifiers[index] = modifiers;
         }
 
+        public float GetRamCooldown(int first, int second)
+        {
+            return _ramCooldowns[PairIndex(first, second)];
+        }
+
+        public void SetRamCooldown(int first, int second, float remaining)
+        {
+            _ramCooldowns[PairIndex(first, second)] = remaining;
+        }
+
         public void Tick(float deltaTime)
         {
+            _rams.Clear();
+            for (var i = 0; i < _ramCooldowns.Length; i++)
+            {
+                _ramCooldowns[i] = Mathf.Max(0f, _ramCooldowns[i] - deltaTime);
+            }
+
             for (var i = 0; i < Count; i++)
             {
                 _vehicles[i] = Integrate(_vehicles[i], _inputs[i], _modifiers[i], deltaTime);
@@ -117,6 +139,57 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             return new VehicleState(state.Position + normal * depth, velocity, state.Forward);
         }
 
+        private void TryRam(int first, int second, VehicleState a, VehicleState b, Vector2 normal, ref Vector2 velocityA, ref Vector2 velocityB)
+        {
+            var pair = PairIndex(first, second);
+            if (_ramCooldowns[pair] > 0f)
+            {
+                return;
+            }
+
+            var speedA = Vector2.Dot(a.Velocity, normal);
+            var speedB = Vector2.Dot(b.Velocity, -normal);
+            var firstRams = speedA >= speedB;
+            var rammer = firstRams ? first : second;
+            var victim = firstRams ? second : first;
+            var approachSpeed = firstRams ? speedA : speedB;
+            var victimState = firstRams ? b : a;
+            var towardVictim = firstRams ? normal : -normal;
+            if (approachSpeed < _settings.RamMinSpeed)
+            {
+                return;
+            }
+
+            if (Vector2.Angle(victimState.Forward, -towardVictim) < _settings.RamMinAngleDegrees)
+            {
+                return;
+            }
+
+            var multiplier = _modifiers[rammer].RamStrengthMultiplier;
+            var knockback = towardVictim * (_settings.RamKnockback * multiplier);
+            var recoil = towardVictim * _settings.RamRecoil;
+            if (firstRams)
+            {
+                velocityA -= recoil;
+                velocityB += knockback;
+            }
+            else
+            {
+                velocityB -= recoil;
+                velocityA += knockback;
+            }
+
+            _ramCooldowns[pair] = _settings.RamCooldown;
+            _rams.Add(new RamEvent(rammer, victim, approachSpeed * multiplier));
+        }
+
+        private static int PairIndex(int first, int second)
+        {
+            var low = Mathf.Min(first, second);
+            var high = Mathf.Max(first, second);
+            return high * (high - 1) / 2 + low;
+        }
+
         private static Vector2 InsideBoxNormal(Vector2 position, BoxObstacle box)
         {
             var local = position - box.Center;
@@ -153,6 +226,7 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
                 var impulse = normal * ((1f + _settings.Restitution) * closingSpeed * 0.5f);
                 velocityA -= impulse;
                 velocityB += impulse;
+                TryRam(first, second, a, b, normal, ref velocityA, ref velocityB);
             }
 
             _vehicles[first] = new VehicleState(a.Position - push, velocityA, a.Forward);
