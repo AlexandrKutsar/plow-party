@@ -1,0 +1,9 @@
+{
+    "name": "PlowParty.Editor",
+    "rootNamespace": "PlowParty.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false
+}

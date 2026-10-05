@@ -31,6 +31,7 @@ The snowplow every Participant drives: movement, collisions, and Rams (GDD 3.4, 
 - `VehicleRegistry` — Vehicles of the Match ordered by Slot, which fixes their index in `VehicleWorld`; `Rammed` (a `VehicleRam`) is how Bucket will learn about Rams.
 - `VehicleArenaReader` — builds the `VehicleArena` from the arena's `BoxCollider`s (boxes) and `CapsuleCollider` / `SphereCollider`s (circles); colliders are assumed axis-aligned.
 - `VehicleInputPoller` — fills `VehicleNetworkInput` from the Input System actions `Player/Move` (stick) and `Player/Attack` (gadget).
+- `Prefabs/Vehicle.prefab` — the networked root (`NetworkObject`, `NetworkVehicle`) plus a `Model` child: the nested visual prefab `Art/Vehicles/Vehicle/V_Vehicle.prefab` with separate wheels, `Bucket`, and a `CritterSeat` anchor for the Critter. The model is purely visual; collision uses `Radius`, not the mesh.
 - `VehicleConfig` — the ScriptableObject behind `VehicleSettings`, registered in `RootLifetimeScope`.
 
 ## Depends on

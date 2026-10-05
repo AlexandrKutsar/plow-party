@@ -24,6 +24,8 @@ Arrows point down: a module references only modules below it, never sideways acr
 | Gameplay | `_Project/Gameplay/<Feature>/` | Everything inside a match, from Countdown to Results | Shared, Infrastructure, other Gameplay features |
 | Bootstrap | `_Project/Bootstrap/` | Lifetime scopes and composition; the only module that sees everything | all |
 
+Visual content lives outside these areas in `_Project/Art/`, grouped by kind of content, one folder per asset, and holds no code. Each asset has a script-free visual prefab `V_<Asset>`; a feature's gameplay prefab nests it as `Model`. Editor-only tooling lives in `_Project/Editor/` (asmdef `PlowParty.Editor`, referenced by no runtime assembly). Rules: `_Project/Art/CLAUDE.md`, ADR-0008, ADR-0009.
+
 Asmdef naming: `PlowParty.<Area>` or `PlowParty.<Area>.<Feature>`; namespaces match. Feature-to-feature references inside an area are allowed but must stay acyclic; prefer depending on another feature's interface over its concrete types.
 
 ## Gameplay/Meta boundary
@@ -51,8 +53,9 @@ Gameplay/Bucket/
   PlowParty.Gameplay.Bucket.asmdef
   Simulation/                    pure C#: rules, math, state transitions
   Network/                       NetworkBehaviour adapters
-  View/                          MonoBehaviour presentation
-  Config/                        ScriptableObject config types
+  View/                          MonoBehaviour presentation scripts (animator, VFX, feedback)
+  Config/                        ScriptableObject config types and assets
+  Prefabs/                       gameplay prefabs; each nests its Art visual prefab as Model
   Tests/                         EditMode tests, own asmdef
 ```
 
@@ -62,7 +65,7 @@ Folders appear only when they have content.
 
 **Network** holds `NetworkBehaviour`s. Each one is a thin adapter: in `FixedUpdateNetwork` it reads `[Networked]` state and input, calls Simulation, writes the result back. Visual reaction to state changes uses `ChangeDetector` in `Render`.
 
-**View** reads state and plays it back to the player (animation, VFX, UI). It never writes simulation state.
+**View** reads state and plays it back to the player (animation, VFX, UI). It never writes simulation state. View scripts live in the feature; the meshes, materials, and effects they drive live in `Art/`.
 
 ## Fusion and DI
 
@@ -85,6 +88,8 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Bootstrap | `_Project/Bootstrap/` | active | Lifetime scopes, app start |
 | Infrastructure | `_Project/Infrastructure/` | active | Scene loading, Fusion session, DI-aware network object provider; later backend client, persistence |
 | Shared | `_Project/Shared/` | active | Cross-boundary types |
+| Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
+| Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules |
 | Account | `_Project/Meta/Account/` | planned | Guest login by device id, nickname (GDD 9.1) |
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |

@@ -9,6 +9,7 @@ Mobile (Android) top-down multiplayer arcade: animals on snowplows collect snow 
 | `client/` | Unity 6 project (URP, Photon Fusion 2 host mode, VContainer, UniTask) | `client/CLAUDE.md` |
 | `backend/` | Tournament API (FastAPI + PostgreSQL, uv, Docker) | `backend/CLAUDE.md` |
 | `.github/workflows/` | CI: `backend.yml` checks; no deploy yet | |
+| `art/` | Blender Python scripts that generate every model and the palette (outputs go to `client/Assets/_Project/Art/`) | `art/CLAUDE.md` |
 | `docs/` | GDD, architecture, standards, ADRs, `api/openapi.json` | |
 
 ## Read before changing code
@@ -16,6 +17,7 @@ Mobile (Android) top-down multiplayer arcade: animals on snowplows collect snow 
 - **Architecture** — `docs/architecture.md` (client) and `docs/backend-architecture.md` (backend): layers, boundaries, and each side's **feature index**. Read before adding a feature or crossing a module boundary.
 - **Contract** — `docs/api/openapi.json`: the HTTP API both sides build against; regenerate it from the backend, never edit it by hand.
 - **Standards** — `docs/coding-standards.md` (C#) and `backend/CLAUDE.md` (Python): binding rules; `/code-review` checks against them.
+- **Art** — `client/Assets/_Project/Art/CLAUDE.md`: where visual content goes, naming prefixes, visual vs gameplay prefabs, import rules. Read before adding or moving any model, texture, material, or effect.
 - **Glossary** — `GLOSSARY.md`: code names for every game concept. Name types, tests, and issues with these terms.
 - **Decisions** — `docs/adr/`: read the ADRs touching the area you change; flag any contradiction explicitly.
 
