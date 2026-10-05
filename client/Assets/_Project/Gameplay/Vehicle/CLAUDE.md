@@ -15,20 +15,22 @@ The snowplow every Participant drives: movement, collisions, and Rams (GDD 3.4, 
 
 - Turning is capped by `TurnRateDegrees`; speed follows stick magnitude × `MaxSpeed` × speed multiplier, approached at `Acceleration` while the stick is held and `Deceleration` when released.
 - Immobilised zeroes velocity and freezes facing and position.
-- Vehicles are circles of `Radius` in the XZ plane (Vector2 x = world x, y = world z). Tick order: integrate every Vehicle → resolve Vehicle pairs → resolve obstacles last, so a Vehicle never ends a tick inside a wall even when pushed there.
+- Vehicles are circles of `Radius` in the XZ plane (Vector2 x = world x, y = world z). Tick order: decay Ram cooldowns → integrate every Vehicle → one Vehicle-pair pass that may produce Rams → alternate obstacle and pair passes until nothing overlaps (capped at `MaxContactIterations`) → a final obstacle pass, so a Vehicle never ends a tick inside a wall or another Vehicle.
 - Contacts reflect only the approaching velocity component, scaled by `Restitution`; tangential speed is kept, so Vehicles slide along walls.
 - A Ram needs: the faster of the two approaching at `RamMinSpeed` or more, the hit landing on the victim's side or rear (angle between victim's forward and the direction to the rammer ≥ `RamMinAngleDegrees`), and the pair's cooldown at zero. A Ram adds `RamKnockback × RamStrengthMultiplier` to the victim and `RamRecoil` back to the rammer, then sets the pair cooldown to `RamCooldown`.
-- Pair cooldowns are state the network adapter must sync: `GetRamCooldown` / `SetRamCooldown`.
+- Pair cooldowns are state the network adapter must sync: `GetRamCooldown` / `SetRamCooldown`, indexed through `VehiclePairs`.
 - An impulse is consumed by the tick that applies it; persistent modifiers stay until the next `SetControl`.
 
 ## Network and view
 
-- `NetworkVehicle` — one per Participant, spawned by `VehicleSpawner` on the Host with the Player as input authority. Holds `[Networked]` position, velocity, forward, and `LastMove`; `Render` interpolates the transform. It does no simulation itself.
-- `VehicleWorldDriver` — scene `NetworkObject` that steps the whole `VehicleWorld` once per tick: reads every registered `NetworkVehicle`, takes each Player's input via `TryGetInputForPlayer`, ticks, writes back, and reports Rams through `VehicleRegistry.Rammed` on forward ticks only. Both it and every `NetworkVehicle` call `SetIsSimulated`, so clients predict all Vehicles and the Host corrects them.
-- Remote Players' input is unknown on a client, so prediction uses their last confirmed `LastMove`. Bots will write `LastMove` on the Host.
-- `VehicleRegistry` — Vehicles of the Match ordered by `NetworkId`, which fixes their index in `VehicleWorld`; `Rammed` is how Bucket will learn about Rams.
+- `NetworkVehicle` — one per Participant, spawned by `VehicleSpawner` on the Host into the first free Slot (which picks its Spawn Point), with the Player as input authority. Holds `[Networked]` state, last input, and Modifiers; `Render` interpolates the transform. It does no simulation itself.
+- Modifiers are how other features drive a Vehicle on the Host: set `SpeedMultiplier`, `IsImmobilised`, `RamStrengthMultiplier`, or call `AddImpulse`. The pending Impulse is networked and cleared by the tick that applies it, so it applies once even across resimulation. Each Modifier has one owner today; if two features need the same one, split it rather than letting them overwrite each other.
+- `VehicleWorldDriver` — scene `NetworkObject` that steps the whole `VehicleWorld` once per tick: reads every registered `NetworkVehicle`, takes each Player's input via `TryGetInputForPlayer`, ticks, writes back, and reports Rams through `VehicleRegistry.Rammed` on the Host only, so each Ram is reported once. Ram cooldowns are stored per Slot pair, so a Vehicle joining or leaving never shifts another pair's cooldown; a new Vehicle starts with its Slot's cooldowns cleared.
+- Decision: clients predict every Vehicle, not only their own (the driver and every `NetworkVehicle` call `SetIsSimulated`). Collisions need all Vehicles in one step; predicting only the local one would let it drive through opponents until the Host corrects it. Remote Players' input is unknown on a client, so their prediction uses the last confirmed `LastMove`. Bots will write `LastMove` on the Host.
+- Spawn and despawn are not rolled back: a resimulated tick runs with the current set of Vehicles.
+- `VehicleRegistry` — Vehicles of the Match ordered by Slot, which fixes their index in `VehicleWorld`; `Rammed` (a `VehicleRam`) is how Bucket will learn about Rams.
 - `VehicleArenaReader` — builds the `VehicleArena` from the arena's `BoxCollider`s (boxes) and `CapsuleCollider` / `SphereCollider`s (circles); colliders are assumed axis-aligned.
-- `VehicleInputPoller` — fills `VehicleNetworkInput` from the Input System action `Player/Move`.
+- `VehicleInputPoller` — fills `VehicleNetworkInput` from the Input System actions `Player/Move` (stick) and `Player/Attack` (gadget).
 - `VehicleConfig` — the ScriptableObject behind `VehicleSettings`, registered in `RootLifetimeScope`.
 
 ## Depends on

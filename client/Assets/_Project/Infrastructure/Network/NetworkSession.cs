@@ -9,7 +9,7 @@ using VContainer.Unity;
 
 namespace PlowParty.Infrastructure.Network
 {
-    public sealed class NetworkSession : INetworkSession, IDisposable
+    public sealed class NetworkSession : IDisposable
     {
         private readonly IObjectResolver _resolver;
         private readonly NetworkRunnerEvents _events;
@@ -41,7 +41,8 @@ namespace PlowParty.Infrastructure.Network
                 Scene = scene,
                 SceneManager = sceneManager,
                 ObjectProvider = objectProvider,
-            }).AsUniTask().AttachExternalCancellation(cancellationToken);
+                StartGameCancellationToken = cancellationToken,
+            }).AsUniTask();
 
             if (!result.Ok)
             {

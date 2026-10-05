@@ -8,8 +8,7 @@ namespace PlowParty.Gameplay.Vehicle.Network
 {
     public sealed class VehicleWorldDriver : NetworkBehaviour
     {
-        private const int MaxVehicles = 6;
-        private const int MaxPairs = MaxVehicles * (MaxVehicles - 1) / 2;
+        public const int MaxVehicles = 6;
 
         [SerializeField] private Transform _arenaRoot;
 
@@ -17,7 +16,7 @@ namespace PlowParty.Gameplay.Vehicle.Network
         private VehicleConfig _config;
         private VehicleWorld _world;
 
-        [Networked, Capacity(MaxPairs)] public NetworkArray<float> RamCooldowns { get; }
+        [Networked, Capacity(MaxVehicles * (MaxVehicles - 1) / 2)] private NetworkArray<float> SlotRamCooldowns { get; }
 
         [Inject]
         public void Construct(VehicleRegistry registry, VehicleConfig config)
@@ -32,64 +31,75 @@ namespace PlowParty.Gameplay.Vehicle.Network
             Runner.SetIsSimulated(Object, true);
         }
 
+        public void ResetRamCooldowns(int slot)
+        {
+            for (var other = 0; other < MaxVehicles; other++)
+            {
+                if (other != slot)
+                {
+                    SlotRamCooldowns.Set(VehiclePairs.Index(slot, other), 0f);
+                }
+            }
+        }
+
         public override void FixedUpdateNetwork()
         {
             var vehicles = _registry.Vehicles;
-            var count = Mathf.Min(vehicles.Count, MaxVehicles);
             _world.Clear();
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < vehicles.Count; i++)
             {
                 var vehicle = vehicles[i];
                 _world.Add(vehicle.ReadState());
-                if (Runner.TryGetInputForPlayer<VehicleNetworkInput>(vehicle.Object.InputAuthority, out var input))
-                {
-                    vehicle.LastMove = input.Move;
-                }
-
-                _world.SetControl(i, VehicleInput.Stick(vehicle.LastMove), VehicleModifiers.None);
+                _world.SetControl(i, vehicle.ReadInput(), vehicle.ConsumeModifiers());
             }
 
-            LoadRamCooldowns(count);
+            CopySlotCooldownsToWorld(vehicles.Count);
             _world.Tick(Runner.DeltaTime);
-            StoreRamCooldowns(count);
+            CopyWorldCooldownsToSlots(vehicles.Count);
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < vehicles.Count; i++)
             {
                 vehicles[i].WriteState(_world.GetVehicle(i));
             }
 
-            if (!Runner.IsForward)
+            if (Runner.IsServer)
             {
-                return;
-            }
-
-            var rams = _world.Rams;
-            for (var i = 0; i < rams.Count; i++)
-            {
-                _registry.ReportRam(vehicles[rams[i].Rammer], vehicles[rams[i].Victim], rams[i].Strength);
+                ReportRams();
             }
         }
 
-        private void LoadRamCooldowns(int count)
+        private void ReportRams()
         {
-            var pair = 0;
+            var vehicles = _registry.Vehicles;
+            var rams = _world.Rams;
+            for (var i = 0; i < rams.Count; i++)
+            {
+                _registry.ReportRam(new VehicleRam(vehicles[rams[i].Rammer], vehicles[rams[i].Victim], rams[i].Strength));
+            }
+        }
+
+        private void CopySlotCooldownsToWorld(int count)
+        {
+            var vehicles = _registry.Vehicles;
             for (var second = 1; second < count; second++)
             {
                 for (var first = 0; first < second; first++)
                 {
-                    _world.SetRamCooldown(first, second, RamCooldowns[pair++]);
+                    var slotPair = VehiclePairs.Index(vehicles[first].Slot, vehicles[second].Slot);
+                    _world.SetRamCooldown(first, second, SlotRamCooldowns[slotPair]);
                 }
             }
         }
 
-        private void StoreRamCooldowns(int count)
+        private void CopyWorldCooldownsToSlots(int count)
         {
-            var pair = 0;
+            var vehicles = _registry.Vehicles;
             for (var second = 1; second < count; second++)
             {
                 for (var first = 0; first < second; first++)
                 {
-                    RamCooldowns.Set(pair++, _world.GetRamCooldown(first, second));
+                    var slotPair = VehiclePairs.Index(vehicles[first].Slot, vehicles[second].Slot);
+                    SlotRamCooldowns.Set(slotPair, _world.GetRamCooldown(first, second));
                 }
             }
         }

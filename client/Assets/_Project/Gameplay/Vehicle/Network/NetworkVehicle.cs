@@ -9,13 +9,25 @@ namespace PlowParty.Gameplay.Vehicle.Network
     {
         private VehicleRegistry _registry;
 
-        [Networked] public Vector2 Position { get; set; }
+        [Networked] public int Slot { get; set; }
 
-        [Networked] public Vector2 Velocity { get; set; }
+        [Networked] public Vector2 Position { get; private set; }
 
-        [Networked] public Vector2 Forward { get; set; }
+        [Networked] public Vector2 Velocity { get; private set; }
 
-        [Networked] public Vector2 LastMove { get; set; }
+        [Networked] public Vector2 Forward { get; private set; }
+
+        [Networked] public Vector2 LastMove { get; private set; }
+
+        [Networked] public NetworkBool GadgetPressed { get; private set; }
+
+        [Networked] public float SpeedMultiplier { get; set; }
+
+        [Networked] public NetworkBool IsImmobilised { get; set; }
+
+        [Networked] public float RamStrengthMultiplier { get; set; }
+
+        [Networked] private Vector2 PendingImpulse { get; set; }
 
         [Inject]
         public void Construct(VehicleRegistry registry)
@@ -27,8 +39,10 @@ namespace PlowParty.Gameplay.Vehicle.Network
         {
             if (HasStateAuthority)
             {
-                Position = ToPlane(transform.position);
-                Forward = ToPlane(transform.forward).normalized;
+                Position = PlaneProjection.ToPlane(transform.position);
+                Forward = PlaneProjection.ToPlane(transform.forward).normalized;
+                SpeedMultiplier = VehicleModifiers.None.SpeedMultiplier;
+                RamStrengthMultiplier = VehicleModifiers.None.RamStrengthMultiplier;
             }
 
             Runner.SetIsSimulated(Object, true);
@@ -40,9 +54,32 @@ namespace PlowParty.Gameplay.Vehicle.Network
             _registry.Remove(this);
         }
 
+        public void AddImpulse(Vector2 impulse)
+        {
+            PendingImpulse += impulse;
+        }
+
         public VehicleState ReadState()
         {
             return new VehicleState(Position, Velocity, Forward);
+        }
+
+        public VehicleInput ReadInput()
+        {
+            if (Runner.TryGetInputForPlayer<VehicleNetworkInput>(Object.InputAuthority, out var input))
+            {
+                LastMove = input.Move;
+                GadgetPressed = input.GadgetPressed;
+            }
+
+            return new VehicleInput(LastMove, GadgetPressed);
+        }
+
+        public VehicleModifiers ConsumeModifiers()
+        {
+            var modifiers = new VehicleModifiers(SpeedMultiplier, IsImmobilised, PendingImpulse, RamStrengthMultiplier);
+            PendingImpulse = Vector2.zero;
+            return modifiers;
         }
 
         public void WriteState(VehicleState state)
@@ -57,16 +94,11 @@ namespace PlowParty.Gameplay.Vehicle.Network
             var interpolator = new NetworkBehaviourBufferInterpolator(this);
             var position = interpolator.Vector2(nameof(Position));
             var forward = interpolator.Vector2(nameof(Forward));
-            transform.position = new Vector3(position.x, transform.position.y, position.y);
+            transform.position = PlaneProjection.ToWorld(position, transform.position.y);
             if (forward.sqrMagnitude > 0f)
             {
-                transform.rotation = Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.y));
+                transform.rotation = Quaternion.LookRotation(PlaneProjection.ToWorld(forward, 0f));
             }
-        }
-
-        private static Vector2 ToPlane(Vector3 value)
-        {
-            return new Vector2(value.x, value.z);
         }
     }
 }

@@ -5,6 +5,9 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
 {
     public sealed class VehicleWorld
     {
+        private const int MaxContactIterations = 12;
+        private const float ContactTolerance = 1e-4f;
+
         private readonly VehicleSettings _settings;
         private readonly VehicleArena _arena;
         private readonly VehicleState[] _vehicles;
@@ -20,7 +23,7 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             _vehicles = new VehicleState[capacity];
             _inputs = new VehicleInput[capacity];
             _modifiers = new VehicleModifiers[capacity];
-            _ramCooldowns = new float[capacity * (capacity - 1) / 2];
+            _ramCooldowns = new float[VehiclePairs.Count(capacity)];
         }
 
         public int Count { get; private set; }
@@ -60,12 +63,12 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
 
         public float GetRamCooldown(int first, int second)
         {
-            return _ramCooldowns[PairIndex(first, second)];
+            return _ramCooldowns[VehiclePairs.Index(first, second)];
         }
 
         public void SetRamCooldown(int first, int second, float remaining)
         {
-            _ramCooldowns[PairIndex(first, second)] = remaining;
+            _ramCooldowns[VehiclePairs.Index(first, second)] = remaining;
         }
 
         public void Tick(float deltaTime)
@@ -82,18 +85,45 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
                 _modifiers[i] = _modifiers[i].WithoutImpulse();
             }
 
+            ResolveVehicleContacts(true);
+            for (var iteration = 0; iteration < MaxContactIterations; iteration++)
+            {
+                var obstacleContacts = ResolveAllObstacles();
+                var vehicleContacts = ResolveVehicleContacts(false);
+                if (!obstacleContacts && !vehicleContacts)
+                {
+                    break;
+                }
+            }
+
+            ResolveAllObstacles();
+        }
+
+        private bool ResolveAllObstacles()
+        {
+            var touched = false;
+            for (var i = 0; i < Count; i++)
+            {
+                var before = _vehicles[i].Position;
+                _vehicles[i] = ResolveObstacles(_vehicles[i]);
+                touched |= (before - _vehicles[i].Position).sqrMagnitude > ContactTolerance * ContactTolerance;
+            }
+
+            return touched;
+        }
+
+        private bool ResolveVehicleContacts(bool allowRams)
+        {
+            var touched = false;
             for (var i = 0; i < Count; i++)
             {
                 for (var j = i + 1; j < Count; j++)
                 {
-                    ResolvePair(i, j);
+                    touched |= ResolvePair(i, j, allowRams);
                 }
             }
 
-            for (var i = 0; i < Count; i++)
-            {
-                _vehicles[i] = ResolveObstacles(_vehicles[i]);
-            }
+            return touched;
         }
 
         private VehicleState ResolveObstacles(VehicleState state)
@@ -144,55 +174,29 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             return new VehicleState(state.Position + normal * depth, velocity, state.Forward);
         }
 
-        private void TryRam(int first, int second, VehicleState a, VehicleState b, Vector2 normal, ref Vector2 velocityA, ref Vector2 velocityB)
+        private void TryRam(int first, int second, Vector2 normal, float firstApproach, float secondApproach)
         {
-            var pair = PairIndex(first, second);
-            if (_ramCooldowns[pair] > 0f)
-            {
-                return;
-            }
-
-            var speedA = Vector2.Dot(a.Velocity, normal);
-            var speedB = Vector2.Dot(b.Velocity, -normal);
-            var firstRams = speedA >= speedB;
+            var pair = VehiclePairs.Index(first, second);
+            var firstRams = firstApproach >= secondApproach;
             var rammer = firstRams ? first : second;
             var victim = firstRams ? second : first;
-            var approachSpeed = firstRams ? speedA : speedB;
-            var victimState = firstRams ? b : a;
+            var approachSpeed = firstRams ? firstApproach : secondApproach;
             var towardVictim = firstRams ? normal : -normal;
-            if (approachSpeed < _settings.RamMinSpeed)
+            if (_ramCooldowns[pair] > 0f || approachSpeed < _settings.RamMinSpeed)
             {
                 return;
             }
 
-            if (Vector2.Angle(victimState.Forward, -towardVictim) < _settings.RamMinAngleDegrees)
+            if (Vector2.Angle(_vehicles[victim].Forward, -towardVictim) < _settings.RamMinAngleDegrees)
             {
                 return;
             }
 
             var multiplier = _modifiers[rammer].RamStrengthMultiplier;
-            var knockback = towardVictim * (_settings.RamKnockback * multiplier);
-            var recoil = towardVictim * _settings.RamRecoil;
-            if (firstRams)
-            {
-                velocityA -= recoil;
-                velocityB += knockback;
-            }
-            else
-            {
-                velocityB -= recoil;
-                velocityA += knockback;
-            }
-
+            _vehicles[victim] = _vehicles[victim].WithVelocity(_vehicles[victim].Velocity + towardVictim * (_settings.RamKnockback * multiplier));
+            _vehicles[rammer] = _vehicles[rammer].WithVelocity(_vehicles[rammer].Velocity - towardVictim * _settings.RamRecoil);
             _ramCooldowns[pair] = _settings.RamCooldown;
             _rams.Add(new RamEvent(rammer, victim, approachSpeed * multiplier));
-        }
-
-        private static int PairIndex(int first, int second)
-        {
-            var low = Mathf.Min(first, second);
-            var high = Mathf.Max(first, second);
-            return high * (high - 1) / 2 + low;
         }
 
         private static Vector2 InsideBoxNormal(Vector2 position, BoxObstacle box)
@@ -209,16 +213,16 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             return Mathf.Min(box.HalfExtents.x - Mathf.Abs(local.x), box.HalfExtents.y - Mathf.Abs(local.y));
         }
 
-        private void ResolvePair(int first, int second)
+        private bool ResolvePair(int first, int second, bool allowRams)
         {
             var a = _vehicles[first];
             var b = _vehicles[second];
             var offset = b.Position - a.Position;
             var distance = offset.magnitude;
             var minDistance = _settings.Radius * 2f;
-            if (distance >= minDistance)
+            if (distance >= minDistance - ContactTolerance)
             {
-                return;
+                return false;
             }
 
             var normal = distance > 0f ? offset / distance : a.Forward;
@@ -231,11 +235,16 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
                 var impulse = normal * ((1f + _settings.Restitution) * closingSpeed * 0.5f);
                 velocityA -= impulse;
                 velocityB += impulse;
-                TryRam(first, second, a, b, normal, ref velocityA, ref velocityB);
             }
 
             _vehicles[first] = new VehicleState(a.Position - push, velocityA, a.Forward);
             _vehicles[second] = new VehicleState(b.Position + push, velocityB, b.Forward);
+            if (allowRams && closingSpeed > 0f)
+            {
+                TryRam(first, second, normal, Vector2.Dot(a.Velocity, normal), Vector2.Dot(b.Velocity, -normal));
+            }
+
+            return true;
         }
 
         private VehicleState Integrate(VehicleState state, VehicleInput input, VehicleModifiers modifiers, float deltaTime)

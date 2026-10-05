@@ -10,7 +10,7 @@ namespace PlowParty.Bootstrap
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<NetworkRunnerEvents>(Lifetime.Singleton);
-            builder.Register<NetworkSession>(Lifetime.Singleton).As<INetworkSession>();
+            builder.Register<NetworkSession>(Lifetime.Singleton);
             builder.Register<VehicleRegistry>(Lifetime.Singleton);
             builder.RegisterEntryPoint<VehicleInputPoller>();
             builder.RegisterComponentInHierarchy<VehicleSpawner>();

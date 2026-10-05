@@ -7,23 +7,21 @@ namespace PlowParty.Gameplay.Vehicle.Network
     {
         public static VehicleArena Read(Transform root)
         {
-            var arena = VehicleArena.Empty;
-            foreach (var box in root.GetComponentsInChildren<BoxCollider>())
+            var arena = VehicleArena.Create();
+            foreach (var collider in root.GetComponentsInChildren<Collider>())
             {
-                var bounds = box.bounds;
-                arena.AddBox(new Vector2(bounds.center.x, bounds.center.z), new Vector2(bounds.extents.x, bounds.extents.z));
-            }
-
-            foreach (var capsule in root.GetComponentsInChildren<CapsuleCollider>())
-            {
-                var bounds = capsule.bounds;
-                arena.AddCircle(new Vector2(bounds.center.x, bounds.center.z), bounds.extents.x);
-            }
-
-            foreach (var sphere in root.GetComponentsInChildren<SphereCollider>())
-            {
-                var bounds = sphere.bounds;
-                arena.AddCircle(new Vector2(bounds.center.x, bounds.center.z), bounds.extents.x);
+                var bounds = collider.bounds;
+                var center = PlaneProjection.ToPlane(bounds.center);
+                switch (collider)
+                {
+                    case BoxCollider:
+                        arena.AddBox(center, PlaneProjection.ToPlane(bounds.extents));
+                        break;
+                    case CapsuleCollider:
+                    case SphereCollider:
+                        arena.AddCircle(center, bounds.extents.x);
+                        break;
+                }
             }
 
             return arena;

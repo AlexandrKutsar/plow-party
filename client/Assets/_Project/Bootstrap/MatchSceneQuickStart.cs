@@ -9,9 +9,9 @@ namespace PlowParty.Bootstrap
     {
         private const string SessionName = "plow-party-dev";
 
-        private readonly INetworkSession _session;
+        private readonly NetworkSession _session;
 
-        public MatchSceneQuickStart(INetworkSession session)
+        public MatchSceneQuickStart(NetworkSession session)
         {
             _session = session;
         }

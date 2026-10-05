@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace PlowParty.Infrastructure.Scenes
 {
-    public sealed class SceneLoader : ISceneLoader
+    public sealed class SceneLoader
     {
         public UniTask LoadAsync(string sceneName, CancellationToken cancellationToken)
         {

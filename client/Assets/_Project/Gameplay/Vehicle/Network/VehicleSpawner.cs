@@ -13,11 +13,15 @@ namespace PlowParty.Gameplay.Vehicle.Network
 
         private readonly Dictionary<PlayerRef, NetworkObject> _spawned = new Dictionary<PlayerRef, NetworkObject>();
         private NetworkRunnerEvents _events;
+        private VehicleRegistry _registry;
+        private VehicleWorldDriver _driver;
 
         [Inject]
-        public void Construct(NetworkRunnerEvents events)
+        public void Construct(NetworkRunnerEvents events, VehicleRegistry registry, VehicleWorldDriver driver)
         {
             _events = events;
+            _registry = registry;
+            _driver = driver;
             _events.PlayerJoined += OnPlayerJoined;
             _events.PlayerLeft += OnPlayerLeft;
         }
@@ -35,13 +39,19 @@ namespace PlowParty.Gameplay.Vehicle.Network
 
         private void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
-            if (!runner.IsServer)
+            if (!runner.IsServer || !TryTakeFreeSlot(out var slot))
             {
                 return;
             }
 
-            var spawnPoint = _spawnPoints[_spawned.Count % _spawnPoints.Length];
-            _spawned[player] = runner.Spawn(_vehiclePrefab, spawnPoint.position, spawnPoint.rotation, player);
+            var spawnPoint = _spawnPoints[slot];
+            _driver.ResetRamCooldowns(slot);
+            _spawned[player] = runner.Spawn(
+                _vehiclePrefab,
+                spawnPoint.position,
+                spawnPoint.rotation,
+                player,
+                (_, spawned) => spawned.GetComponent<NetworkVehicle>().Slot = slot);
         }
 
         private void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
@@ -52,6 +62,20 @@ namespace PlowParty.Gameplay.Vehicle.Network
             }
 
             runner.Despawn(vehicle);
+        }
+
+        private bool TryTakeFreeSlot(out int slot)
+        {
+            var slotCount = Mathf.Min(_spawnPoints.Length, VehicleWorldDriver.MaxVehicles);
+            for (slot = 0; slot < slotCount; slot++)
+            {
+                if (!_registry.IsSlotTaken(slot))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

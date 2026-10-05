@@ -17,6 +17,11 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
 
         public Vector2 Forward { get; }
 
+        public VehicleState WithVelocity(Vector2 velocity)
+        {
+            return new VehicleState(Position, velocity, Forward);
+        }
+
         public static VehicleState At(Vector2 position, Vector2 forward)
         {
             return new VehicleState(position, Vector2.zero, forward.normalized);

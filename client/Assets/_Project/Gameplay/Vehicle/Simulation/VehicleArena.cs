@@ -8,7 +8,10 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
         private readonly List<BoxObstacle> _boxes = new List<BoxObstacle>();
         private readonly List<CircleObstacle> _circles = new List<CircleObstacle>();
 
-        public static VehicleArena Empty => new VehicleArena();
+        public static VehicleArena Create()
+        {
+            return new VehicleArena();
+        }
 
         public IReadOnlyList<BoxObstacle> Boxes => _boxes;
 

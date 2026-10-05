@@ -66,7 +66,9 @@ Folders appear only when they have content.
 
 ## Fusion and DI
 
-Fusion, not VContainer, instantiates networked prefabs. `MatchScope` registers a custom `INetworkObjectProvider` that instantiates through the scope's `IObjectResolver`, so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike. See ADR-0004.
+Fusion, not VContainer, instantiates networked prefabs. The session adds a `ResolverNetworkObjectProvider` that instantiates through `MatchScope`'s `IObjectResolver`, so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike; scene `NetworkObject`s are injected through `RegisterComponentInHierarchy`. See ADR-0004.
+
+Every assembly that declares a `NetworkBehaviour` or `INetworkInput` must be listed in `AssembliesToWeave` in `NetworkProjectConfig.fusion`.
 
 Players and bots drive a vehicle through the same input-source abstraction; the vehicle cannot tell them apart. Bots run on the host only.
 
@@ -81,7 +83,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Module | Path | Status | Purpose |
 |---|---|---|---|
 | Bootstrap | `_Project/Bootstrap/` | active | Lifetime scopes, app start |
-| Infrastructure | `_Project/Infrastructure/` | active | Scene loading; later backend client, persistence, network object provider |
+| Infrastructure | `_Project/Infrastructure/` | active | Scene loading, Fusion session, DI-aware network object provider; later backend client, persistence |
 | Shared | `_Project/Shared/` | active | Cross-boundary types |
 | Account | `_Project/Meta/Account/` | planned | Guest login by device id, nickname (GDD 9.1) |
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |

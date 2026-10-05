@@ -13,7 +13,7 @@ namespace PlowParty.Gameplay.Vehicle.Tests
         [SetUp]
         public void SetUp()
         {
-            _world = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Empty, 6);
+            _world = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Create(), 6);
         }
 
         [Test]
@@ -103,8 +103,8 @@ namespace PlowParty.Gameplay.Vehicle.Tests
         [Test]
         public void Tick_RamWithStrengthMultiplier_HitsVictimHarderAndReportsStrongerRam()
         {
-            var plain = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Empty, 6);
-            var boosted = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Empty, 6);
+            var plain = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Create(), 6);
+            var boosted = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Create(), 6);
             foreach (var world in new[] { plain, boosted })
             {
                 world.Add(VehicleState.At(Vector2.zero, Vector2.up));
@@ -122,7 +122,7 @@ namespace PlowParty.Gameplay.Vehicle.Tests
         [Test]
         public void Tick_SameInputsInTwoWorlds_ProducesIdenticalResults()
         {
-            var arena = VehicleArena.Empty.AddBox(new Vector2(0f, 6f), new Vector2(6f, 0.5f)).AddCircle(new Vector2(2f, 2f), 1f);
+            var arena = VehicleArena.Create().AddBox(new Vector2(0f, 6f), new Vector2(6f, 0.5f)).AddCircle(new Vector2(2f, 2f), 1f);
             var first = new VehicleWorld(VehicleTestSettings.Create(), arena, 6);
             var second = new VehicleWorld(VehicleTestSettings.Create(), arena, 6);
             foreach (var world in new[] { first, second })

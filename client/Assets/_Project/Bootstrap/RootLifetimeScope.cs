@@ -13,7 +13,7 @@ namespace PlowParty.Bootstrap
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_vehicleConfig);
-            builder.Register<SceneLoader>(Lifetime.Singleton).As<ISceneLoader>();
+            builder.Register<SceneLoader>(Lifetime.Singleton);
         }
     }
 }
