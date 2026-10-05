@@ -2,7 +2,9 @@
     "name": "PlowParty.Infrastructure",
     "rootNamespace": "PlowParty.Infrastructure",
     "references": [
-        "UniTask"
+        "UniTask",
+        "VContainer",
+        "Fusion.Unity"
     ],
     "autoReferenced": false
 }

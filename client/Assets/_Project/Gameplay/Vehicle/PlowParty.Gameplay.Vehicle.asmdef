@@ -1,6 +1,11 @@
 {
     "name": "PlowParty.Gameplay.Vehicle",
     "rootNamespace": "PlowParty.Gameplay.Vehicle",
-    "references": [],
+    "references": [
+        "PlowParty.Infrastructure",
+        "Fusion.Unity",
+        "VContainer",
+        "Unity.InputSystem"
+    ],
     "autoReferenced": false
 }

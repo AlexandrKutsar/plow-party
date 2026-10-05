@@ -27,6 +27,11 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
 
         public IReadOnlyList<RamEvent> Rams => _rams;
 
+        public void Clear()
+        {
+            Count = 0;
+        }
+
         public int Add(VehicleState state)
         {
             var index = Count;

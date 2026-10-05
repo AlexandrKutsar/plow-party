@@ -16,10 +16,14 @@ Code carries zero comments: no `//`, no `/* */`, no XML-doc `///`, no `#region`,
 
 The Unity Editor must be open on `client/` (the `com.unity.pipeline` package serves the CLI). After each logical change:
 
-1. `unity recompile --project-path client` — must report zero errors. Fix and repeat.
-2. `unity test client --mode EditMode --output client/Logs/test-results.xml` — add `--filter <TestClass>` while iterating, run the full suite before committing.
+1. `unity recompile --project-path <absolute path to client>` — must report zero errors. Fix and repeat. Pass the absolute path: with several Editors open, a relative path can reach the wrong one.
+2. `unity command --project-path <absolute path to client> --timeout 300 --result-only run_tests --mode editor --filter PlowParty.Gameplay.<Feature> --filter_type assembly` — run the feature's suite while iterating, every suite before committing. `unity test` only works in batch mode and refuses while the Editor is open.
+
+Leave Play Mode (`editor_stop`) before running tests or recompiling; a forgotten Play Mode session makes later commands hang.
 
 If the Editor is closed, `unity status` shows nothing connected: open it with `unity open client` (the project root is `client/`, never the repo root), or ask the user. Avoid batch mode while the user may have the Editor open.
+
+`eval` / `eval_file` run a method body: no `using` directives, so write fully qualified type names.
 
 `unity command` arguments are flags: `unity command --project-path client eval_file --file <path>`. Package changes in `manifest.json` reach an unfocused Editor only after `unity command --project-path client package_resolve`. The `unity-cli` skill covers the remaining commands (scenes, prefabs, play mode, console logs).
 
@@ -28,4 +32,6 @@ If the Editor is closed, `unity status` shows nothing connected: open it with `u
 - Every asset and folder under `Assets/` has a `.meta` file holding its GUID. Move and rename with `git mv` on both the file and its `.meta`, or through the Editor; never delete a `.meta` for an asset that stays.
 - Scenes, prefabs, and ScriptableObject assets are YAML with cross-file GUID references. Create and edit them through the Editor or `unity command`, not by hand.
 - Fusion 2.1.3 lives in `Assets/Photon/` (imported `.unitypackage`, upgrade by re-importing). The App ID is in `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset`; network settings in `NetworkProjectConfig.fusion` next to it. Fusion's Weaver rewrites `NetworkBehaviour` IL after compilation, so `[Networked]` properties must be auto-properties `{ get; set; }`.
+- Fusion's Weaver only processes assemblies listed in `AssembliesToWeave` in `NetworkProjectConfig.fusion`. Every asmdef that declares a `NetworkBehaviour` or `INetworkInput` is added there, or the session fails to start with "has not been weaved".
+- In Play Mode the Editor ignores keyboard input unless the Game view has focus, so input cannot be simulated from the CLI while the user works in another window; verify input-driven behaviour with the user, and the rest by setting networked state from `eval`.
 - Precompiled DLLs (Fusion runtime) are visible to every asmdef by default. An asmdef that must stay Fusion-free sets `"overrideReferences": true` and lists only the DLLs it may use; source asmdefs (`Fusion.Unity`, `VContainer`, `UniTask`) are referenced by name.

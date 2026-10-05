@@ -21,6 +21,16 @@ The snowplow every Participant drives: movement, collisions, and Rams (GDD 3.4, 
 - Pair cooldowns are state the network adapter must sync: `GetRamCooldown` / `SetRamCooldown`.
 - An impulse is consumed by the tick that applies it; persistent modifiers stay until the next `SetControl`.
 
+## Network and view
+
+- `NetworkVehicle` — one per Participant, spawned by `VehicleSpawner` on the Host with the Player as input authority. Holds `[Networked]` position, velocity, forward, and `LastMove`; `Render` interpolates the transform. It does no simulation itself.
+- `VehicleWorldDriver` — scene `NetworkObject` that steps the whole `VehicleWorld` once per tick: reads every registered `NetworkVehicle`, takes each Player's input via `TryGetInputForPlayer`, ticks, writes back, and reports Rams through `VehicleRegistry.Rammed` on forward ticks only. Both it and every `NetworkVehicle` call `SetIsSimulated`, so clients predict all Vehicles and the Host corrects them.
+- Remote Players' input is unknown on a client, so prediction uses their last confirmed `LastMove`. Bots will write `LastMove` on the Host.
+- `VehicleRegistry` — Vehicles of the Match ordered by `NetworkId`, which fixes their index in `VehicleWorld`; `Rammed` is how Bucket will learn about Rams.
+- `VehicleArenaReader` — builds the `VehicleArena` from the arena's `BoxCollider`s (boxes) and `CapsuleCollider` / `SphereCollider`s (circles); colliders are assumed axis-aligned.
+- `VehicleInputPoller` — fills `VehicleNetworkInput` from the Input System action `Player/Move`.
+- `VehicleConfig` — the ScriptableObject behind `VehicleSettings`, registered in `RootLifetimeScope`.
+
 ## Depends on
 
-Nothing but `UnityEngine` math. Bucket, Gadgets, and Bots depend on this module, never the reverse.
+Simulation: nothing but `UnityEngine` math. Network: Fusion, VContainer, Input System, Infrastructure. Bucket, Gadgets, and Bots depend on this module, never the reverse. The assembly is in Fusion's `AssembliesToWeave`.

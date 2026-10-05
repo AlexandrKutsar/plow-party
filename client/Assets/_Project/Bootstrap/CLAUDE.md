@@ -5,7 +5,9 @@ Composition root: the only module that references every other module. It owns th
 ## Entry points
 
 - `RootLifetimeScope` — app-wide scope. `RootLifetimeScope.prefab` is assigned as the root in `VContainerSettings.asset` (both in this folder; the settings asset sits in PlayerSettings → Preloaded Assets), so VContainer instantiates it before any scene scope. Registers configs and Infrastructure services.
-- `MenuScope`, `MatchScope` — planned, one per scene, children of the root.
+- `MatchScope` — the Match scene's scope: network session, runner events, Vehicle registry, input poller, and the scene components Fusion does not instantiate (`VehicleSpawner`, `VehicleWorldDriver`).
+- `MatchSceneQuickStart` — temporary entry point that starts a dev session the moment the Match scene loads, so the scene is playable on its own. Replaced by `Meta/Session` once matchmaking exists.
+- `MenuScope` — planned.
 
 ## Rules
 
