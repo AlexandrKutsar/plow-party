@@ -6,7 +6,8 @@ namespace PlowParty.Gameplay.Vehicle.Config
     [CreateAssetMenu(menuName = "Plow Party/Vehicle Config", fileName = nameof(VehicleConfig))]
     public sealed class VehicleConfig : ScriptableObject
     {
-        [SerializeField] private float _radius = 0.6f;
+        [SerializeField] private float _radius = 0.54f;
+        [SerializeField] private float _halfLength = 0.27f;
         [SerializeField] private float _maxSpeed = 8f;
         [SerializeField] private float _acceleration = 18f;
         [SerializeField] private float _deceleration = 9f;
@@ -23,6 +24,7 @@ namespace PlowParty.Gameplay.Vehicle.Config
             return new VehicleSettings
             {
                 Radius = _radius,
+                HalfLength = _halfLength,
                 MaxSpeed = _maxSpeed,
                 Acceleration = _acceleration,
                 Deceleration = _deceleration,

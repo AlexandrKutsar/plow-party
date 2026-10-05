@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4c65cedef874ed4eaf933c2e56db6c9, type: 3}
   m_Name: VehicleConfig
   m_EditorClassIdentifier: 
-  _radius: 0.6
+  _radius: 0.54
+  _halfLength: 0.27
   _maxSpeed: 8
   _acceleration: 18
   _deceleration: 9

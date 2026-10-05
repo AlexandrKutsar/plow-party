@@ -39,6 +39,7 @@ def build(name, write_files=True):
     collection = bpy.data.collections.new(model.NAME)
     bpy.context.scene.collection.children.link(collection)
     root = model.build(collection)
+    shapes.center_footprint(root)
     if write_files:
         palette.save_image(image, os.path.join(REPO_ROOT, PALETTE_OUTPUT))
         export.export_fbx(root, os.path.join(REPO_ROOT, model.OUTPUT))

@@ -8,9 +8,20 @@ namespace PlowParty.Gameplay.Vehicle.Tests
 
         public static VehicleSettings Create()
         {
+            return Create(0.5f, 0f);
+        }
+
+        public static VehicleSettings CreateCapsule()
+        {
+            return Create(0.5f, 0.3f);
+        }
+
+        private static VehicleSettings Create(float radius, float halfLength)
+        {
             return new VehicleSettings
             {
-                Radius = 0.5f,
+                Radius = radius,
+                HalfLength = halfLength,
                 MaxSpeed = 10f,
                 Acceleration = 20f,
                 Deceleration = 10f,

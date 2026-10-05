@@ -25,7 +25,7 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 ## Conventions
 
 - Meters, Z up, the model's front faces Blender −Y; the export maps this to Unity +Z forward with identity rotation and scale 1.
-- The root is an empty named after the model, its origin on the ground at the center of the footprint.
+- The root is an empty named after the model, its origin on the ground at the center of the footprint; `shapes.center_footprint`, called by `build.py` after every model, enforces the centering. Gameplay collision shapes are sized from this footprint, so report a changed footprint in the model's commit.
 - Parts that move or get swapped (wheels, Bucket, seat anchor) are separate objects with their origin at their pivot. `L`/`R` in names are from the driver's seat.
 - Colors come only from `palette.COLORS`: `paint` points a face's UVs at the color's cell, so every model shares one material and one texture. A new color goes into the palette, never into a new material.
 - Shapes are chamfered boxes and low-segment cylinders, flat-shaded; a vehicle stays under ~1500 triangles.

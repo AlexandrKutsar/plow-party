@@ -54,7 +54,7 @@ Gameplay/Bucket/
   Simulation/                    pure C#: rules, math, state transitions
   Network/                       NetworkBehaviour adapters
   View/                          MonoBehaviour presentation scripts (animator, VFX, feedback)
-  Config/                        ScriptableObject config types and assets
+  Config/                        ScriptableObject config types (assets live in _Project/Configs/)
   Prefabs/                       gameplay prefabs; each nests its Art visual prefab as Model
   Tests/                         EditMode tests, own asmdef
 ```
@@ -77,7 +77,9 @@ Players and bots drive a vehicle through the same input-source abstraction; the 
 
 ## Configuration
 
-Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...), each defined in its feature's `Config/`. The asset instances are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
+Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...). The config type is code and lives in its feature's `Config/`; the asset instance is data and lives in `_Project/Configs/`, one `<Feature>Config.asset` each, so the whole game is balanced from one folder and balance changes show up as their own diffs. The assets are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
+
+Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` next to its scene, once maps exist.
 
 ## Feature index
 

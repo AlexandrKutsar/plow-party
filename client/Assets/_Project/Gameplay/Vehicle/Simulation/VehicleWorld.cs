@@ -132,26 +132,34 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             for (var i = 0; i < boxes.Count; i++)
             {
                 var box = boxes[i];
-                var min = box.Center - box.HalfExtents;
-                var max = box.Center + box.HalfExtents;
-                var closest = new Vector2(Mathf.Clamp(state.Position.x, min.x, max.x), Mathf.Clamp(state.Position.y, min.y, max.y));
-                state = closest == state.Position
-                    ? PushOut(state, InsideBoxNormal(state.Position, box), DistanceToBoxEdge(state.Position, box) + _settings.Radius)
-                    : PushOutOfPoint(state, closest, _settings.Radius);
+                AxisOf(state, out var start, out var end);
+                SegmentMath.ClosestPoints(start, end, box, out var onAxis, out var onBox);
+                state = onAxis == onBox
+                    ? PushOut(state, InsideBoxNormal(onAxis, box), SegmentMath.DepthInsideBox(onAxis, box) + _settings.Radius)
+                    : PushOutOfPoint(state, onAxis, onBox, _settings.Radius);
             }
 
             var circles = _arena.Circles;
             for (var i = 0; i < circles.Count; i++)
             {
-                state = PushOutOfPoint(state, circles[i].Center, circles[i].Radius + _settings.Radius);
+                AxisOf(state, out var start, out var end);
+                var onAxis = SegmentMath.ClosestPoint(start, end, circles[i].Center);
+                state = PushOutOfPoint(state, onAxis, circles[i].Center, circles[i].Radius + _settings.Radius);
             }
 
             return state;
         }
 
-        private VehicleState PushOutOfPoint(VehicleState state, Vector2 point, float minDistance)
+        private void AxisOf(VehicleState state, out Vector2 start, out Vector2 end)
         {
-            var offset = state.Position - point;
+            var half = state.Forward * _settings.HalfLength;
+            start = state.Position - half;
+            end = state.Position + half;
+        }
+
+        private VehicleState PushOutOfPoint(VehicleState state, Vector2 onAxis, Vector2 point, float minDistance)
+        {
+            var offset = onAxis - point;
             var distance = offset.magnitude;
             if (distance >= minDistance)
             {
@@ -207,17 +215,14 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             return gapX < gapY ? new Vector2(Mathf.Sign(local.x), 0f) : new Vector2(0f, Mathf.Sign(local.y));
         }
 
-        private static float DistanceToBoxEdge(Vector2 position, BoxObstacle box)
-        {
-            var local = position - box.Center;
-            return Mathf.Min(box.HalfExtents.x - Mathf.Abs(local.x), box.HalfExtents.y - Mathf.Abs(local.y));
-        }
-
         private bool ResolvePair(int first, int second, bool allowRams)
         {
             var a = _vehicles[first];
             var b = _vehicles[second];
-            var offset = b.Position - a.Position;
+            AxisOf(a, out var firstStart, out var firstEnd);
+            AxisOf(b, out var secondStart, out var secondEnd);
+            SegmentMath.ClosestPoints(firstStart, firstEnd, secondStart, secondEnd, out var onFirst, out var onSecond);
+            var offset = onSecond - onFirst;
             var distance = offset.magnitude;
             var minDistance = _settings.Radius * 2f;
             if (distance >= minDistance - ContactTolerance)
@@ -225,7 +230,7 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
                 return false;
             }
 
-            var normal = distance > 0f ? offset / distance : a.Forward;
+            var normal = distance > 0f ? offset / distance : FallbackNormal(a, b);
             var push = normal * ((minDistance - distance) * 0.5f);
             var velocityA = a.Velocity;
             var velocityB = b.Velocity;
@@ -245,6 +250,12 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
             }
 
             return true;
+        }
+
+        private static Vector2 FallbackNormal(VehicleState a, VehicleState b)
+        {
+            var centres = b.Position - a.Position;
+            return centres.sqrMagnitude > 0f ? centres.normalized : a.Forward;
         }
 
         private VehicleState Integrate(VehicleState state, VehicleInput input, VehicleModifiers modifiers, float deltaTime)

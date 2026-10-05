@@ -1,6 +1,6 @@
 import bmesh
 import bpy
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 
 from . import palette
 
@@ -97,3 +97,16 @@ def facing(direction, threshold=0.7):
 
 def on_axis(axis_index, tolerance=0.001):
     return lambda polygon: all(abs(polygon.center[i]) < tolerance for i in range(3) if i != axis_index)
+
+
+def center_footprint(root):
+    bpy.context.view_layer.update()
+    corners = [obj.matrix_world @ Vector(corner) for obj in root.children_recursive if obj.type == "MESH" for corner in obj.bound_box]
+    offset = Vector((
+        (min(c.x for c in corners) + max(c.x for c in corners)) / 2,
+        (min(c.y for c in corners) + max(c.y for c in corners)) / 2,
+        0,
+    ))
+    for child in root.children:
+        child.location -= offset
+    bpy.context.view_layer.update()
