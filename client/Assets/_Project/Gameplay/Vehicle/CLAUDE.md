@@ -7,12 +7,15 @@ The snowplow every Participant drives: movement, collisions, and Rams (GDD 3.4, 
 - `VehicleWorld` — owns all Vehicles of a Match. `Add` a `VehicleState`, `SetControl` with a `VehicleInput` and `VehicleModifiers` each tick, `Tick(deltaTime)`, read back with `GetVehicle`. The single test seam.
 - `VehicleInput` — stick vector (clamped to length 1) and gadget flag; the only control surface, identical for Players and Bots.
 - `VehicleModifiers` — how other features steer a Vehicle without Vehicle knowing them: speed multiplier (Bucket Load, Turbo), immobilised (Freeze, Countdown), one-shot impulse (snowball, Turbo Rocket), Ram strength multiplier.
+- `VehicleArena` — static obstacles of the map: axis-aligned boxes and circles, passed to `VehicleWorld` at construction.
 - `VehicleSettings` — tunable numbers, filled from the config asset.
 
 ## Rules worth knowing
 
 - Turning is capped by `TurnRateDegrees`; speed follows stick magnitude × `MaxSpeed` × speed multiplier, approached at `Acceleration` while the stick is held and `Deceleration` when released.
 - Immobilised zeroes velocity and freezes facing and position.
+- Vehicles are circles of `Radius` in the XZ plane (Vector2 x = world x, y = world z). Tick order: integrate every Vehicle → resolve Vehicle pairs → resolve obstacles last, so a Vehicle never ends a tick inside a wall even when pushed there.
+- Contacts reflect only the approaching velocity component, scaled by `Restitution`; tangential speed is kept, so Vehicles slide along walls.
 - An impulse is consumed by the tick that applies it; persistent modifiers stay until the next `SetControl`.
 
 ## Depends on

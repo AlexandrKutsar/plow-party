@@ -11,7 +11,7 @@ namespace PlowParty.Gameplay.Vehicle.Tests
         [SetUp]
         public void SetUp()
         {
-            _world = new VehicleWorld(VehicleTestSettings.Create(), 6);
+            _world = new VehicleWorld(VehicleTestSettings.Create(), VehicleArena.Empty, 6);
         }
 
         [Test]
