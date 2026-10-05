@@ -12,4 +12,4 @@ Engine, platform, and network plumbing used by both Gameplay and Meta: things th
 
 ## Depends on
 
-UniTask. Will add VContainer and Fusion when the network object provider lands.
+UniTask. Fusion runtime DLLs are auto-referenced; add `Fusion.Unity` and `VContainer` to the asmdef when the network object provider lands.

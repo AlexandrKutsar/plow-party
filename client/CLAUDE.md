@@ -27,4 +27,5 @@ If the Editor is closed, `unity status` shows nothing connected: open it with `u
 
 - Every asset and folder under `Assets/` has a `.meta` file holding its GUID. Move and rename with `git mv` on both the file and its `.meta`, or through the Editor; never delete a `.meta` for an asset that stays.
 - Scenes, prefabs, and ScriptableObject assets are YAML with cross-file GUID references. Create and edit them through the Editor or `unity command`, not by hand.
-- Fusion requires a Photon App ID in `NetworkProjectConfig`; the user installs and configures Fusion.
+- Fusion 2.1.3 lives in `Assets/Photon/` (imported `.unitypackage`, upgrade by re-importing). The App ID is in `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset`; network settings in `NetworkProjectConfig.fusion` next to it. Fusion's Weaver rewrites `NetworkBehaviour` IL after compilation, so `[Networked]` properties must be auto-properties `{ get; set; }`.
+- Precompiled DLLs (Fusion runtime) are visible to every asmdef by default. An asmdef that must stay Fusion-free sets `"overrideReferences": true` and lists only the DLLs it may use; source asmdefs (`Fusion.Unity`, `VContainer`, `UniTask`) are referenced by name.
