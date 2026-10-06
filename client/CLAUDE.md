@@ -29,7 +29,7 @@ If the Editor is closed, `unity status` shows nothing connected: open it with `u
 
 ## Multiplayer check
 
-Multiplayer Play Mode (`com.unity.multiplayer.playmode`) runs extra virtual players beside the main Editor; Fusion supports it. Window → Multiplayer → Multiplayer Play Mode, tick Player 2 (up to Player 4), open `Assets/_Project/Scenes/Match.unity`, press Play in the main Editor. `MatchSceneQuickStart` joins every instance to the same `AutoHostOrClient` session: the first becomes Host, the rest Clients. Keyboard input goes only to the focused Game view. Virtual players are a user-side check: the CLI drives only the main Editor.
+Multiplayer Play Mode (`com.unity.multiplayer.playmode`) runs extra virtual players beside the main Editor; Fusion supports it. Window → Multiplayer → Multiplayer Play Mode, tick Player 2 (up to Player 4), open `Assets/_Project/Scenes/Match.unity`, press Play in the main Editor. `MatchSceneQuickStart` joins every instance to the same `AutoHostOrClient` session: the first becomes Host, the rest Clients. Keyboard input goes only to the focused Game view. `PhotonAppSettings` pins `FixedRegion` to `eu`: without a fixed region every instance picks its own best region and they never meet, and region pinging from Russia can time out (`PhotonCloudTimeout`). Virtual players are a user-side check: the CLI drives only the main Editor.
 
 ## Unity gotchas
 
