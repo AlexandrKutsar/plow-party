@@ -20,7 +20,7 @@ class CurrentAccount:
 
 
 @dataclass(frozen=True)
-class Login:
+class LoginResult:
     account: CurrentAccount
     token: str
 
@@ -38,12 +38,12 @@ class AccountService:
         self._session = session
         self._accounts = AccountRepository(session)
 
-    async def login(self, device_id: uuid.UUID) -> Login:
+    async def login(self, device_id: uuid.UUID) -> LoginResult:
         token = secrets.token_urlsafe(32)
         nickname = default_nickname(secrets.randbelow(len(DEFAULT_NICKNAME_NUMBERS)))
         account = await self._accounts.upsert_by_device(device_id, nickname, _hash_token(token))
         await self._session.commit()
-        return Login(account=_current(account), token=token)
+        return LoginResult(account=_current(account), token=token)
 
     async def authenticate(self, token: str) -> CurrentAccount | None:
         account = await self._accounts.find_by_token_hash(_hash_token(token))

@@ -2,6 +2,7 @@ import asyncio
 import re
 import uuid
 
+import pytest
 from httpx import AsyncClient
 
 
@@ -68,10 +69,17 @@ async def test_get_me_without_token_is_unauthorized(client: AsyncClient) -> None
     assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
-async def test_get_me_with_unknown_token_is_unauthorized(client: AsyncClient) -> None:
-    response = await client.get("/accounts/me", headers=bearer("not-a-real-token"))
+@pytest.mark.parametrize(
+    "authorization",
+    ["Bearer not-a-real-token", "Bearer ", "Basic dXNlcjpwYXNz", "not-a-real-token"],
+)
+async def test_get_me_with_bad_authorization_is_unauthorized(
+    client: AsyncClient, authorization: str
+) -> None:
+    response = await client.get("/accounts/me", headers={"Authorization": authorization})
 
     assert response.status_code == 401
+    assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
 async def test_login_again_invalidates_previous_token(client: AsyncClient) -> None:
@@ -84,6 +92,7 @@ async def test_login_again_invalidates_previous_token(client: AsyncClient) -> No
 
     assert new["token"] != old["token"]
     assert old_response.status_code == 401
+    assert old_response.headers["WWW-Authenticate"] == "Bearer"
     assert new_response.status_code == 200
 
 
@@ -137,6 +146,7 @@ async def test_rename_me_without_token_is_unauthorized(client: AsyncClient) -> N
     response = await client.patch("/accounts/me", json={"nickname": "Snowy"})
 
     assert response.status_code == 401
+    assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
 async def test_login_concurrent_first_logins_share_one_account(client: AsyncClient) -> None:

@@ -1,6 +1,6 @@
 # accounts
 
-Guest Accounts (GDD 9.1): login by Device Id, the Account's Nickname, and the Auth Token every other feature authenticates with. Decisions: ADR-0011. Spec: `.scratch/accounts/spec.md`.
+Guest Accounts (GDD 9.1): login by Device Id, the Account's Nickname, and the Auth Token every other feature authenticates with. Decisions: ADR-0011.
 
 ## Entry points
 

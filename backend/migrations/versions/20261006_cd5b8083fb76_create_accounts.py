@@ -14,8 +14,8 @@ def upgrade() -> None:
         "accounts",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("device_id", sa.Uuid(), nullable=False),
-        sa.Column("nickname", sa.String(length=16), nullable=False),
-        sa.Column("token_hash", sa.String(length=64), nullable=False),
+        sa.Column("nickname", sa.Text(), nullable=False),
+        sa.Column("token_hash", sa.Text(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
