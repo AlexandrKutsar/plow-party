@@ -8,7 +8,7 @@ Vehicles scrape Snow off the Snow Grid, but nothing holds it: the Blade clears a
 
 ## Solution
 
-A Bucket feature in Gameplay. Its rules live in one pure C# type, `BucketRules`, that works on Load held in whole Depth steps: how much room is left, what collecting adds, how many steps a Spill throws out, and the speed multiplier for a given Load. A `NetworkBucket` on the Vehicle prefab holds the networked Load. A host-side entry point, `BucketHost`, fills Buckets from `SnowGridDriver.Scraped`, Spills on `VehicleRegistry.Rammed`, and writes the Vehicle's `SpeedMultiplier`. Snow asks for the free space through `IBladeRoom`, an interface Snow declares and Bucket implements, so Snow still never references Bucket.
+A Bucket feature in Gameplay. Its rules live in one pure C# type, `BucketRules`, that works on Load held in whole Depth steps: how many free steps are left, what collecting adds, how many steps a Spill throws out, and the speed multiplier for a given Load. A `NetworkBucket` on the Vehicle prefab holds the networked Load. A host-side entry point, `BucketHost`, fills Buckets from `SnowGridDriver.Scraped`, Spills on `VehicleRegistry.Rammed`, and writes the Vehicle's `SpeedMultiplier`. Snow asks for the free space through `IScrapeLimit`, an interface Snow declares and Bucket implements, so Snow still never references Bucket.
 
 ## User Stories
 
@@ -32,18 +32,18 @@ A Bucket feature in Gameplay. Its rules live in one pure C# type, `BucketRules`,
 - **Load unit:** Load is stored in whole Depth steps (`LoadSteps`); capacity is `Capacity × StepsPerLoad` steps. Load in GDD units is `LoadSteps / StepsPerLoad`, rounded down; "full" means `LoadSteps` equals the capacity in steps. Lossless: a Spill puts back exactly the steps it takes out.
 - **Numbers (BucketConfig):** `Capacity` 100, `StepsPerLoad` 6 (fresh Snow ≈ 13 steps/m with the current Blade, ≈ 2.2 Load/m, GDD's "~2 per metre"), `MaxSpeedPenalty` 0.25, `SpillShare` 0.3.
 - **Speed penalty:** linear, `1 − MaxSpeedPenalty × LoadSteps / CapacitySteps`. Closes GDD 11's "stepped or linear" for MVP; revisit at playtest.
-- **Spill amount:** `ceil(LoadSteps × SpillShare)`, so a non-empty Bucket always loses something; steps that find no Cell (`SnowGrid.Spill` returns fewer) are lost, never returned to the Bucket.
+- **Spill amount:** `ceil(LoadSteps × SpillShare)`, a product within float error of a whole number counting as that number, so a non-empty Bucket always loses something; steps that find no Cell (`SnowGrid.Spill` returns fewer) are lost, never returned to the Bucket.
 - **Snow Pile placement on a Ram:** the midpoint of the Rammer's and the Victim's positions after the tick, right in front of the Rammer's nose.
-- **Single test seam — `BucketRules`:** pure C#, built from `BucketSettings`; `CapacitySteps`, `RoomFor(load)`, `Collect(load, steps)`, `SpillSteps(load)`, `SpeedMultiplier(load)`, `LoadUnits(load)`, `IsFull(load)`. Load passes in and out as `int` steps; the networked value is the only state.
-- **Room seam:** Snow declares `IBladeRoom.RoomFor(NetworkVehicle)` in `Snow/Network`; `SnowGridDriver` passes it to `Scrape`, `SnowGridView` shares it across all pre-clear samples of a frame. `BucketHost` implements it.
-- **Network:** `NetworkBucket` on `Vehicle.prefab` with `[Networked] int LoadSteps`; host-only `Collect(steps)` and `TakeSpill()`; each Load change writes the Vehicle's `SpeedMultiplier` (Bucket is that Modifier's only owner). `BucketHost` (VContainer entry point in `MatchScope`) subscribes to `Scraped` and `Rammed`, both raised only on the Host, and exposes `Spill(vehicle, point)` for Gadgets.
+- **Single test seam — `BucketRules`:** pure C#, built from `BucketSettings`; `CapacitySteps`, `FreeStepsFor(load)`, `Collect(load, steps)`, `SpillSteps(load)`, `SpeedMultiplier(load)`, `LoadUnits(load)`, `IsFull(load)`. Load passes in and out as `int` steps; the networked value is the only state.
+- **Scrape-limit seam:** Snow declares `IScrapeLimit.LimitFor(NetworkVehicle)` in `Snow/Network`; `SnowGridDriver` passes it to `Scrape`, `SnowGridView` shares it across all pre-clear samples of a frame. `BucketRegistry` (Vehicle → `NetworkBucket` map) implements it; "Room" is avoided because the glossary reserves it.
+- **Network:** `NetworkBucket` on `Vehicle.prefab` with `[Networked] int LoadSteps`; `Collect(steps)` and `TakeSpill()` that act only with state authority; each Load change writes the Vehicle's `SpeedMultiplier` (Bucket is that Modifier's only owner). `BucketHost` (VContainer entry point in `MatchScope`) subscribes to `Scraped` and `Rammed`, both raised only on the Host, and exposes `Spill(vehicle, point)` for Gadgets.
 - **Config:** `BucketConfig` ScriptableObject → `BucketSettings`; asset `_Project/Configs/BucketConfig.asset`, registered in `RootLifetimeScope`.
 
 ## Testing Decisions
 
 - Tests build `BucketRules` from small settings and assert only on return values. Assembly `PlowParty.Gameplay.Bucket.Tests`, names `Method_Condition_ExpectedResult`.
 - Cover: capacity in steps; room shrinks with Load and never goes negative; collect clamps at capacity; spill rounds up, is zero for an empty Bucket, never exceeds Load; speed multiplier 1 empty, `1 − penalty` full, linear between; Load units round down; full only at capacity.
-- Not unit-tested: `NetworkBucket`, `BucketHost`, Snow's use of `IBladeRoom`; checked in Play Mode by driving into a full Bucket and Ramming via `eval`.
+- Not unit-tested: `NetworkBucket`, `BucketHost`, Snow's use of `IScrapeLimit`; checked in Play Mode by driving into a full Bucket and Ramming via `eval`.
 
 ## Out of Scope
 
@@ -54,5 +54,5 @@ A Bucket feature in Gameplay. Its rules live in one pure C# type, `BucketRules`,
 
 ## Further Notes
 
-- Out-of-module edits: `Snow/Network/IBladeRoom.cs` (new), `SnowGridDriver` and `SnowGridView` use it, Snow `CLAUDE.md`; `Vehicle.prefab` gets `NetworkBucket`, Vehicle `CLAUDE.md`; `MatchScope`, `RootLifetimeScope` (+ prefab field), `NetworkProjectConfig.fusion`; `GLOSSARY.md` unchanged (Bucket, Load, Spill exist); GDD 11 row on the speed penalty marked decided.
+- Out-of-module edits: `Snow/Network/IScrapeLimit.cs` (new), `SnowGridDriver` and `SnowGridView` use it, Snow `CLAUDE.md`; `Vehicle.prefab` gets `NetworkBucket`, Vehicle `CLAUDE.md`; `MatchScope`, `RootLifetimeScope` (+ prefab field), `NetworkProjectConfig.fusion`; Bootstrap `CLAUDE.md`; two worktree gotchas in `client/CLAUDE.md`; `GLOSSARY.md` unchanged (Bucket, Load, Spill exist); GDD 11 row on the speed penalty marked decided.
 - ADRs touched: ADR-0005 (Simulation free of Fusion), ADR-0012 ("Bucket owns the conversion").

@@ -3,7 +3,7 @@ using PlowParty.Gameplay.Bucket.Simulation;
 
 namespace PlowParty.Gameplay.Bucket.Tests
 {
-    public sealed class BucketRulesRoomTests
+    public sealed class BucketRulesFreeStepsTests
     {
         private BucketRules _rules;
 
@@ -20,16 +20,16 @@ namespace PlowParty.Gameplay.Bucket.Tests
         }
 
         [Test]
-        public void RoomFor_PartlyLoaded_IsCapacityLeft()
+        public void FreeStepsFor_PartlyLoaded_IsCapacityLeft()
         {
-            Assert.That(_rules.RoomFor(0), Is.EqualTo(40));
-            Assert.That(_rules.RoomFor(15), Is.EqualTo(25));
+            Assert.That(_rules.FreeStepsFor(0), Is.EqualTo(40));
+            Assert.That(_rules.FreeStepsFor(15), Is.EqualTo(25));
         }
 
         [Test]
-        public void RoomFor_Overfilled_IsZero()
+        public void FreeStepsFor_Overfilled_IsZero()
         {
-            Assert.That(_rules.RoomFor(50), Is.EqualTo(0));
+            Assert.That(_rules.FreeStepsFor(50), Is.EqualTo(0));
         }
     }
 }

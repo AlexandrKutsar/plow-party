@@ -20,7 +20,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<VehicleWorldDriver>();
             builder.RegisterComponentInHierarchy<SnowGridDriver>();
             builder.RegisterComponentInHierarchy<SnowGridView>();
-            builder.Register<BucketRegistry>(Lifetime.Singleton).AsSelf().As<IBladeRoom>();
+            builder.Register<BucketRegistry>(Lifetime.Singleton).AsSelf().As<IScrapeLimit>();
             builder.RegisterEntryPoint<BucketHost>().AsSelf();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }

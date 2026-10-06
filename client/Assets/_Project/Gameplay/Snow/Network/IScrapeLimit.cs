@@ -2,8 +2,8 @@ using PlowParty.Gameplay.Vehicle.Network;
 
 namespace PlowParty.Gameplay.Snow.Network
 {
-    public interface IBladeRoom
+    public interface IScrapeLimit
     {
-        int RoomFor(NetworkVehicle vehicle);
+        int LimitFor(NetworkVehicle vehicle);
     }
 }

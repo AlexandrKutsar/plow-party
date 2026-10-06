@@ -4,7 +4,7 @@ using PlowParty.Gameplay.Vehicle.Network;
 
 namespace PlowParty.Gameplay.Bucket.Network
 {
-    public sealed class BucketRegistry : IBladeRoom
+    public sealed class BucketRegistry : IScrapeLimit
     {
         private readonly Dictionary<NetworkVehicle, NetworkBucket> _buckets = new Dictionary<NetworkVehicle, NetworkBucket>();
 
@@ -23,9 +23,9 @@ namespace PlowParty.Gameplay.Bucket.Network
             return _buckets.TryGetValue(vehicle, out bucket);
         }
 
-        public int RoomFor(NetworkVehicle vehicle)
+        public int LimitFor(NetworkVehicle vehicle)
         {
-            return TryGet(vehicle, out var bucket) ? bucket.Room : 0;
+            return TryGet(vehicle, out var bucket) ? bucket.FreeSteps : 0;
         }
     }
 }

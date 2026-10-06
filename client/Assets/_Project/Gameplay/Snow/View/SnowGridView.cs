@@ -21,7 +21,7 @@ namespace PlowParty.Gameplay.Snow.View
         [SerializeField] private Color32 _pileColor = new Color32(196, 222, 255, 255);
 
         private VehicleRegistry _registry;
-        private IBladeRoom _room;
+        private IScrapeLimit _limit;
         private SnowConfig _config;
         private SnowSettings _settings;
         private SnowGrid _shown;
@@ -36,11 +36,11 @@ namespace PlowParty.Gameplay.Snow.View
         private NetworkVehicle _localVehicle;
 
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config, IBladeRoom room)
+        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit)
         {
             _registry = registry;
             _config = config;
-            _room = room;
+            _limit = limit;
         }
 
         private void LateUpdate()
@@ -115,12 +115,12 @@ namespace PlowParty.Gameplay.Snow.View
             }
 
             var oldest = Time.time - _config.PreClearDuration;
-            var room = _localVehicle != null ? _room.RoomFor(_localVehicle) : 0;
-            for (var i = 0; i < _recentBlades.Length && room > 0; i++)
+            var limit = _localVehicle != null ? _limit.LimitFor(_localVehicle) : 0;
+            for (var i = 0; i < _recentBlades.Length && limit > 0; i++)
             {
                 if (_recentBladeTimes[i] >= oldest)
                 {
-                    room -= _shown.Scrape(_recentBlades[i], room);
+                    limit -= _shown.Scrape(_recentBlades[i], limit);
                 }
             }
         }

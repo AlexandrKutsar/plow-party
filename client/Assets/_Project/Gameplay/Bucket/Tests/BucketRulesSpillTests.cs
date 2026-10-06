@@ -32,6 +32,15 @@ namespace PlowParty.Gameplay.Bucket.Tests
         }
 
         [Test]
+        public void SpillSteps_WholeShare_NeverExceedsLoad()
+        {
+            var settings = BucketTestSettings.Create();
+            settings.SpillShare = 1f;
+
+            Assert.That(new BucketRules(settings).SpillSteps(13), Is.EqualTo(13));
+        }
+
+        [Test]
         public void SpillSteps_EmptyBucket_IsZero()
         {
             Assert.That(_rules.SpillSteps(0), Is.EqualTo(0));

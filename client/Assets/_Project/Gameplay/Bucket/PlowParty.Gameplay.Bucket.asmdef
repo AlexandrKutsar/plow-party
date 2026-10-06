@@ -4,7 +4,6 @@
     "references": [
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Vehicle",
-        "PlowParty.Infrastructure",
         "Fusion.Unity",
         "VContainer"
     ],

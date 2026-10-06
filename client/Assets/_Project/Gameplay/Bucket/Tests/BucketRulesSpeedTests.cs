@@ -26,6 +26,12 @@ namespace PlowParty.Gameplay.Bucket.Tests
         }
 
         [Test]
+        public void SpeedMultiplier_QuarterFull_LosesQuarterOfThePenalty()
+        {
+            Assert.That(_rules.SpeedMultiplier(10), Is.EqualTo(0.95f).Within(1e-5f));
+        }
+
+        [Test]
         public void SpeedMultiplier_HalfFull_LosesHalfThePenalty()
         {
             Assert.That(_rules.SpeedMultiplier(20), Is.EqualTo(0.9f).Within(1e-5f));

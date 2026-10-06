@@ -24,20 +24,5 @@ namespace PlowParty.Gameplay.Bucket.Tests
         {
             Assert.That(_rules.Collect(35, 12), Is.EqualTo(40));
         }
-
-        [Test]
-        public void IsFull_OnlyAtCapacity()
-        {
-            Assert.That(_rules.IsFull(39), Is.False);
-            Assert.That(_rules.IsFull(40), Is.True);
-        }
-
-        [Test]
-        public void LoadUnits_PartialLoad_RoundsDown()
-        {
-            Assert.That(_rules.LoadUnits(3), Is.EqualTo(0));
-            Assert.That(_rules.LoadUnits(7), Is.EqualTo(1));
-            Assert.That(_rules.LoadUnits(40), Is.EqualTo(10));
-        }
     }
 }

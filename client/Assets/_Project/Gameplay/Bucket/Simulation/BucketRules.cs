@@ -14,7 +14,7 @@ namespace PlowParty.Gameplay.Bucket.Simulation
 
         public int CapacitySteps { get; }
 
-        public int RoomFor(int loadSteps)
+        public int FreeStepsFor(int loadSteps)
         {
             return Mathf.Max(CapacitySteps - loadSteps, 0);
         }

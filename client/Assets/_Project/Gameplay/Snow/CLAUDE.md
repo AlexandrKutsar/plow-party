@@ -6,7 +6,7 @@ The Snow Grid: Snow lying on the Arena, scraped by every Vehicle's Blade, regrow
 
 - `SnowGrid` — the single test seam. Built from `SnowSettings`, a `VehicleArena` (Cells inside `VehicleArena.Contains` are masked), and a seed. `Scrape(blade, room)` returns the Depth steps taken, at most `room`; `Spill(point, steps)` returns the steps that landed; `Tick(elapsedPlayingTime)` applies Regrowth and Blizzards due by then; `GetDepth(x, y)` or `GetDepth(cellIndex)` (row-major) reads a Cell; `WordCount` / `GetWord` / `SetWord` expose the packed form for sync.
 - `SnowBlade` — the oriented strip a Blade scrapes; `SnowBlade.Ahead(position, forward, settings)` places it `BladeForwardOffset` in front of a Vehicle.
-- `IBladeRoom` — Snow's capacity seam: `RoomFor(vehicle)` is how many steps that Vehicle's Blade may still take. Bucket implements it, so Snow never references Bucket. The driver passes it to `Scrape`; the View shares one frame's room across all pre-clear samples, so a full Bucket shows no pre-cleared track.
+- `IScrapeLimit` — Snow's capacity seam: `LimitFor(vehicle)` is how many steps that Vehicle's Blade may still take. Bucket implements it, so Snow never references Bucket. The driver passes it to `Scrape` as `room`; the View shares one frame's limit across all pre-clear samples, so a full Bucket shows no pre-cleared track.
 - `SnowSettings` — tunable numbers, filled from `SnowConfig`.
 
 ## Rules worth knowing
@@ -31,4 +31,4 @@ The Snow Grid: Snow lying on the Arena, scraped by every Vehicle's Blade, regrow
 
 ## Depends on
 
-Simulation: `UnityEngine` math and Vehicle's `VehicleArena`. Network and View: Fusion, VContainer, Vehicle (`VehicleRegistry`, `NetworkVehicle`, `VehicleArenaReader`), and an `IBladeRoom` registered in `MatchScope`. Vehicle never references Snow. The assembly is in Fusion's `AssembliesToWeave`.
+Simulation: `UnityEngine` math and Vehicle's `VehicleArena`. Network and View: Fusion, VContainer, Vehicle (`VehicleRegistry`, `NetworkVehicle`, `VehicleArenaReader`), and an `IScrapeLimit` registered in `MatchScope`. Vehicle never references Snow. The assembly is in Fusion's `AssembliesToWeave`.

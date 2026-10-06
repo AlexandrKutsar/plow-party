@@ -33,7 +33,7 @@ namespace PlowParty.Gameplay.Bucket.Network
 
         public void Spill(NetworkVehicle vehicle, Vector2 point)
         {
-            if (!_buckets.TryGet(vehicle, out var bucket) || !bucket.HasStateAuthority)
+            if (!_buckets.TryGet(vehicle, out var bucket))
             {
                 return;
             }

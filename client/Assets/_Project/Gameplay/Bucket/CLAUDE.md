@@ -4,7 +4,7 @@ The Vehicle's snow container: Load filled by the Blade, capped at capacity, slow
 
 ## Entry points
 
-- `BucketRules` — the single test seam. Built from `BucketSettings`; Load passes in and out as whole Depth steps: `CapacitySteps`, `RoomFor(load)`, `Collect(load, steps)`, `SpillSteps(load)`, `SpeedMultiplier(load)`, `LoadUnits(load)`, `IsFull(load)`. Holds no state.
+- `BucketRules` — the single test seam. Built from `BucketSettings`; Load passes in and out as whole Depth steps: `CapacitySteps`, `FreeStepsFor(load)`, `Collect(load, steps)`, `SpillSteps(load)`, `SpeedMultiplier(load)`, `LoadUnits(load)`, `IsFull(load)`. Holds no state.
 - `BucketSettings` — tunable numbers, filled from `BucketConfig`.
 
 ## Rules worth knowing
@@ -16,11 +16,11 @@ The Vehicle's snow container: Load filled by the Blade, capped at capacity, slow
 
 ## Network
 
-- `NetworkBucket` — on `Vehicle.prefab` beside `NetworkVehicle`. `[Networked] LoadSteps` is the only state; `Load`, `IsFull`, `Room` read it on every peer. Host-only `Collect` and `TakeSpill` change it and write the Vehicle's `SpeedMultiplier`; Bucket is that Modifier's only owner.
-- `BucketRegistry` — maps each `NetworkVehicle` to its `NetworkBucket`; implements Snow's `IBladeRoom`, so the Host's scrape and the local View's pre-clear both stop at the Bucket's room. A Vehicle without a Bucket has no room.
+- `NetworkBucket` — on `Vehicle.prefab` beside `NetworkVehicle`. `[Networked] LoadSteps` is the only state; `Load`, `IsFull`, `FreeSteps` read it on every peer. `Collect` and `TakeSpill` change it only with state authority (the Host) and write the Vehicle's `SpeedMultiplier`; Bucket is that Modifier's only owner.
+- `BucketRegistry` — maps each `NetworkVehicle` to its `NetworkBucket`; implements Snow's `IScrapeLimit` with the Bucket's free steps, so the Host's scrape and the local View's pre-clear both stop when the Bucket is full. A Vehicle without a Bucket collects nothing.
 - `BucketHost` — VContainer entry point in `MatchScope`. Subscribes to `SnowGridDriver.Scraped` (fills the Bucket) and `VehicleRegistry.Rammed` (Spills the Victim's Bucket at the midpoint of Rammer and Victim, in front of the Rammer's nose); both events fire only on the Host. `Spill(vehicle, point)` is the host-side call Gadgets (Snowball) use.
 - `BucketConfig` — the ScriptableObject behind `BucketSettings`; asset `_Project/Configs/BucketConfig.asset`, registered in `RootLifetimeScope`.
 
 ## Depends on
 
-Snow (`SnowGridDriver`, `IBladeRoom`, `VehicleScrape`) and Vehicle (`NetworkVehicle`, `VehicleRegistry`, `VehicleRam`), Fusion, VContainer. Snow and Vehicle never reference Bucket. The assembly is in Fusion's `AssembliesToWeave`. Unloading and multipliers belong to DropOff; the Load gauge to Hud.
+Snow (`SnowGridDriver`, `IScrapeLimit`, `VehicleScrape`) and Vehicle (`NetworkVehicle`, `VehicleRegistry`, `VehicleRam`), Fusion, VContainer. Snow and Vehicle never reference Bucket. Snow's word for the same number is the scrape limit (`room` in `SnowGrid.Scrape`); "Room" alone is avoided, the glossary reserves it. The assembly is in Fusion's `AssembliesToWeave`. Unloading and multipliers belong to DropOff; the Load gauge to Hud.
