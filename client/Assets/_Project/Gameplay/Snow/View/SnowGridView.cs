@@ -8,9 +8,10 @@ using VContainer;
 
 namespace PlowParty.Gameplay.Snow.View
 {
-    public sealed class SnowSurfaceView : MonoBehaviour
+    public sealed class SnowGridView : MonoBehaviour
     {
-        private const int RecentBladeCapacity = 64;
+        private const float BladeSampleInterval = 1f / 60f;
+        private const int UnlimitedRoom = int.MaxValue;
 
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
@@ -20,17 +21,18 @@ namespace PlowParty.Gameplay.Snow.View
         [SerializeField] private Color32 _snowColor = new Color32(240, 246, 255, 255);
         [SerializeField] private Color32 _pileColor = new Color32(196, 222, 255, 255);
 
-        private readonly SnowBlade[] _recentBlades = new SnowBlade[RecentBladeCapacity];
-        private readonly float[] _recentBladeTimes = new float[RecentBladeCapacity];
-
         private VehicleRegistry _registry;
         private SnowConfig _config;
+        private SnowSettings _settings;
         private SnowGrid _shown;
         private Texture2D _texture;
         private Color32[] _pixels;
         private int[] _paintedWords;
         private MaterialPropertyBlock _block;
+        private SnowBlade[] _recentBlades;
+        private float[] _recentBladeTimes;
         private int _nextRecentBlade;
+        private float _lastBladeSampleTime = float.NegativeInfinity;
 
         [Inject]
         public void Construct(VehicleRegistry registry, SnowConfig config)
@@ -66,7 +68,8 @@ namespace PlowParty.Gameplay.Snow.View
 
         private void CreateSurface()
         {
-            _shown = new SnowGrid(_driver.Settings, VehicleArena.Create(), 0);
+            _settings = _config.ToSettings();
+            _shown = new SnowGrid(_settings, VehicleArena.Create(), 0);
             _texture = new Texture2D(_shown.Width, _shown.Height, TextureFormat.RGBA32, false)
             {
                 filterMode = FilterMode.Bilinear,
@@ -79,47 +82,59 @@ namespace PlowParty.Gameplay.Snow.View
                 _paintedWords[i] = ~_shown.GetWord(i);
             }
 
-            FitSurfaceToGrid(_driver.Settings);
+            var bladeCapacity = Mathf.CeilToInt(_config.PreClearDuration / BladeSampleInterval) + 1;
+            _recentBlades = new SnowBlade[bladeCapacity];
+            _recentBladeTimes = new float[bladeCapacity];
+            for (var i = 0; i < bladeCapacity; i++)
+            {
+                _recentBladeTimes[i] = float.NegativeInfinity;
+            }
+
+            FitSurfaceToGrid();
             _block = new MaterialPropertyBlock();
             _surface.GetPropertyBlock(_block);
             _block.SetTexture(BaseMapId, _texture);
             _surface.SetPropertyBlock(_block);
         }
 
-        private void FitSurfaceToGrid(SnowSettings settings)
+        private void FitSurfaceToGrid()
         {
             var surface = _surface.transform;
-            var centre = settings.Origin + settings.Size * 0.5f;
+            var centre = _settings.Origin + _settings.Size * 0.5f;
             surface.position = new Vector3(centre.x, surface.position.y, centre.y);
-            surface.localScale = new Vector3(settings.Size.x, settings.Size.y, 1f);
+            surface.localScale = new Vector3(_settings.Size.x, _settings.Size.y, 1f);
         }
 
         private void PreClearUnderLocalBlade()
+        {
+            if (Time.time - _lastBladeSampleTime >= BladeSampleInterval)
+            {
+                SampleLocalBlade();
+            }
+
+            var oldest = Time.time - _config.PreClearDuration;
+            for (var i = 0; i < _recentBlades.Length; i++)
+            {
+                if (_recentBladeTimes[i] >= oldest)
+                {
+                    _shown.Scrape(_recentBlades[i], UnlimitedRoom);
+                }
+            }
+        }
+
+        private void SampleLocalBlade()
         {
             var vehicles = _registry.Vehicles;
             for (var i = 0; i < vehicles.Count; i++)
             {
                 if (vehicles[i].HasInputAuthority)
                 {
-                    RememberBlade(SnowBlade.Ahead(vehicles[i].Position, vehicles[i].Forward, _driver.Settings));
+                    _recentBlades[_nextRecentBlade] = SnowBlade.Ahead(vehicles[i].Position, vehicles[i].Forward, _settings);
+                    _recentBladeTimes[_nextRecentBlade] = Time.time;
+                    _nextRecentBlade = (_nextRecentBlade + 1) % _recentBlades.Length;
+                    _lastBladeSampleTime = Time.time;
                 }
             }
-
-            var oldest = Time.time - _config.PreClearDuration;
-            for (var i = 0; i < RecentBladeCapacity; i++)
-            {
-                if (_recentBladeTimes[i] > 0f && _recentBladeTimes[i] >= oldest)
-                {
-                    _shown.Scrape(_recentBlades[i], int.MaxValue);
-                }
-            }
-        }
-
-        private void RememberBlade(SnowBlade blade)
-        {
-            _recentBlades[_nextRecentBlade] = blade;
-            _recentBladeTimes[_nextRecentBlade] = Time.time;
-            _nextRecentBlade = (_nextRecentBlade + 1) % RecentBladeCapacity;
         }
 
         private void Paint()
@@ -149,15 +164,15 @@ namespace PlowParty.Gameplay.Snow.View
         {
             var first = word * SnowGrid.CellsPerWord;
             var last = Mathf.Min(first + SnowGrid.CellsPerWord, _pixels.Length);
-            for (var index = first; index < last; index++)
+            for (var cell = first; cell < last; cell++)
             {
-                _pixels[index] = ColourOf(_shown.GetDepth(index % _shown.Width, index / _shown.Width));
+                _pixels[cell] = ColourOf(_shown.GetDepth(cell));
             }
         }
 
         private Color32 ColourOf(int depth)
         {
-            var full = _driver.Settings.FullDepth;
+            var full = _settings.FullDepth;
             if (depth <= full)
             {
                 return Color32.Lerp(_groundColor, _snowColor, (float)depth / full);

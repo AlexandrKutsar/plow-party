@@ -11,6 +11,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private const int BitsPerCell = 4;
         private const int DepthMask = MaxDepth;
         private const int BlizzardSalt = -1;
+        private const uint BlizzardSideCount = 4;
 
         private readonly SnowSettings _settings;
         private readonly int[] _words;
@@ -30,7 +31,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             _masked = new bool[Width * Height];
             for (var index = 0; index < Width * Height; index++)
             {
-                _masked[index] = IsInsideObstacle(arena, CellCentre(index));
+                _masked[index] = arena.Contains(CellCentre(index));
                 SetDepth(index, _masked[index] ? 0 : settings.FullDepth);
             }
         }
@@ -43,7 +44,13 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public int GetDepth(int x, int y)
         {
-            return GetDepth(y * Width + x);
+            return GetDepth(IndexOf(x, y));
+        }
+
+        public int GetDepth(int cellIndex)
+        {
+            var shift = cellIndex % CellsPerWord * BitsPerCell;
+            return (_words[cellIndex / CellsPerWord] >> shift) & DepthMask;
         }
 
         public int GetWord(int index)
@@ -72,7 +79,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             {
                 for (var x = Mathf.Max(min.x, 0); x <= Mathf.Min(max.x, Width - 1) && taken < room; x++)
                 {
-                    var index = y * Width + x;
+                    var index = IndexOf(x, y);
                     var offset = CellCentre(index) - blade.Centre;
                     if (Mathf.Abs(Vector2.Dot(offset, right)) > halfWidth || Mathf.Abs(Vector2.Dot(offset, forward)) > halfDepth)
                     {
@@ -114,16 +121,10 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public void Tick(float elapsedPlayingTime)
         {
-            var regrowthStepsDue = Mathf.FloorToInt(elapsedPlayingTime / _settings.RegrowthInterval);
-            while (_regrowthStepsApplied < regrowthStepsDue)
-            {
-                _regrowthStepsApplied++;
-                ApplyRegrowthStep(_regrowthStepsApplied);
-            }
-
+            ApplyRegrowthDueBy(elapsedPlayingTime);
             for (var wave = 0; wave < _blizzardProgress.Length; wave++)
             {
-                var progress = Mathf.Clamp01((elapsedPlayingTime - _settings.BlizzardTimes[wave]) / _settings.BlizzardDuration);
+                var progress = BlizzardProgress(wave, elapsedPlayingTime);
                 if (progress > _blizzardProgress[wave])
                 {
                     SweepBlizzardFront(wave, _blizzardProgress[wave], progress);
@@ -132,12 +133,38 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
         }
 
+        private void ApplyRegrowthDueBy(float elapsedPlayingTime)
+        {
+            if (_settings.RegrowthInterval <= 0f)
+            {
+                return;
+            }
+
+            var regrowthStepsDue = Mathf.FloorToInt(elapsedPlayingTime / _settings.RegrowthInterval);
+            while (_regrowthStepsApplied < regrowthStepsDue)
+            {
+                _regrowthStepsApplied++;
+                ApplyRegrowthStep(_regrowthStepsApplied);
+            }
+        }
+
+        private float BlizzardProgress(int wave, float elapsedPlayingTime)
+        {
+            var sinceStart = elapsedPlayingTime - _settings.BlizzardTimes[wave];
+            if (_settings.BlizzardDuration <= 0f)
+            {
+                return sinceStart >= 0f ? 1f : 0f;
+            }
+
+            return Mathf.Clamp01(sinceStart / _settings.BlizzardDuration);
+        }
+
         private void SweepBlizzardFront(int wave, float fromProgress, float toProgress)
         {
-            var direction = BlizzardDirection(wave);
+            var side = BlizzardSideOf(wave);
             for (var index = 0; index < _masked.Length; index++)
             {
-                var position = PositionAlong(direction, index);
+                var position = PositionFrom(side, index);
                 if (_masked[index] || position <= fromProgress || position > toProgress)
                 {
                     continue;
@@ -150,25 +177,26 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
         }
 
-        private int BlizzardDirection(int wave)
+        private BlizzardSide BlizzardSideOf(int wave)
         {
-            return (int)(SnowHash.Mix(_seed, wave, BlizzardSalt) % 4);
+            return (BlizzardSide)(SnowHash.Mix(_seed, wave, BlizzardSalt) % BlizzardSideCount);
         }
 
-        private float PositionAlong(int direction, int index)
+        private float PositionFrom(BlizzardSide side, int index)
         {
-            var x = index % Width + 0.5f;
-            var y = index / Width + 0.5f;
-            switch (direction)
+            var cell = CellOf(index);
+            var x = (cell.x + 0.5f) / Width;
+            var y = (cell.y + 0.5f) / Height;
+            switch (side)
             {
-                case 0:
-                    return x / Width;
-                case 1:
-                    return 1f - x / Width;
-                case 2:
-                    return y / Height;
+                case BlizzardSide.West:
+                    return x;
+                case BlizzardSide.East:
+                    return 1f - x;
+                case BlizzardSide.South:
+                    return y;
                 default:
-                    return 1f - y / Height;
+                    return 1f - y;
             }
         }
 
@@ -196,7 +224,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
                 return 0;
             }
 
-            var index = y * Width + x;
+            var index = IndexOf(x, y);
             if (_masked[index])
             {
                 return 0;
@@ -216,39 +244,18 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         private Vector2 CellCentre(int index)
         {
-            var x = index % Width;
-            var y = index / Width;
-            return _settings.Origin + new Vector2(x + 0.5f, y + 0.5f) * _settings.CellSize;
+            var cell = CellOf(index);
+            return _settings.Origin + new Vector2(cell.x + 0.5f, cell.y + 0.5f) * _settings.CellSize;
         }
 
-        private static bool IsInsideObstacle(VehicleArena arena, Vector2 point)
+        private int IndexOf(int x, int y)
         {
-            for (var i = 0; i < arena.Boxes.Count; i++)
-            {
-                var box = arena.Boxes[i];
-                var offset = point - box.Center;
-                if (Mathf.Abs(offset.x) <= box.HalfExtents.x && Mathf.Abs(offset.y) <= box.HalfExtents.y)
-                {
-                    return true;
-                }
-            }
-
-            for (var i = 0; i < arena.Circles.Count; i++)
-            {
-                var circle = arena.Circles[i];
-                if ((point - circle.Center).sqrMagnitude <= circle.Radius * circle.Radius)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return y * Width + x;
         }
 
-        private int GetDepth(int index)
+        private Vector2Int CellOf(int index)
         {
-            var shift = index % CellsPerWord * BitsPerCell;
-            return (_words[index / CellsPerWord] >> shift) & DepthMask;
+            return new Vector2Int(index % Width, index / Width);
         }
 
         private void SetDepth(int index, int depth)

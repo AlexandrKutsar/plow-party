@@ -12,17 +12,19 @@ namespace PlowParty.Gameplay.Snow.Network
     {
         public const int MaxWords = 512;
 
+        private const int UnlimitedRoom = int.MaxValue;
+
         [SerializeField] private Transform _arenaRoot;
+
+        private readonly VehicleScrape[] _scrapes = new VehicleScrape[VehicleWorldDriver.MaxVehicles];
 
         private VehicleRegistry _registry;
         private SnowConfig _config;
-        private IBladeRoom _bladeRoom;
         private SnowSettings _settings;
         private SnowGrid _grid;
+        private int _scrapeCount;
 
         [Networked, Capacity(MaxWords)] private NetworkArray<int> Words { get; }
-
-        [Networked] private int Seed { get; set; }
 
         [Networked] private int StartTick { get; set; }
 
@@ -30,26 +32,18 @@ namespace PlowParty.Gameplay.Snow.Network
 
         public bool IsReady => _grid != null;
 
-        public SnowSettings Settings => _settings;
-
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config, IBladeRoom bladeRoom)
+        public void Construct(VehicleRegistry registry, SnowConfig config)
         {
             _registry = registry;
             _config = config;
-            _bladeRoom = bladeRoom;
         }
 
         public override void Spawned()
         {
             _settings = _config.ToSettings();
-            if (HasStateAuthority)
-            {
-                Seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-                StartTick = Runner.Tick;
-            }
-
-            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), Seed);
+            var seed = HasStateAuthority ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : 0;
+            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), seed);
             if (_grid.WordCount > MaxWords)
             {
                 throw new InvalidOperationException($"Snow Grid needs {_grid.WordCount} words, {nameof(MaxWords)} is {MaxWords}");
@@ -57,6 +51,7 @@ namespace PlowParty.Gameplay.Snow.Network
 
             if (HasStateAuthority)
             {
+                StartTick = Runner.Tick;
                 CopyGridToWords();
             }
         }
@@ -68,7 +63,7 @@ namespace PlowParty.Gameplay.Snow.Network
 
         public void Spill(Vector2 point, int steps)
         {
-            if (Runner.IsServer)
+            if (IsReady && Runner.IsServer)
             {
                 _grid.Spill(point, steps);
             }
@@ -92,20 +87,29 @@ namespace PlowParty.Gameplay.Snow.Network
             ScrapeUnderBlades();
             _grid.Tick((Runner.Tick - StartTick) * Runner.DeltaTime);
             CopyGridToWords();
+            ReportScrapes();
         }
 
         private void ScrapeUnderBlades()
         {
             var vehicles = _registry.Vehicles;
+            _scrapeCount = 0;
             for (var i = 0; i < vehicles.Count; i++)
             {
                 var vehicle = vehicles[i];
-                var blade = SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings);
-                var steps = _grid.Scrape(blade, _bladeRoom.GetRoom(vehicle.Slot));
+                var steps = _grid.Scrape(SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings), UnlimitedRoom);
                 if (steps > 0)
                 {
-                    Scraped?.Invoke(new VehicleScrape(vehicle, steps));
+                    _scrapes[_scrapeCount++] = new VehicleScrape(vehicle, steps);
                 }
+            }
+        }
+
+        private void ReportScrapes()
+        {
+            for (var i = 0; i < _scrapeCount; i++)
+            {
+                Scraped?.Invoke(_scrapes[i]);
             }
         }
 

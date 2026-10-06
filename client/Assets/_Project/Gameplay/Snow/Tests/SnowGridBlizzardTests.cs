@@ -46,6 +46,19 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
+        public void Tick_ZeroDuration_FillsWholeGridAtWaveStart()
+        {
+            var settings = CreateSettings();
+            settings.BlizzardDuration = 0f;
+            var grid = new SnowGrid(settings, VehicleArena.Create(), SnowTestSettings.Seed);
+            grid.Scrape(WholeGrid, int.MaxValue);
+
+            grid.Tick(FirstWave);
+
+            Assert.That(CountAtDepth(grid, 3), Is.EqualTo(32));
+        }
+
+        [Test]
         public void Tick_HalfwayThroughWave_FillsExactlyOneHalfOfTheGrid()
         {
             var grid = CreateCleared(SnowTestSettings.Seed);

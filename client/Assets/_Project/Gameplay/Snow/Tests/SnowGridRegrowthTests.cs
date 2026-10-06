@@ -65,6 +65,20 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
+        public void Tick_ZeroInterval_DisablesRegrowth()
+        {
+            var settings = SnowTestSettings.Create();
+            settings.RegrowthChance = 1f;
+            settings.RegrowthInterval = 0f;
+            var grid = new SnowGrid(settings, VehicleArena.Create(), SnowTestSettings.Seed);
+            grid.Scrape(WholeGrid, int.MaxValue);
+
+            grid.Tick(10f);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
+        }
+
+        [Test]
         public void Tick_HalfChance_RegrowsSomeCellsButNotAll()
         {
             var grid = CreateCleared(0.5f, SnowTestSettings.Seed);

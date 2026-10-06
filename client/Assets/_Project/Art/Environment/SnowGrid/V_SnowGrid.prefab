@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 220193649429209108}
   - component: {fileID: 3124563467992227638}
   m_Layer: 0
-  m_Name: V_SnowSurface
+  m_Name: V_SnowGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

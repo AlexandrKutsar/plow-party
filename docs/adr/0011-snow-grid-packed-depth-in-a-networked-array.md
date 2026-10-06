@@ -14,4 +14,4 @@ The snow surface gets its own material instead of `M_Palette`, as `Art/CLAUDE.md
 
 ## Consequences
 
-A finer Cell or a larger Arena grows the array linearly; at 0.25 m the same Arena needs 1800 words, so a cell-size change is a bandwidth decision, not just a config tweak. Regrowth touches scattered Cells each regrowth step, so it dirties many words at once; its interval is a bandwidth knob as well as a balance one.
+A finer Cell or a larger Arena grows the array linearly; at 0.25 m the same Arena needs 1800 words, so a cell-size change is a bandwidth decision, not just a config tweak. Regrowth's step counter, Blizzard progress, and the seed live only on the Host, outside networked state; that is safe while a Host never migrates, and host migration (GDD MVP+) must network them or rebuild them from elapsed time. Regrowth touches scattered Cells each regrowth step, so it dirties many words at once; its interval is a bandwidth knob as well as a balance one.

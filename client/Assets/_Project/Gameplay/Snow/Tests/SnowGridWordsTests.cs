@@ -47,7 +47,7 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
-        public void SameSeedAndInputs_ProduceIdenticalWords()
+        public void Tick_SameSeedAndInputs_ProducesIdenticalWords()
         {
             var first = Play(SnowTestSettings.Seed);
             var second = Play(SnowTestSettings.Seed);

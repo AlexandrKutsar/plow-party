@@ -88,6 +88,19 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
+        public void Scrape_BladeOverObstacle_TakesOnlyUnmaskedCells()
+        {
+            var arena = VehicleArena.Create().AddBox(new Vector2(0.75f, 1.25f), new Vector2(0.1f, 0.1f));
+            var grid = new SnowGrid(SnowTestSettings.Create(), arena, SnowTestSettings.Seed);
+
+            var steps = grid.Scrape(new SnowBlade(new Vector2(1f, 1.25f), Vector2.up, 1f, 0.4f), Unlimited);
+
+            Assert.That(steps, Is.EqualTo(3));
+            Assert.That(grid.GetDepth(1, 2), Is.EqualTo(0));
+            Assert.That(grid.GetDepth(2, 2), Is.EqualTo(0));
+        }
+
+        [Test]
         public void Scrape_BladePartlyOutsideGrid_ClearsOnlyCellsInside()
         {
             var steps = _grid.Scrape(new SnowBlade(new Vector2(0f, 0.25f), Vector2.up, 1f, 0.4f), Unlimited);
