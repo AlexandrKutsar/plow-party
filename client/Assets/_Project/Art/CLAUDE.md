@@ -10,7 +10,7 @@ Art/
   Vehicles/<Asset>/       Vehicle/  → SM_Vehicle.fbx, V_Vehicle.prefab
   Critters/<Asset>/       Critter_Fox/ → SM_Critter_Fox.fbx, V_Critter_Fox.prefab (one per Critter Species)
   Environment/<Asset>/    Barn/ → SM_Barn.fbx, V_Barn.prefab; buildings, field Obstacles, Drift, Drop-Off Zone
-  Props/<Asset>/          planned: Loot, Gadget pickups, snowballs
+  Props/<Asset>/          Loot/ → SM_Loot.fbx, V_Loot.prefab; Loot_Gadget/, Snowball/
   VFX/<Effect>/           Steam/ → SM_SteamPuff.fbx, FX_Steam.prefab; particle prefabs and their meshes or textures
   UI/                     planned: sprites, icons, fonts (imported as sprites)
 ```
@@ -94,3 +94,6 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 | DropOffZone | `Environment/DropOffZone/` | `art/blender/models/drop_off_zone.py`; `V_DropOffZone` nests `FX_Steam` under `SteamOrigin` |
 | Drift | `Environment/Drift/` | `art/blender/models/drift.py` |
 | Steam | `VFX/Steam/` | `art/blender/models/steam_puff.py` (puff mesh); `FX_Steam.prefab` is a normal asset: mesh particles drawn with `M_Palette`, no transparency |
+| Loot | `Props/Loot/` | `art/blender/models/loot.py` |
+| Loot_Gadget | `Props/Loot_Gadget/` | `art/blender/models/loot_gadget.py` |
+| Snowball | `Props/Snowball/` | `art/blender/models/snowball.py` |

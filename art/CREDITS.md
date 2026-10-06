@@ -12,3 +12,5 @@ Third-party content used by the art pipeline: asset, author, link, license. Ever
 | Well | Quaternius | https://poly.pizza/m/QlqncKYxXb | CC0 1.0 | `sources/quaternius/Well.glb` | `SM_Well` |
 | Cauldron | Quaternius | https://poly.pizza/m/QaWJOPa6Gt | CC0 1.0 | `sources/quaternius/Cauldron.glb` | `SM_DropOffZone` |
 | Bonfire | Quaternius | https://poly.pizza/m/Azj9hJwwwG | CC0 1.0 | `sources/quaternius/Bonfire.glb` | `SM_DropOffZone` |
+| Present | CreativeTrio | https://poly.pizza/m/LVg3ynJDxa | CC0 1.0 | `sources/creativetrio/Present.glb` | `SM_Loot` |
+| Cube Exclamation | Quaternius | https://poly.pizza/m/5UhMsny9iP | CC0 1.0 | `sources/quaternius/CubeExclamation.glb` | `SM_Loot_Gadget` |

@@ -34,6 +34,7 @@ COLORS = {
     "hay": "E3B54F",
     "hay_dark": "C08E35",
     "fire": "FF7A2E",
+    "blue_dark": "2C559C",
 }
 
 

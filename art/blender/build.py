@@ -14,7 +14,7 @@ if BLENDER_DIR not in sys.path:
 from plow_art import critter, export, imported, palette, shapes
 from models import (
     barn, cart, chicken_coop, critter_bear, critter_beaver, critter_fox, critter_penguin, critter_rabbit, critter_raccoon,
-    drift, drop_off_zone, fence, hay_bale, house, pine, shed, steam_puff, vehicle, well, wood_pile,
+    drift, drop_off_zone, fence, hay_bale, house, loot, loot_gadget, pine, shed, snowball, steam_puff, vehicle, well, wood_pile,
 )
 
 MODELS = {
@@ -38,6 +38,9 @@ MODELS = {
     "drop_off_zone": drop_off_zone,
     "drift": drift,
     "steam_puff": steam_puff,
+    "loot": loot,
+    "loot_gadget": loot_gadget,
+    "snowball": snowball,
 }
 
 

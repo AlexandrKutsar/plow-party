@@ -61,6 +61,9 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 | DropOffZone | `blender/models/drop_off_zone.py` | `client/Assets/_Project/Art/Environment/DropOffZone/SM_DropOffZone.fbx` — Quaternius Cauldron over Bonfire with generated flames; `SteamOrigin` anchor 1.6 m up; footprint ⌀ 3.4 circle; ~1904 triangles |
 | Drift | `blender/models/drift.py` | `client/Assets/_Project/Art/Environment/Drift/SM_Drift.fbx` — generated; snowed-over haystack mound; footprint ⌀ 2.6 circle; ~670 triangles |
 | SteamPuff | `blender/models/steam_puff.py` | `client/Assets/_Project/Art/VFX/Steam/SM_SteamPuff.fbx` — generated; white puff mesh for the `FX_Steam` mesh particles, origin at its center; ~80 triangles |
+| Loot | `blender/models/loot.py` | `client/Assets/_Project/Art/Props/Loot/SM_Loot.fbx` — CreativeTrio Present, red gift box with green ribbon; 0.7 m; ~230 triangles |
+| Loot_Gadget | `blender/models/loot_gadget.py` | `client/Assets/_Project/Art/Props/Loot_Gadget/SM_Loot_Gadget.fbx` — Quaternius Cube Exclamation, blue with yellow "!" and a yellow top panel; 0.7 m; ~1100 triangles |
+| Snowball | `blender/models/snowball.py` | `client/Assets/_Project/Art/Props/Snowball/SM_Snowball.fbx` — generated; ⌀ 0.36 m, origin at its center; ~80 triangles |
 
 ## Adding a model
 

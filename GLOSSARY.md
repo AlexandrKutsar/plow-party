@@ -148,6 +148,10 @@ _Avoid_: Power-up, item, weapon
 **Immunity** (иммунитет):
 A short window after any enemy effect during which a Participant ignores new enemy effects.
 
+**Snowball** (снежок):
+A throwable Gadget; its projectile knocks the hit Vehicle back and causes a Spill.
+_Avoid_: Projectile (as the Gadget's name), ball
+
 **Trap Pile** (куча-ловушка):
 A Gadget that leaves a disguised pile behind the Vehicle, visible as a trap only to its owner.
 
