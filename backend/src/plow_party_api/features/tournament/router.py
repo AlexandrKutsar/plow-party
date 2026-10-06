@@ -75,7 +75,8 @@ def _http_errors() -> Generator[None]:
     summary="Top of a day's Leaderboard",
     description=(
         "Ranks every Account's best Credited Score of the Tournament Day; ties go to whoever "
-        "reached the score first. A Match counts for the UTC day it was registered on. "
+        "reached the score first. A Match counts for the UTC day its result settles on "
+        "(registration + 303 s). "
         "Reaches the Verdict of overdue Matches first."
     ),
     response_model=LeaderboardResponse,
@@ -119,7 +120,7 @@ async def get_leaderboard_around_me(
     "/medals",
     summary="Current Medals of a set of Accounts",
     description=(
-        "Medals come from the Medal Day, the latest Tournament Day whose results are final: "
+        "Medals come from the Medal Day, yesterday (UTC), which is final from midnight: "
         "gold, silver and bronze for Rank 1-3 with a Daily Best above 0. Pass the Roster's "
         "Accounts to frame HUD portraits; unknown Accounts get no Medal."
     ),

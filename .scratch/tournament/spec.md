@@ -8,7 +8,7 @@ The backend reaches a Verdict on every Match and stores a Credited Score per Con
 
 ## Solution
 
-The Tournament owns no tables. It derives everything on read from the Credited Scores of accepted Matches, which it gets through one method of the matches service. A Match counts for the Tournament Day (UTC date) on which it was registered. Before reading a day, the matches service reaches the Verdict of every overdue open Match registered that day, so no Match waits for someone to open it. The Tournament ranks Daily Bests with pure rules: higher score first, the earlier Match breaking ties, so every Rank is unique. Medals belong to the Medal Day, the latest Tournament Day whose results can no longer change: Rank 1, 2, 3 earn gold, silver, bronze. Nothing is materialized: once a day is final its ranking cannot change, so computing it again always gives the same Medals.
+The Tournament owns no tables. It derives everything on read from the Credited Scores of accepted Matches, which it gets through one method of the matches service. A Match counts for the Tournament Day (UTC date) on which its result settles: registration plus the 303 s submission window. Every Match of a day is therefore settled by midnight, the day is final at 00:00 UTC, and Medals switch at 00:00 UTC. Before reading a day, the matches service reaches the Verdict of every overdue open Match of that day, so no Match waits for someone to open it. The Tournament ranks Daily Bests with pure rules: higher score first, the earlier Match breaking ties, so every Rank is unique. Medals belong to the Medal Day, the latest Tournament Day whose results can no longer change: Rank 1, 2, 3 earn gold, silver, bronze. Nothing is materialized: once a day is final its ranking cannot change, so computing it again always gives the same Medals.
 
 ## User Stories
 
@@ -26,7 +26,7 @@ The Tournament owns no tables. It derives everything on read from the Credited S
 12. As a Player, I want a future day refused with 422, so that client date bugs surface.
 13. As a Player, I want to know whether a day's Leaderboard is final and when it ends, so that the client can show a countdown and a "final" badge.
 14. As a Player, I want the total number of ranked Players, so that "57th of 230" can be shown.
-15. As a Player, I want a Match registered before midnight and decided after it to count for the day it started, so that a late Verdict never moves my result to another day.
+15. As a Player, I want each Match to count for the day its result settles, so that a day is complete at midnight and a Match started in the last five minutes simply counts for the next day.
 16. As a Player whose opponents never voted, I want my Match to reach its Verdict when anyone reads the Leaderboard, so that my score appears without anyone opening the Match.
 17. As a Player who placed 1st, 2nd or 3rd on the last final day, I want a gold, silver or bronze Medal, so that I wear a portrait frame.
 18. As a Player, I want a Medal never to change once shown, so that it is an award, not a guess.
@@ -41,10 +41,10 @@ The Tournament owns no tables. It derives everything on read from the Credited S
 - **Module:** new feature slice `tournament` with router, schemas, service, rules and a module `CLAUDE.md`; no models or repository, because it owns no tables. Its row in the backend feature index moves to `active`. Router included by the app factory.
 - **Glossary:** Tournament Day, Daily Best, Leaderboard, Rank, Standing, Medal Day (added to `GLOSSARY.md`). Decision record: ADR-0014.
 - **Seam (pull):** tournament imports only `MatchService`, `AccountService` and `RESULTS_SETTLE` from the services. `MatchService.best_credited_scores(registered_from, registered_before)` first reaches the Verdict of every overdue open Match registered in that range (rows locked `FOR UPDATE`, same code path as `GET /matches/{id}`), then returns one `AccountBest(account_id, score, achieved_at)` per Account, which the Tournament turns into its Daily Best: its highest Credited Score and the registration time of the earliest Match reaching it. Matches knows nothing about the Tournament.
-- **Day:** a Match belongs to the UTC date of its `registered_at`. Today is the UTC date of the server clock. A day is final once `day end + RESULTS_SETTLE` (303 s, the matches submission window) has passed; after that no Vote and no Verdict can change it.
+- **Day:** a Match belongs to the UTC date of `registered_at + RESULTS_SETTLE` (303 s, the matches submission window), so day D reads Matches registered in `[D 00:00 − 303 s, D+1 00:00 − 303 s)`, which keeps the `registered_at` index usable. Today is the UTC date of the server clock. A day is final at its midnight: by then every one of its Matches is past its submission window, so no Vote and no Verdict can change it. A Match registered in the last 303 s of a day counts for the next day.
 - **Ranking (pure):** sort by score descending, then `achieved_at` ascending, then Account id; Ranks 1..n, unique.
 - **Windows (pure):** top N = first N Standings, N in 1–100, default 10. Around me = Standings with Rank within my Rank ± K, K in 0–25, default 3; empty with no Standing if I have no Daily Best that day.
-- **Medals (pure):** Medal Day = `(now − RESULTS_SETTLE).date() − 1 day`. Rank 1 gold, 2 silver, 3 bronze, only when the Daily Best is above 0. Computed on read, never stored.
+- **Medals (pure):** Medal Day = yesterday (UTC), from 00:00:00. A Medal lasts one day; there is no history. Rank 1 gold, 2 silver, 3 bronze, only when the Daily Best is above 0. Computed on read, never stored.
 - **Nicknames:** the accounts service gains `nicknames(account_ids) → dict`; the Leaderboard always shows the current Nickname.
 - **Index:** a migration adds an index on `matches.registered_at`, which every day query filters by.
 - **API contract** (all bearer, 401 from accounts):
@@ -57,8 +57,8 @@ The Tournament owns no tables. It derives everything on read from the Credited S
 ## Testing Decisions
 
 - Seams: the pure rules (no fixtures, no database) and the HTTP API on a real Postgres via testcontainers with the controllable clock. Nothing reaches into tables.
-- Rules tests: day bounds and finality at the exact settle edge, ranking with ties on score and on time, top and around-me windows at both ends of the table, Medal Day before and after the settle edge, Medal tiers and the zero-score rule.
-- HTTP tests: best of several Matches; Bots and unconfirmed seats absent; rejected Match ignored; Interrupted Match ranked at its Credited Score; reset at midnight; Match registered before midnight counting for its day; overdue Match decided by a Leaderboard read; around me with and without a Standing; past day; future day 422; Medals before and after the settle edge; 401.
+- Rules tests: day bounds, the registration window and finality at exactly midnight, ranking with ties on score and on time, top and around-me windows at both ends of the table, Medal Day just before and at midnight, Medal tiers and the zero-score rule.
+- HTTP tests: best of several Matches; Bots and unconfirmed seats absent; rejected Match ignored; Interrupted Match ranked at its Credited Score; reset at midnight; Match registered 304 s before midnight counting for that day and 303 s before for the next; overdue Match decided by a Leaderboard read; around me with and without a Standing; past day; future day 422; Medals just before and exactly at midnight; 401.
 - HTTP tests share one database across tests, so they create Matches on their own far-apart days (the clock is per-test) to stay independent.
 - Prior art: `tests/features/matches/` (clock fixture, flow helpers).
 

@@ -51,8 +51,12 @@ def day_end(day: date) -> datetime:
     return day_start(day) + ONE_DAY
 
 
-def is_final(day: date, now: datetime, settle: timedelta) -> bool:
-    return now >= day_end(day) + settle
+def registration_window(day: date, settle: timedelta) -> tuple[datetime, datetime]:
+    return day_start(day) - settle, day_end(day) - settle
+
+
+def is_final(day: date, now: datetime) -> bool:
+    return now >= day_end(day)
 
 
 def check_day(day: date, now: datetime) -> None:
@@ -85,8 +89,8 @@ def around(
     return me, [standing for standing in standings if abs(standing.rank - me.rank) <= radius]
 
 
-def medal_day(now: datetime, settle: timedelta) -> date:
-    return day_of(now - settle) - ONE_DAY
+def medal_day(now: datetime) -> date:
+    return day_of(now) - ONE_DAY
 
 
 def medal(standing: Standing) -> Medal | None:

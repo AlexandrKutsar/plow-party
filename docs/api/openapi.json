@@ -381,7 +381,7 @@
           "tournament"
         ],
         "summary": "Top of a day's Leaderboard",
-        "description": "Ranks every Account's best Credited Score of the Tournament Day; ties go to whoever reached the score first. A Match counts for the UTC day it was registered on. Reaches the Verdict of overdue Matches first.",
+        "description": "Ranks every Account's best Credited Score of the Tournament Day; ties go to whoever reached the score first. A Match counts for the UTC day its result settles on (registration + 303 s). Reaches the Verdict of overdue Matches first.",
         "operationId": "get_leaderboard",
         "security": [
           {
@@ -517,7 +517,7 @@
           "tournament"
         ],
         "summary": "Current Medals of a set of Accounts",
-        "description": "Medals come from the Medal Day, the latest Tournament Day whose results are final: gold, silver and bronze for Rank 1-3 with a Daily Best above 0. Pass the Roster's Accounts to frame HUD portraits; unknown Accounts get no Medal.",
+        "description": "Medals come from the Medal Day, yesterday (UTC), which is final from midnight: gold, silver and bronze for Rank 1-3 with a Daily Best above 0. Pass the Roster's Accounts to frame HUD portraits; unknown Accounts get no Medal.",
         "operationId": "get_medals",
         "security": [
           {
@@ -631,7 +631,7 @@
           "final": {
             "type": "boolean",
             "title": "Final",
-            "description": "Whether the day's results can no longer change (303 s after it ends)"
+            "description": "Whether the day's results can no longer change (from its ending midnight)"
           },
           "players": {
             "type": "integer",

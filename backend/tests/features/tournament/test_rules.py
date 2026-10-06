@@ -17,6 +17,7 @@ from plow_party_api.features.tournament.rules import (
     medal,
     medal_day,
     rank,
+    registration_window,
     standing_of,
     top,
 )
@@ -54,11 +55,18 @@ def test_day_bounds_span_midnight_to_midnight_utc() -> None:
     assert day_end(DAY) == datetime(2026, 10, 7, 0, 0, tzinfo=UTC)
 
 
-def test_is_final_once_the_submission_window_after_midnight_has_passed() -> None:
-    settled = day_end(DAY) + SETTLE
+def test_registration_window_ends_a_settle_period_before_midnight() -> None:
+    assert registration_window(DAY, SETTLE) == (
+        datetime(2026, 10, 5, 23, 54, 57, tzinfo=UTC),
+        datetime(2026, 10, 6, 23, 54, 57, tzinfo=UTC),
+    )
 
-    assert not is_final(DAY, settled - timedelta(microseconds=1), SETTLE)
-    assert is_final(DAY, settled, SETTLE)
+
+def test_is_final_exactly_at_midnight() -> None:
+    midnight = day_end(DAY)
+
+    assert not is_final(DAY, midnight - timedelta(microseconds=1))
+    assert is_final(DAY, midnight)
 
 
 def test_check_day_accepts_today_and_past_days() -> None:
@@ -168,17 +176,17 @@ def test_around_without_my_standing_is_empty() -> None:
     assert window == []
 
 
-def test_medal_day_is_yesterday_once_yesterday_is_final() -> None:
-    settled = day_end(DAY) + SETTLE
+def test_medal_day_is_yesterday_from_midnight() -> None:
+    midnight = day_end(DAY)
 
-    assert medal_day(settled, SETTLE) == DAY
-    assert medal_day(settled + timedelta(hours=23), SETTLE) == DAY
+    assert medal_day(midnight) == DAY
+    assert medal_day(midnight + timedelta(hours=23, minutes=59)) == DAY
 
 
-def test_medal_day_stays_on_the_day_before_until_yesterday_is_final() -> None:
-    just_before = day_end(DAY) + SETTLE - timedelta(microseconds=1)
+def test_medal_day_before_midnight_is_the_day_before_yesterday() -> None:
+    just_before = day_end(DAY) - timedelta(microseconds=1)
 
-    assert medal_day(just_before, SETTLE) == DAY - timedelta(days=1)
+    assert medal_day(just_before) == DAY - timedelta(days=1)
 
 
 @pytest.mark.parametrize(

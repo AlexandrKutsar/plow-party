@@ -208,19 +208,36 @@ async def test_leaderboard_resets_at_midnight_utc(client: AsyncClient, clock: Fa
     assert ranked(yesterday) == [(1, player["account_id"], 100)]
 
 
-async def test_match_registered_before_midnight_counts_for_the_day_it_started(
+async def test_match_settling_before_midnight_counts_for_that_day(
     client: AsyncClient, clock: FakeClock
 ) -> None:
     player = await login(client)
-    clock.now = next_midnight(clock) - timedelta(seconds=60)
-    started_day = clock.now.date().isoformat()
+    clock.now = next_midnight(clock) - timedelta(seconds=SETTLE_SECONDS + 1)
+    registered_day = clock.now.date().isoformat()
     await play_solo(client, clock, player, 100)
+    clock.now = next_midnight(clock)
 
-    today = await leaderboard(client, player)
-    started = await leaderboard(client, player, day=started_day)
+    registered = await leaderboard(client, player, day=registered_day)
+    following = await leaderboard(client, player)
 
-    assert today["entries"] == []
-    assert ranked(started) == [(1, player["account_id"], 100)]
+    assert ranked(registered) == [(1, player["account_id"], 100)]
+    assert following["entries"] == []
+
+
+async def test_match_settling_at_midnight_counts_for_the_next_day(
+    client: AsyncClient, clock: FakeClock
+) -> None:
+    player = await login(client)
+    clock.now = next_midnight(clock) - timedelta(seconds=SETTLE_SECONDS)
+    registered_day = clock.now.date().isoformat()
+    await play_solo(client, clock, player, 100)
+    clock.now = next_midnight(clock)
+
+    registered = await leaderboard(client, player, day=registered_day)
+    following = await leaderboard(client, player)
+
+    assert registered["entries"] == []
+    assert ranked(following) == [(1, player["account_id"], 100)]
 
 
 async def test_leaderboard_read_reaches_the_verdict_of_an_overdue_match(
@@ -240,15 +257,13 @@ async def test_leaderboard_read_reaches_the_verdict_of_an_overdue_match(
     assert ranked(board) == [(1, host["account_id"], 120), (2, silent["account_id"], 80)]
 
 
-async def test_past_day_is_final_once_its_submission_window_has_closed(
-    client: AsyncClient, clock: FakeClock
-) -> None:
+async def test_past_day_is_final_from_midnight(client: AsyncClient, clock: FakeClock) -> None:
     player = await login(client)
     played_day = clock.now.date().isoformat()
-    clock.now = next_midnight(clock) + timedelta(seconds=SETTLE_SECONDS - 1)
+    clock.now = next_midnight(clock) - timedelta(microseconds=1)
 
-    settling = await leaderboard(client, player, day=played_day)
-    clock.advance(1)
+    settling = await leaderboard(client, player)
+    clock.now = next_midnight(clock)
     settled = await leaderboard(client, player, day=played_day)
 
     assert settling["final"] is False
@@ -321,7 +336,7 @@ async def test_around_me_radius_out_of_range_is_rejected(client: AsyncClient) ->
     assert response.status_code == 422
 
 
-async def test_medals_go_to_the_top_three_once_the_day_is_final(
+async def test_medals_go_to_yesterdays_top_three_from_midnight(
     client: AsyncClient, clock: FakeClock
 ) -> None:
     players = [await login(client) for _ in range(4)]
@@ -329,7 +344,7 @@ async def test_medals_go_to_the_top_three_once_the_day_is_final(
         await play_solo(client, clock, player, score)
     played_day = clock.now.date()
     ids = [player["account_id"] for player in players]
-    clock.now = next_midnight(clock) + timedelta(seconds=SETTLE_SECONDS)
+    clock.now = next_midnight(clock)
 
     result = await medals(client, players[0], *ids)
 
@@ -342,11 +357,11 @@ async def test_medals_go_to_the_top_three_once_the_day_is_final(
     ]
 
 
-async def test_medals_wait_until_the_day_is_final(client: AsyncClient, clock: FakeClock) -> None:
+async def test_medals_wait_until_midnight(client: AsyncClient, clock: FakeClock) -> None:
     player = await login(client)
     await play_solo(client, clock, player, 400)
     played_day = clock.now.date()
-    clock.now = next_midnight(clock) + timedelta(seconds=SETTLE_SECONDS - 1)
+    clock.now = next_midnight(clock) - timedelta(microseconds=1)
 
     result = await medals(client, player, player["account_id"])
 

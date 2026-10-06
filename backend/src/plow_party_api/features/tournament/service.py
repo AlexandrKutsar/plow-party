@@ -19,11 +19,11 @@ from plow_party_api.features.tournament.rules import (
     check_day,
     day_end,
     day_of,
-    day_start,
     is_final,
     medal,
     medal_day,
     rank,
+    registration_window,
     standing_of,
     top,
 )
@@ -107,7 +107,7 @@ class TournamentService:
         return await self._board(day, now, standings, me, window)
 
     async def medals(self, account_ids: Sequence[uuid.UUID]) -> MedalsView:
-        day = medal_day(self._clock(), RESULTS_SETTLE)
+        day = medal_day(self._clock())
         standings = await self._standings(day)
         medals: list[MedalView] = []
         for account_id in dict.fromkeys(account_ids):
@@ -116,7 +116,7 @@ class TournamentService:
         return MedalsView(day=day, medals=medals)
 
     async def _standings(self, day: date) -> list[Standing]:
-        bests = await self._matches.best_credited_scores(day_start(day), day_end(day))
+        bests = await self._matches.best_credited_scores(*registration_window(day, RESULTS_SETTLE))
         return rank(
             [
                 DailyBest(
@@ -139,7 +139,7 @@ class TournamentService:
         return LeaderboardView(
             day=day,
             ends_at=day_end(day),
-            final=is_final(day, now, RESULTS_SETTLE),
+            final=is_final(day, now),
             players=len(standings),
             me=_view(me, nicknames) if me else None,
             entries=[_view(standing, nicknames) for standing in entries],

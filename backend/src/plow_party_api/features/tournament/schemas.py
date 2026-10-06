@@ -17,7 +17,7 @@ class LeaderboardResponse(BaseModel):
     day: date = Field(description="Tournament Day (UTC date) the Leaderboard ranks")
     ends_at: datetime = Field(description="Midnight UTC that ends the Tournament Day")
     final: bool = Field(
-        description="Whether the day's results can no longer change (303 s after it ends)"
+        description="Whether the day's results can no longer change (from its ending midnight)"
     )
     players: int = Field(description="Number of Accounts ranked that day")
     me: StandingResponse | None = Field(

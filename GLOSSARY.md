@@ -199,7 +199,7 @@ _Avoid_: League (reserved for the post-MVP weekly league)
 A cosmetic portrait frame awarded at Tournament reset.
 
 **Tournament Day** (турнирные сутки):
-One UTC calendar day of the Tournament; a Match counts for the day it was registered on.
+One UTC calendar day of the Tournament; a Match counts for the day its result settles on (registration plus the submission window), so a day is final at midnight.
 _Avoid_: Season, round
 
 **Daily Best** (лучший результат дня):
@@ -219,7 +219,7 @@ An Account's unique position on the Leaderboard; equal Daily Bests go to whoever
 _Avoid_: Placement (that is a Match's)
 
 **Medal Day** (день медалей):
-The latest Tournament Day whose results are final; its top three Ranks hold gold, silver and bronze Medals.
+Yesterday's Tournament Day, final since midnight; its top three Ranks hold gold, silver and bronze Medals until the next midnight.
 
 **Account** (аккаунт):
 A person's identity on the backend, created on first guest login and owning their Nickname and Tournament results.

@@ -11,8 +11,8 @@ The daily Tournament (GDD 9.2): each Account's Daily Best, the Leaderboard top a
 
 ## Rules
 
-`rules.py` holds every decision as a pure function: a Tournament Day is a UTC date, a Match counts for the day of its `registered_at`, a day is final `RESULTS_SETTLE` (303 s) after it ends; ranking by score descending, then earlier Match, then Account id, so Ranks are unique; top and around-me windows; Medal Day = the latest final day; gold, silver, bronze for Rank 1–3 with a Daily Best above 0. The service only orchestrates them.
+`rules.py` holds every decision as a pure function: a Tournament Day is a UTC date, a Match counts for the day of `registered_at + RESULTS_SETTLE` (303 s, its submission window), so day D reads registrations in `[D 00:00 − 303 s, D+1 00:00 − 303 s)` and is final at its midnight; ranking by score descending, then earlier Match, then Account id, so Ranks are unique; top and around-me windows; Medal Day = yesterday, switching at 00:00 UTC, one day only; gold, silver, bronze for Rank 1–3 with a Daily Best above 0. The service only orchestrates them.
 
 ## State
 
-None. The feature owns no tables: every read asks `MatchService.best_credited_scores` for the day's best Credited Score per Account, which first reaches the Verdict of overdue open Matches registered that day, then ranks in Python. Nicknames come from `AccountService.nicknames`, so the Leaderboard always shows current ones. Medals are recomputed on read; a final day cannot change, so they are stable without being stored. ADR-0014 names when to materialize instead.
+None. The feature owns no tables: every read asks `MatchService.best_credited_scores` for the day's best Credited Score per Account, which first reaches the Verdict of overdue open Matches of that day, then ranks in Python. Nicknames come from `AccountService.nicknames`, so the Leaderboard always shows current ones. Medals are recomputed on read; a final day cannot change, so they are stable without being stored. ADR-0014 names when to materialize instead.
