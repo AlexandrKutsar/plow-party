@@ -1,7 +1,7 @@
 import bpy
 
 CELL_PIXELS = 4
-GRID = 4
+GRID = 8
 IMAGE_NAME = "Palette"
 MATERIAL_NAME = "Palette"
 
@@ -22,6 +22,19 @@ COLORS = {
     "black": "15161A",
     "snow": "E8F1F8",
     "wood": "A87445",
+    "brown": "7A5232",
+    "tan": "D9B48A",
+    "pink": "F2A0B4",
+    "gray": "7D8088",
+    "barn_red": "B8423A",
+    "barn_red_dark": "8E3330",
+    "roof": "5A5F68",
+    "pine": "2F6B45",
+    "pine_light": "3F8A55",
+    "hay": "E3B54F",
+    "hay_dark": "C08E35",
+    "fire": "FF7A2E",
+    "blue_dark": "2C559C",
 }
 
 

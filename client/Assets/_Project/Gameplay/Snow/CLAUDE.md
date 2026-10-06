@@ -1,6 +1,6 @@
 # Snow
 
-The Snow Grid: Snow lying on the Arena, scraped by every Vehicle's Blade, regrowing slowly, re-covered by Blizzard waves, and stacked into Snow Piles by a Spill (GDD 4.1, 4.3, 4.4). Rules live in `Simulation/` as deterministic C#; the Host steps them once per Fusion tick. Decisions: ADR-0011. Spec: `.scratch/snow/spec.md`.
+The Snow Grid: Snow lying on the Arena, scraped by every Vehicle's Blade, regrowing slowly, re-covered by Blizzard waves, and stacked into Snow Piles by a Spill (GDD 4.1, 4.3, 4.4). Rules live in `Simulation/` as deterministic C#; the Host steps them once per Fusion tick. Decisions: ADR-0012. Spec: `.scratch/snow/spec.md`.
 
 ## Entry points
 
@@ -23,7 +23,7 @@ The Snow Grid: Snow lying on the Arena, scraped by every Vehicle's Blade, regrow
 
 - `SnowGridDriver` — scene `NetworkObject` in `Match.unity`. Mirrors the grid into `[Networked, Capacity(512)] NetworkArray<int>`; Fusion's delta compression sends only changed words. On the Host each tick: scrape under every registered Vehicle's Blade in Slot order, `Tick` with time since the driver spawned, copy words, then raise `Scraped` (`VehicleScrape`: Vehicle, steps) for each non-zero result, so subscribers see the finished tick. `Spill(point, steps)` is Host-only and ignored before spawn. Clients only read words through `CopyWordsTo`.
 - Seed: a random number the Host picks at spawn, not networked and not configured; it only varies Regrowth and Blizzard sides between Matches. Clients never simulate, so they do not need it; client prediction would network it.
-- Regrowth and Blizzard progress live only in the Host's `SnowGrid`, outside `[Networked]` state. Fine without host migration (ADR-0011).
+- Regrowth and Blizzard progress live only in the Host's `SnowGrid`, outside `[Networked]` state. Fine without host migration (ADR-0012).
 - Temporary clock: elapsed Playing time is counted from the driver's spawn tick until the Match module exists and supplies the real one.
 - `SnowGridView` — paints the grid into a runtime RGBA32 texture (one texel per Cell, bilinear) set as `_BaseMap` on the `Model` renderer through a property block, and fits the `Model` quad to the grid rectangle. Repaints only words that changed. Cosmetic pre-clear: the local Player's Blade is sampled at 60 Hz and every sample from the last `PreClearDuration` seconds is scraped on the View's own copy, so the track appears before the Host confirms. Layout comes from `SnowConfig`; the driver only supplies words.
 - `SnowConfig` — the ScriptableObject behind `SnowSettings`; asset `_Project/Configs/SnowConfig.asset`, registered in `RootLifetimeScope`.

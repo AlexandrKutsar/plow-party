@@ -8,7 +8,7 @@ The core loop of Plow Party is "collect Snow, deliver it" (GDD 2, 4.1), but the 
 
 ## Solution
 
-A Snow feature in Gameplay whose rules live in one pure C# type, `SnowGrid`: a 0.5 m grid of Cells over the Arena, each holding a Depth of 0–15 (0 cleared, 3 full, 4–15 Snow Pile), packed eight Cells per `int`. The Host steps it once per Fusion tick: every Vehicle's Blade scrapes the Cells in front of it, Regrowth raises cleared Cells one step at a time by seeded chance, and a Blizzard front sweeps the Arena at 45, 90, and 135 s of Playing. A scene `NetworkBehaviour` mirrors the packed words into a `[Networked] NetworkArray<int>`; Fusion's per-word delta compression sends only what changed. Clients do not predict the grid; their View paints the grid onto the floor through a runtime texture and clears Cells under the local Blade cosmetically until the Host confirms. Snow speaks only in Depth steps; Bucket will convert them to Load and limit scraping through a capacity interface Snow declares. Decisions: ADR-0011.
+A Snow feature in Gameplay whose rules live in one pure C# type, `SnowGrid`: a 0.5 m grid of Cells over the Arena, each holding a Depth of 0–15 (0 cleared, 3 full, 4–15 Snow Pile), packed eight Cells per `int`. The Host steps it once per Fusion tick: every Vehicle's Blade scrapes the Cells in front of it, Regrowth raises cleared Cells one step at a time by seeded chance, and a Blizzard front sweeps the Arena at 45, 90, and 135 s of Playing. A scene `NetworkBehaviour` mirrors the packed words into a `[Networked] NetworkArray<int>`; Fusion's per-word delta compression sends only what changed. Clients do not predict the grid; their View paints the grid onto the floor through a runtime texture and clears Cells under the local Blade cosmetically until the Host confirms. Snow speaks only in Depth steps; Bucket will convert them to Load and limit scraping through the `room` it supplies. Decisions: ADR-0012.
 
 ## User Stories
 
@@ -57,7 +57,7 @@ A Snow feature in Gameplay whose rules live in one pure C# type, `SnowGrid`: a 0
 - **Blade placement:** centred `BladeForwardOffset` ahead of the Vehicle position along its forward, `BladeWidth` × `BladeDepth` (defaults 1.08 × 0.5 m, offset so it sits in front of the capsule's nose). Values in `SnowConfig`; Snow never reads Vehicle's config.
 - **Network adapter — `SnowGridDriver`:** scene `NetworkObject` in `Match.unity`. Holds `[Networked, Capacity(512)] NetworkArray<int>` (450 needed by the default Arena, the rest is headroom checked at spawn) and the networked start tick. On the Host in `FixedUpdateNetwork`: for each registered Vehicle in Slot order, build its Blade and `Scrape` with the capacity seam's room; `Tick` with elapsed time since the start tick (temporary clock until Match exists); copy every word into the array; then raise the scrape event. A host-only `Spill(point, steps)` forwards to `SnowGrid`. Clients only read the array. The assembly is added to `AssembliesToWeave`.
 - **View — `SnowGridView`:** owns a 60 × 60 RGBA32 texture (bilinear) on the snow floor's material; repaints Cells whose networked word changed, colouring by Depth between ground, snow, and pile colours. Cosmetic pre-clear: Cells under the local Player's Blade are painted as cleared at once and kept so for a short timeout. The View never writes simulation state.
-- **Art:** `Art/Environment/SnowGrid/M_SnowGrid.mat` (URP Simple Lit, base map assigned at runtime) and `V_SnowGrid.prefab`; a Shader Graph with height comes later. Row added to the Art assets table; reason for a new material recorded in ADR-0011.
+- **Art:** `Art/Environment/SnowGrid/M_SnowGrid.mat` (URP Simple Lit, base map assigned at runtime) and `V_SnowGrid.prefab`; a Shader Graph with height comes later. Row added to the Art assets table; reason for a new material recorded in ADR-0012.
 - **Config:** `SnowConfig` ScriptableObject → `SnowSettings`; asset `_Project/Configs/SnowConfig.asset`, registered in `RootLifetimeScope`.
 - **Glossary:** Snow Grid, Cell, Depth, Blade, Snow Pile, Regrowth, Blizzard as defined in `GLOSSARY.md`.
 
@@ -74,12 +74,12 @@ A Snow feature in Gameplay whose rules live in one pure C# type, `SnowGrid`: a 0
 - Bucket Load, capacity, the steps-to-Load rate, and calling `Spill` on a Ram — Bucket.
 - Match state and the real Playing clock — Match replaces the temporary clock.
 - HUD Blizzard announcement — Hud reads the schedule.
-- Client prediction of the grid (ADR-0011 keeps the door open).
+- Client prediction of the grid (ADR-0012 keeps the door open).
 - Shader Graph height or displacement, snow particles, Blizzard VFX.
 - Bots' use of the grid.
 
 ## Further Notes
 
-- GDD sources: 4.1 (collection, cleared path), 4.3 (Spill and Snow Pile), 4.4 (Regrowth and Blizzard), 11 (grid sync question, answered by ADR-0011).
+- GDD sources: 4.1 (collection, cleared path), 4.3 (Spill and Snow Pile), 4.4 (Regrowth and Blizzard), 11 (grid sync question, answered by ADR-0012).
 - Out-of-module edits approved by the user: `NetworkProjectConfig.fusion` (`AssembliesToWeave`), `_Project/Configs/SnowConfig.asset`, one registration in `RootLifetimeScope`, two in `MatchScope`, scene objects in `Match.unity`, `Art/Environment/SnowGrid/` with its row in `Art/CLAUDE.md`.
-- ADRs touched: ADR-0004 (DI for scene NetworkObjects), ADR-0005 (Simulation free of Fusion types), ADR-0010 (Vehicle geometry the Blade follows), ADR-0011 (this design).
+- ADRs touched: ADR-0004 (DI for scene NetworkObjects), ADR-0005 (Simulation free of Fusion types), ADR-0010 (Vehicle geometry the Blade follows), ADR-0012 (this design).

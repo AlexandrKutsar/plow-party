@@ -45,6 +45,10 @@ _Avoid_: Car, plow, truck
 The cosmetic animal riding a Vehicle; no gameplay effect.
 _Avoid_: Hero, character, pet
 
+**Critter Species** (вид зверюшки):
+The animal a Critter depicts: Fox, Bear, Rabbit, Raccoon, Penguin, or Beaver; each has its own model `SM_Critter_<Species>`.
+_Avoid_: Skin, character type
+
 **Snow Grid** (сетка снега):
 The map-wide grid of cells tracking how much Snow lies on the ground.
 
@@ -155,6 +159,10 @@ _Avoid_: Power-up, item, weapon
 **Immunity** (иммунитет):
 A short window after any enemy effect during which a Participant ignores new enemy effects.
 
+**Snowball** (снежок):
+A throwable Gadget; its projectile knocks the hit Vehicle back and causes a Spill.
+_Avoid_: Projectile (as the Gadget's name), ball
+
 **Trap Pile** (куча-ловушка):
 A Gadget that leaves a disguised pile behind the Vehicle, visible as a trap only to its owner.
 
@@ -166,3 +174,19 @@ _Avoid_: League (reserved for the post-MVP weekly league)
 
 **Medal** (медаль):
 A cosmetic portrait frame awarded at Tournament reset.
+
+**Account** (аккаунт):
+A person's identity on the backend, created on first guest login and owning their Nickname and Tournament results.
+_Avoid_: User, profile, Player (that is a Participant in a Match)
+
+**Nickname** (ник):
+The display name of an Account shown in the HUD and the Tournament; not unique.
+_Avoid_: Name, username
+
+**Device Id** (идентификатор устройства):
+The identifier a device generates once and presents to log in to its Account as a guest.
+_Avoid_: Hardware id, install id
+
+**Auth Token** (токен):
+The bearer credential issued at login that a client presents to act as its Account.
+_Avoid_: Session (that is the Fusion Session), API key

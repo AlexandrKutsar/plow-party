@@ -8,10 +8,10 @@ All visual content of the game, and nothing else: models, textures, materials, s
 Art/
   Shared/                 used by many assets: T_Palette.png, M_Palette.mat, shaders
   Vehicles/<Asset>/       Vehicle/  → SM_Vehicle.fbx, V_Vehicle.prefab
-  Critters/<Asset>/       planned
-  Environment/<Asset>/    planned: ground, buildings, Drifts, Drop-Off Zone
-  Props/<Asset>/          planned: Loot, Gadget pickups, snowballs
-  VFX/<Effect>/           planned: particle prefabs and their textures
+  Critters/<Asset>/       Critter_Fox/ → SM_Critter_Fox.fbx, V_Critter_Fox.prefab (one per Critter Species)
+  Environment/<Asset>/    Barn/ → SM_Barn.fbx, V_Barn.prefab; buildings, field Obstacles, Drift, Drop-Off Zone
+  Props/<Asset>/          Loot/ → SM_Loot.fbx, V_Loot.prefab; Loot_Gadget/, Snowball/
+  VFX/<Effect>/           Steam/ → SM_SteamPuff.fbx, FX_Steam.prefab; particle prefabs and their meshes or textures
   UI/                     planned: sprites, icons, fonts (imported as sprites)
 ```
 
@@ -31,7 +31,7 @@ Asset names are PascalCase after a type prefix; the name after the prefix is the
 | `A_` | animation clip | `A_Critter_Cheer.anim` |
 | `AC_` | animator controller | `AC_Critter.controller` |
 | `V_` | visual prefab | `V_Vehicle.prefab` |
-| `FX_` | VFX prefab | `FX_RamImpact.prefab` |
+| `FX_` | VFX prefab | `FX_Steam.prefab` |
 | `UI_` | UI sprite or atlas | `UI_GadgetButton.png` |
 
 Variants append `_<Variant>`: `SK_Critter_Fox`, `T_Snow_Normal`.
@@ -65,7 +65,7 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 ## Adding an asset
 
 1. Create `Art/<Category>/<Asset>/` and put the exported files there with their prefixes.
-2. Build `V_<Asset>.prefab` from the model: anchors named after glossary terms, no scripts.
+2. Build `V_<Asset>.prefab` from the model: anchors that gameplay looks up are named after glossary terms (`CritterSeat`); attach points used only inside the visual prefab are named for what they hold (`SteamOrigin` carries `FX_Steam`); no scripts.
 3. Nest it as `Model` in the feature's gameplay prefab.
 4. Add a row to the table below.
 
@@ -75,4 +75,26 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 |---|---|---|
 | Palette | `Shared/` | `art/blender/plow_art/palette.py` (texture), `M_Palette.mat` is a normal asset |
 | Vehicle | `Vehicles/Vehicle/` | `art/blender/models/vehicle.py` |
-| SnowGrid | `Environment/SnowGrid/` | none: a Unity quad with `M_SnowGrid` (Simple Lit, base map written at runtime by Snow's View; reason in ADR-0011) |
+| Critter_Fox | `Critters/Critter_Fox/` | `art/blender/models/critter_fox.py` |
+| Critter_Bear | `Critters/Critter_Bear/` | `art/blender/models/critter_bear.py` |
+| Critter_Rabbit | `Critters/Critter_Rabbit/` | `art/blender/models/critter_rabbit.py` |
+| Critter_Raccoon | `Critters/Critter_Raccoon/` | `art/blender/models/critter_raccoon.py` |
+| Critter_Penguin | `Critters/Critter_Penguin/` | `art/blender/models/critter_penguin.py` |
+| Critter_Beaver | `Critters/Critter_Beaver/` | `art/blender/models/critter_beaver.py` |
+| Barn | `Environment/Barn/` | `art/blender/models/barn.py` |
+| Shed | `Environment/Shed/` | `art/blender/models/shed.py` |
+| ChickenCoop | `Environment/ChickenCoop/` | `art/blender/models/chicken_coop.py` |
+| House | `Environment/House/` | `art/blender/models/house.py` |
+| Fence | `Environment/Fence/` | `art/blender/models/fence.py` |
+| Well | `Environment/Well/` | `art/blender/models/well.py` |
+| WoodPile | `Environment/WoodPile/` | `art/blender/models/wood_pile.py` |
+| HayBale | `Environment/HayBale/` | `art/blender/models/hay_bale.py` |
+| Cart | `Environment/Cart/` | `art/blender/models/cart.py` |
+| Pine | `Environment/Pine/` | `art/blender/models/pine.py` |
+| DropOffZone | `Environment/DropOffZone/` | `art/blender/models/drop_off_zone.py`; `V_DropOffZone` nests `FX_Steam` under `SteamOrigin` |
+| Drift | `Environment/Drift/` | `art/blender/models/drift.py` |
+| Steam | `VFX/Steam/` | `art/blender/models/steam_puff.py` (puff mesh); `FX_Steam.prefab` is a normal asset: mesh particles drawn with `M_Palette`, no transparency |
+| Loot | `Props/Loot/` | `art/blender/models/loot.py` |
+| Loot_Gadget | `Props/Loot_Gadget/` | `art/blender/models/loot_gadget.py` |
+| Snowball | `Props/Snowball/` | `art/blender/models/snowball.py` |
+| SnowGrid | `Environment/SnowGrid/` | none: a Unity quad with `M_SnowGrid` (Simple Lit, base map written at runtime by Snow's View; reason in ADR-0012) |
