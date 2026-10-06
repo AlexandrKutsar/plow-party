@@ -154,7 +154,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
         }
 
-        private bool IsOverPile(SnowBlade blade)
+        public bool IsOverPile(SnowBlade blade)
         {
             var footprint = new BladeFootprint(blade);
             var min = ClampedCell(footprint.Min);
