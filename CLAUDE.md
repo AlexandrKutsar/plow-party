@@ -25,6 +25,12 @@ Mobile (Android) top-down multiplayer arcade: animals on snowplows collect snow 
 
 Every module folder carries a `CLAUDE.md` describing its purpose, entry points, state, and decisions. A change to a module updates its `CLAUDE.md` and its row in the feature index in the same commit. A new module starts by writing its `CLAUDE.md`. Specs and tickets in `.scratch/` are transient; module `CLAUDE.md` files are the lasting record.
 
+## Branches and pull requests
+
+`main` always builds and passes tests; every task starts from it. A feature, a module boundary change, or anything an ADR records goes through a branch (`feature/<name>`, `fix/<name>`, `chore/<name>`) and a pull request: `/code-review` against the spec, tests green, body written with `/pr`. Only small, self-contained edits (typos, doc wording, ignore rules) are committed straight to `main`.
+
+Parallel agents work in separate git worktrees, one branch each, and stay inside their own module folders. Shared files (`GLOSSARY.md`, the feature index in `docs/architecture.md`) get additive edits only: add your own rows, never rewrite others'.
+
 Docs, code, and commit messages are in English. Talk to the user in the language they write in.
 
 ## Agent skills
