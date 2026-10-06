@@ -1,8 +1,9 @@
 import hashlib
 import secrets
 import uuid
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -55,10 +56,17 @@ class AccountService:
         await self._session.commit()
         return _current(account)
 
+    async def existing_ids(self, account_ids: Collection[uuid.UUID]) -> set[uuid.UUID]:
+        return await self._accounts.existing_ids(account_ids)
+
 
 AccountServiceDep = Annotated[AccountService, Depends()]
 
 _bearer = HTTPBearer(auto_error=False)
+
+UNAUTHORIZED_RESPONSE: dict[int | str, dict[str, Any]] = {
+    401: {"description": "Missing, malformed, or superseded Auth Token"}
+}
 
 
 async def get_current_account(

@@ -35,6 +35,29 @@ A 5-character code a Host shares so friends join the same Session.
 The final placement and Score of every Participant, submitted to the backend.
 _Avoid_: Scoreboard, leaderboard (that is the Tournament's)
 
+**Roster** (состав участников):
+The Slots of a registered Match, each held by an Account (a Player) or by a Bot, fixed by the Host at registration.
+_Avoid_: Lineup, party
+
+**Confirmed Player** (подтвердивший участник):
+A Player in the Roster who confirmed with their own Auth Token before Countdown ended; only Confirmed Players vote and earn Credited Score.
+
+**Vote** (голос):
+One Confirmed Player's submitted Match Result; the backend accepts the version a strict majority of Votes agree on.
+_Avoid_: Submission (as a type name), report
+
+**Verdict** (вердикт):
+The backend's final decision on a Match: accepted with its Scores, or rejected with a reason.
+
+**Interrupted Match** (прерванный матч):
+A Match that stopped before 180 s because the Host left; it counts with a lower Weight.
+
+**Weight** (вес):
+The factor a Match's Scores are multiplied by for the Tournament: 1 for a full Match, lower for an Interrupted Match.
+
+**Credited Score** (зачётные очки):
+A Confirmed Player's Score times the Match Weight, rounded down; what the Tournament ranks.
+
 ## Snow
 
 **Vehicle** (машина, снегоуборщик):

@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Collection
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -31,3 +32,7 @@ class AccountRepository:
 
     async def get(self, account_id: uuid.UUID) -> Account:
         return await self._session.get_one(Account, account_id)
+
+    async def existing_ids(self, account_ids: Collection[uuid.UUID]) -> set[uuid.UUID]:
+        statement = select(Account.id).where(Account.id.in_(account_ids))
+        return set(await self._session.scalars(statement))

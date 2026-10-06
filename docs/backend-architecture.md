@@ -50,5 +50,5 @@ FastAPI generates the OpenAPI schema; `scripts/export_openapi.py` writes it to `
 |---|---|---|---|
 | health | `features/health/` | active | Liveness of API and database |
 | accounts | `features/accounts/` | active | Guest login by Device Id, Nickname, Auth Token (GDD 9.1, ADR-0011) |
-| matches | `features/matches/` | planned | Match registration, participant confirmation, result submission and verification (GDD 9.3) |
+| matches | `features/matches/` | active | Match registration, Player confirmation, Votes and the Verdict with Credited Score (GDD 9.3, ADR-0013) |
 | tournament | `features/tournament/` | planned | Daily best score, leaderboard top and around-me, reset and Medals (GDD 9.2) |
