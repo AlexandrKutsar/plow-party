@@ -27,6 +27,10 @@ If the Editor is closed, `unity status` shows nothing connected: open it with `u
 
 `unity command` arguments are flags: `unity command --project-path client eval_file --file <path>`. Package changes in `manifest.json` reach an unfocused Editor only after `unity command --project-path client package_resolve`. The `unity-cli` skill covers the remaining commands (scenes, prefabs, play mode, console logs).
 
+## Multiplayer check
+
+Multiplayer Play Mode (`com.unity.multiplayer.playmode`) runs extra virtual players beside the main Editor; Fusion supports it. Window → Multiplayer → Multiplayer Play Mode, tick Player 2 (up to Player 4), open `Assets/_Project/Scenes/Match.unity`, press Play in the main Editor. `MatchSceneQuickStart` joins every instance to the same `AutoHostOrClient` session: the first becomes Host, the rest Clients. Keyboard input goes only to the focused Game view. Virtual players are a user-side check: the CLI drives only the main Editor.
+
 ## Unity gotchas
 
 - Every asset and folder under `Assets/` has a `.meta` file holding its GUID. Move and rename with `git mv` on both the file and its `.meta`, or through the Editor; never delete a `.meta` for an asset that stays.
