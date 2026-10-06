@@ -1,4 +1,3 @@
-import math
 import os
 import re
 
@@ -7,19 +6,16 @@ from mathutils import Matrix, Vector
 
 from . import palette
 
-_PIXEL_CACHE = {}
 SOURCES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sources")
 
 
-def load(name, source, collection, parent, colors, size, rotation_z=0.0, location=(0, 0, 0)):
-    _PIXEL_CACHE.clear()
+def load(name, source, collection, parent, colors, size):
     meshes = _import(source, collection)
     for obj in meshes:
         _paint_faces(obj, colors)
     obj = _join(meshes, name)
-    _normalize(obj, size, rotation_z)
+    _normalize(obj, size)
     obj.parent = parent
-    obj.location = location
     return obj
 
 
@@ -49,7 +45,8 @@ def _import(source, collection):
 def _paint_faces(obj, colors):
     mesh = obj.data
     source_uv = mesh.uv_layers.active.data if mesh.uv_layers else None
-    picked = [_face_color(mesh, polygon, source_uv, colors) for polygon in mesh.polygons]
+    pixels = {}
+    picked = [_face_color(mesh, polygon, source_uv, colors, pixels) for polygon in mesh.polygons]
     for layer in list(mesh.uv_layers):
         mesh.uv_layers.remove(layer)
     layer = mesh.uv_layers.new(name="UVMap").data
@@ -62,7 +59,7 @@ def _paint_faces(obj, colors):
     mesh.materials.append(bpy.data.materials[palette.MATERIAL_NAME])
 
 
-def _face_color(mesh, polygon, source_uv, colors):
+def _face_color(mesh, polygon, source_uv, colors, pixels):
     material = mesh.materials[polygon.material_index] if mesh.materials else None
     key = re.sub(r"\.\d{3}$", "", material.name) if material else None
     rule = colors.get(key, colors.get("*"))
@@ -70,10 +67,10 @@ def _face_color(mesh, polygon, source_uv, colors):
         raise KeyError(f"No palette color for source material {key!r}")
     if isinstance(rule, str):
         return rule
-    return _nearest(_source_color(material, polygon, source_uv), rule)
+    return _nearest(_source_color(material, polygon, source_uv, pixels), rule)
 
 
-def _source_color(material, polygon, source_uv):
+def _source_color(material, polygon, source_uv, pixels):
     nodes = material.node_tree.nodes
     texture = next((n for n in nodes if n.type == "TEX_IMAGE" and n.image), None)
     if texture is None or source_uv is None:
@@ -86,13 +83,10 @@ def _source_color(material, polygon, source_uv):
     x = min(width - 1, max(0, int((u % 1.0) * width)))
     y = min(height - 1, max(0, int((v % 1.0) * height)))
     offset = (y * width + x) * 4
-    return tuple(_pixels(image)[offset:offset + 3])
+    if image.name not in pixels:
+        pixels[image.name] = list(image.pixels)
+    return tuple(pixels[image.name][offset:offset + 3])
 
-
-def _pixels(image):
-    if image.name not in _PIXEL_CACHE:
-        _PIXEL_CACHE[image.name] = list(image.pixels)
-    return _PIXEL_CACHE[image.name]
 
 
 def _nearest(color, candidates):
@@ -113,9 +107,8 @@ def _join(meshes, name):
     return target
 
 
-def _normalize(obj, size, rotation_z):
+def _normalize(obj, size):
     mesh = obj.data
-    mesh.transform(Matrix.Rotation(math.radians(rotation_z), 4, "Z"))
     points = [v.co for v in mesh.vertices]
     low = Vector([min(p[i] for p in points) for i in range(3)])
     high = Vector([max(p[i] for p in points) for i in range(3)])

@@ -1,9 +1,8 @@
+from models.barn import COLORS
 from plow_art import imported, shapes
 
 NAME = "ChickenCoop"
 OUTPUT = "client/Assets/_Project/Art/Environment/ChickenCoop/SM_ChickenCoop.fbx"
-
-COLORS = {"DarkRed": "barn_red_dark", "LightRed": "barn_red", "White": "white", "RoofBlack": "roof", "Brown": "wood"}
 
 
 def build(collection):

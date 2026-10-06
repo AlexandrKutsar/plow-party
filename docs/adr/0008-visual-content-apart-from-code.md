@@ -1,6 +1,6 @@
 # Visual content lives apart from code, in one Art folder with visual prefabs
 
-All visual content lives in `client/Assets/_Project/Art/`, grouped by kind of content (`Vehicles/`, `Critters/`, `Environment/`, `VFX/`, `UI/`), one folder per asset, with type prefixes (`SM_`, `T_`, `M_`, `V_`, ...). Art holds no code. Each asset gets a visual prefab `V_<Asset>` with only Unity components; the feature's gameplay prefab in `<Feature>/Prefabs/` carries scripts and networking and nests the visual prefab as `Model`. Editable sources stay outside `client/` under `art/`; import settings are enforced by a postprocessor in `_Project/Editor/`. Rules: `client/Assets/_Project/Art/CLAUDE.md`.
+All visual content lives in `client/Assets/_Project/Art/`, grouped by kind of content (`Vehicles/`, `Critters/`, `Environment/`, `Props/`, `VFX/`, `UI/`), one folder per asset, with type prefixes (`SM_`, `T_`, `M_`, `V_`, ...). Art holds no code. Each asset gets a visual prefab `V_<Asset>` with only Unity components; the feature's gameplay prefab in `<Feature>/Prefabs/` carries scripts and networking and nests the visual prefab as `Model`. Editable sources stay outside `client/` under `art/`; import settings are enforced by a postprocessor in `_Project/Editor/`. Rules: `client/Assets/_Project/Art/CLAUDE.md`.
 
 ## Considered Options
 

@@ -65,7 +65,7 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 ## Adding an asset
 
 1. Create `Art/<Category>/<Asset>/` and put the exported files there with their prefixes.
-2. Build `V_<Asset>.prefab` from the model: anchors named after glossary terms, no scripts.
+2. Build `V_<Asset>.prefab` from the model: anchors that gameplay looks up are named after glossary terms (`CritterSeat`); attach points used only inside the visual prefab are named for what they hold (`SteamOrigin` carries `FX_Steam`); no scripts.
 3. Nest it as `Model` in the feature's gameplay prefab.
 4. Add a row to the table below.
 

@@ -2,7 +2,7 @@ from plow_art import shapes
 
 NAME = "SteamPuff"
 OUTPUT = "client/Assets/_Project/Art/VFX/Steam/SM_SteamPuff.fbx"
-ANCHORED = True
+KEEP_ORIGIN = True
 
 
 def build(collection):

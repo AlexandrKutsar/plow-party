@@ -30,7 +30,7 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 
 - Meters, Z up, the model's front faces Blender −Y; the export maps this to Unity +Z forward with identity rotation and scale 1.
 - The root is an empty named after the model, its origin on the ground at the center of the footprint; `shapes.center_footprint`, called by `build.py` after every model, enforces the centering. Gameplay collision shapes are sized from this footprint (listed in the Models table in meters, X × Y), so report a changed footprint in the model's commit.
-- A model that sits on another model's anchor sets `ANCHORED = True` and is not centered: its origin is the anchor point. Critters have their origin on the seat cushion at `CritterSeat`, hands on the Vehicle's steering wheel; a Vehicle change that moves the seat or the wheel needs `plow_art/critter.py` updated.
+- A model whose origin is not a ground footprint sets `KEEP_ORIGIN = True`, and `build.py` leaves it uncentered: a model that sits on another model's anchor has its origin at the anchor point, and a model that spins or flies (Snowball, SteamPuff) has it at its own center. Critters have their origin on the seat cushion at `CritterSeat`, hands on the Vehicle's steering wheel; a Vehicle change that moves the seat or the wheel needs `plow_art/critter.py` updated.
 - Parts that move or get swapped (wheels, Bucket, seat anchor) are separate objects with their origin at their pivot. `L`/`R` in names are from the driver's seat.
 - A third-party model is never committed to `client/` as downloaded: its model script loads it through `imported.load`, so it leaves the build with the palette material and the project's scale like any generated model. A source that cannot be mapped to the palette (alpha textures, baked lighting) is rejected or recorded as an exception in ADR-0009.
 - Colors come only from `palette.COLORS`: `paint` points a face's UVs at the color's cell, so every model shares one material and one texture. A new color goes into the palette, never into a new material.
@@ -52,8 +52,8 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 | Shed | `blender/models/shed.py` | `client/Assets/_Project/Art/Environment/Shed/SM_Shed.fbx` — Quaternius Small Barn; perimeter building; footprint 4.8 × 5.0 box; ~2176 triangles |
 | ChickenCoop | `blender/models/chicken_coop.py` | `client/Assets/_Project/Art/Environment/ChickenCoop/SM_ChickenCoop.fbx` — Quaternius ChickenCoop; perimeter building; footprint 3.0 × 2.7 box; ~948 triangles |
 | House | `blender/models/house.py` | `client/Assets/_Project/Art/Environment/House/SM_House.fbx` — CreativeTrio Cabin Shed, log house; perimeter building; footprint 5.0 × 3.5 box; ~2745 triangles |
-| Fence | `blender/models/fence.py` | `client/Assets/_Project/Art/Environment/Fence/SM_Fence.fbx` — Quaternius Fence; one 2.2 m section, tiles along X; footprint 2.2 × 0.07 box; ~208 triangles |
-| Well | `blender/models/well.py` | `client/Assets/_Project/Art/Environment/Well/SM_Well.fbx` — Quaternius Well; field Obstacle; footprint 1.1 × 1.6 box (stone ring ⌀ 1.1 circle); ~1870 triangles |
+| Fence | `blender/models/fence.py` | `client/Assets/_Project/Art/Environment/Fence/SM_Fence.fbx` — Quaternius Fence; one 2.2 m section, tiles along X; mesh 2.2 × 0.07, gameplay box 2.2 × 0.3 so Vehicles cannot tunnel through; ~208 triangles |
+| Well | `blender/models/well.py` | `client/Assets/_Project/Art/Environment/Well/SM_Well.fbx` — Quaternius Well; field Obstacle; footprint 1.1 × 1.6 box (the roof posts stand outside the stone ring); ~1870 triangles |
 | WoodPile | `blender/models/wood_pile.py` | `client/Assets/_Project/Art/Environment/WoodPile/SM_WoodPile.fbx` — generated; stacked logs, ends face front and back; footprint 2.0 × 1.0 box; ~1068 triangles |
 | HayBale | `blender/models/hay_bale.py` | `client/Assets/_Project/Art/Environment/HayBale/SM_HayBale.fbx` — generated; round bale lying along X, snow cap; footprint 1.2 × 1.2 box; ~208 triangles |
 | Cart | `blender/models/cart.py` | `client/Assets/_Project/Art/Environment/Cart/SM_Cart.fbx` — generated; two-wheel farm cart with hay, shafts to the front; footprint 1.4 × 2.9 box; ~508 triangles |
@@ -62,7 +62,7 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 | Drift | `blender/models/drift.py` | `client/Assets/_Project/Art/Environment/Drift/SM_Drift.fbx` — generated; snowed-over haystack mound; footprint ⌀ 2.6 circle; ~670 triangles |
 | SteamPuff | `blender/models/steam_puff.py` | `client/Assets/_Project/Art/VFX/Steam/SM_SteamPuff.fbx` — generated; white puff mesh for the `FX_Steam` mesh particles, origin at its center; ~80 triangles |
 | Loot | `blender/models/loot.py` | `client/Assets/_Project/Art/Props/Loot/SM_Loot.fbx` — CreativeTrio Present, red gift box with green ribbon; 0.7 m; ~230 triangles |
-| Loot_Gadget | `blender/models/loot_gadget.py` | `client/Assets/_Project/Art/Props/Loot_Gadget/SM_Loot_Gadget.fbx` — Quaternius Cube Exclamation, blue with yellow "!" and a yellow top panel; 0.7 m; ~1100 triangles |
+| Loot_Gadget | `blender/models/loot_gadget.py` | `client/Assets/_Project/Art/Props/Loot_Gadget/SM_Loot_Gadget.fbx` — Quaternius Cube Exclamation, the Loot that holds a Gadget, blue with yellow "!" and a yellow top panel; 0.7 m; ~1100 triangles |
 | Snowball | `blender/models/snowball.py` | `client/Assets/_Project/Art/Props/Snowball/SM_Snowball.fbx` — generated; ⌀ 0.36 m, origin at its center; ~80 triangles |
 
 ## Adding a model

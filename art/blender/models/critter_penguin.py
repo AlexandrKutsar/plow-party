@@ -4,7 +4,7 @@ from plow_art import critter, shapes
 
 NAME = "Critter_Penguin"
 OUTPUT = critter.output("Penguin")
-ANCHORED = True
+KEEP_ORIGIN = True
 
 DARK = "tire"
 LIGHT = "white"

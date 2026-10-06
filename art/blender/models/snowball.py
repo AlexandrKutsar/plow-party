@@ -2,7 +2,7 @@ from plow_art import shapes
 
 NAME = "Snowball"
 OUTPUT = "client/Assets/_Project/Art/Props/Snowball/SM_Snowball.fbx"
-ANCHORED = True
+KEEP_ORIGIN = True
 
 RADIUS = 0.18
 

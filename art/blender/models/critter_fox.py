@@ -4,7 +4,7 @@ from plow_art import critter, shapes
 
 NAME = "Critter_Fox"
 OUTPUT = critter.output("Fox")
-ANCHORED = True
+KEEP_ORIGIN = True
 
 FUR = "orange"
 LIGHT = "white"

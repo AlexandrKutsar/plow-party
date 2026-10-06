@@ -2,7 +2,7 @@ from plow_art import critter, shapes
 
 NAME = "Critter_Beaver"
 OUTPUT = critter.output("Beaver")
-ANCHORED = True
+KEEP_ORIGIN = True
 
 FUR = "wood"
 DARK = "brown"
