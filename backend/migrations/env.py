@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from plow_party_api.core.models import Base
 from plow_party_api.core.settings import Settings
+from plow_party_api.features.accounts import models as accounts_models
+
+TABLE_MODULES = (accounts_models,)
 
 
 def run_migrations(connection: Connection) -> None:

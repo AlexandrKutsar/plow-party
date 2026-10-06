@@ -13,7 +13,7 @@ schemas     rules (pure functions)
 | Layer | File | Owns | Knows about |
 |---|---|---|---|
 | Router | `router.py` | HTTP: path, status codes, auth dependency, OpenAPI text | service, schemas |
-| Schemas | `schemas.py` | Pydantic request/response models — the public contract | nothing |
+| Schemas | `schemas.py` | Pydantic request/response models — the public contract | own rules (validators only) |
 | Service | `service.py` | Use cases: orchestrates repository calls and rules in one transaction | repository, rules, models |
 | Rules | `rules.py` | Pure domain decisions (majority vote, plausibility checks, best-of-day) | plain data only |
 | Repository | `repository.py` | SQLAlchemy queries for the feature's tables | models, `AsyncSession` |
@@ -26,6 +26,11 @@ Files appear only when they have content: `health` has just a router and schemas
 ## Dependencies
 
 FastAPI `Depends` is the DI container. `core/dependencies.py` exposes `SessionDep`; each feature adds its own `Annotated[..., Depends(...)]` aliases for its service. A feature imports another feature only through its `service.py`, never its repository or models.
+
+Two exceptions follow from that rule and from the contract:
+
+- A dependency that other features need, such as `accounts`' `CurrentAccountDep`, lives in the owning feature's `service.py`, and so do the 401 and `WWW-Authenticate` it raises, because `service.py` is the only module other features may import.
+- A schema may call pure functions from its own feature's `rules.py` in a validator, so that a broken input rule is a 422 whose message names the rule. Schemas still never touch services, repositories, or models.
 
 ## Application assembly
 
@@ -44,6 +49,6 @@ FastAPI generates the OpenAPI schema; `scripts/export_openapi.py` writes it to `
 | Feature | Path | Status | Purpose |
 |---|---|---|---|
 | health | `features/health/` | active | Liveness of API and database |
-| accounts | `features/accounts/` | planned | Guest login by device id, nickname, auth token (GDD 9.1) |
+| accounts | `features/accounts/` | active | Guest login by Device Id, Nickname, Auth Token (GDD 9.1, ADR-0011) |
 | matches | `features/matches/` | planned | Match registration, participant confirmation, result submission and verification (GDD 9.3) |
 | tournament | `features/tournament/` | planned | Daily best score, leaderboard top and around-me, reset and Medals (GDD 9.2) |
