@@ -354,7 +354,7 @@ async def test_medals_wait_until_the_day_is_final(client: AsyncClient, clock: Fa
     assert result["medals"] == [{"account_id": player["account_id"], "medal": None}]
 
 
-async def test_medals_list_each_requested_account_once_in_request_order(
+async def test_medals_list_each_requested_account_once_in_request_order_without_medal_for_unknown(
     client: AsyncClient,
 ) -> None:
     player = await login(client)
@@ -362,9 +362,9 @@ async def test_medals_list_each_requested_account_once_in_request_order(
 
     result = await medals(client, player, stranger, player["account_id"], stranger)
 
-    assert [entry["account_id"] for entry in result["medals"]] == [
-        stranger,
-        player["account_id"],
+    assert result["medals"] == [
+        {"account_id": stranger, "medal": None},
+        {"account_id": player["account_id"], "medal": None},
     ]
 
 

@@ -5,3 +5,5 @@ The tournament API is FastAPI on Python 3.13 with SQLAlchemy 2.0 async (asyncpg)
 ## Consequences
 
 Running the full test suite locally requires Docker. Deployment is containerised (`backend/Dockerfile`) and host-agnostic; the hosting target is open because the existing VPS is unreachable from Russia, where the players are.
+
+The Tournament ranks in Python instead of with window functions; see ADR-0014.

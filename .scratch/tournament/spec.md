@@ -40,7 +40,7 @@ The Tournament owns no tables. It derives everything on read from the Credited S
 
 - **Module:** new feature slice `tournament` with router, schemas, service, rules and a module `CLAUDE.md`; no models or repository, because it owns no tables. Its row in the backend feature index moves to `active`. Router included by the app factory.
 - **Glossary:** Tournament Day, Daily Best, Leaderboard, Rank, Standing, Medal Day (added to `GLOSSARY.md`). Decision record: ADR-0014.
-- **Seam (pull):** tournament imports only `MatchService`, `AccountService` and `RESULTS_SETTLE` from the services. `MatchService.daily_bests(registered_from, registered_to)` first reaches the Verdict of every overdue open Match registered in that range (rows locked `FOR UPDATE`, same code path as `GET /matches/{id}`), then returns one `DailyBest(account_id, score, achieved_at)` per Account: its highest Credited Score and the registration time of the earliest Match reaching it. Matches knows nothing about the Tournament.
+- **Seam (pull):** tournament imports only `MatchService`, `AccountService` and `RESULTS_SETTLE` from the services. `MatchService.best_credited_scores(registered_from, registered_before)` first reaches the Verdict of every overdue open Match registered in that range (rows locked `FOR UPDATE`, same code path as `GET /matches/{id}`), then returns one `AccountBest(account_id, score, achieved_at)` per Account, which the Tournament turns into its Daily Best: its highest Credited Score and the registration time of the earliest Match reaching it. Matches knows nothing about the Tournament.
 - **Day:** a Match belongs to the UTC date of its `registered_at`. Today is the UTC date of the server clock. A day is final once `day end + RESULTS_SETTLE` (303 s, the matches submission window) has passed; after that no Vote and no Verdict can change it.
 - **Ranking (pure):** sort by score descending, then `achieved_at` ascending, then Account id; Ranks 1..n, unique.
 - **Windows (pure):** top N = first N Standings, N in 1–100, default 10. Around me = Standings with Rank within my Rank ± K, K in 0–25, default 3; empty with no Standing if I have no Daily Best that day.
@@ -49,9 +49,9 @@ The Tournament owns no tables. It derives everything on read from the Credited S
 - **Index:** a migration adds an index on `matches.registered_at`, which every day query filters by.
 - **API contract** (all bearer, 401 from accounts):
   - `GET /tournament/leaderboard?day=&limit=` → 200 Leaderboard; `day` defaults to today.
-  - `GET /tournament/leaderboard/me?day=&radius=` → 200 Around Me.
-  - `GET /tournament/medals?account_id=…` (1–20 ids, repeated) → 200 Medals for the Medal Day; unknown Accounts get no Medal.
-  - Leaderboard: `{day, ends_at, final, players, entries: [Standing]}`. Around Me: Leaderboard fields plus `me: Standing | null`. Standing: `{rank, account_id, nickname, score}`. Medals: `{day, medals: [{account_id, medal: gold | silver | bronze | null}]}` in request order without duplicates.
+  - `GET /tournament/leaderboard/me?day=&radius=` → 200 Leaderboard (around me).
+  - `GET /tournament/medals?account_id=…` (1–20 ids, repeated, counted before duplicates are dropped) → 200 Medals for the Medal Day; unknown Accounts get no Medal.
+  - Both Leaderboard endpoints answer one shape: `{day, ends_at, final, players, me: Standing | null, entries: [Standing]}`; the top view carries `me` too, so the client can pin the caller's row under the top list. Standing: `{rank, account_id, nickname, score}`. Medals: `{day, medals: [{account_id, medal: gold | silver | bronze | null}]}` in request order without duplicates.
   - Errors: 422 for a future `day` or out-of-range `limit`, `radius`, `account_id` count.
 
 ## Testing Decisions

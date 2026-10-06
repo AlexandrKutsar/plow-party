@@ -72,6 +72,16 @@ def _view(standing: Standing, nicknames: Mapping[uuid.UUID, str]) -> StandingVie
     )
 
 
+def _checked_day(day: date | None, now: datetime) -> date:
+    if day is None:
+        return day_of(now)
+    try:
+        check_day(day, now)
+    except DayError as error:
+        raise TournamentDayError(str(error)) from error
+    return day
+
+
 class TournamentService:
     def __init__(self, session: SessionDep, clock: ClockDep) -> None:
         self._clock = clock
@@ -81,18 +91,20 @@ class TournamentService:
     async def leaderboard(
         self, account_id: uuid.UUID, day: date | None, limit: int
     ) -> LeaderboardView:
-        day = self._checked_day(day)
+        now = self._clock()
+        day = _checked_day(day, now)
         standings = await self._standings(day)
         me = standing_of(standings, account_id)
-        return await self._board(day, standings, me, top(standings, limit))
+        return await self._board(day, now, standings, me, top(standings, limit))
 
     async def around_me(
         self, account_id: uuid.UUID, day: date | None, radius: int
     ) -> LeaderboardView:
-        day = self._checked_day(day)
+        now = self._clock()
+        day = _checked_day(day, now)
         standings = await self._standings(day)
         me, window = around(standings, account_id, radius)
-        return await self._board(day, standings, me, window)
+        return await self._board(day, now, standings, me, window)
 
     async def medals(self, account_ids: Sequence[uuid.UUID]) -> MedalsView:
         day = medal_day(self._clock(), RESULTS_SETTLE)
@@ -102,16 +114,6 @@ class TournamentService:
             standing = standing_of(standings, account_id)
             medals.append(MedalView(account_id, medal(standing) if standing else None))
         return MedalsView(day=day, medals=medals)
-
-    def _checked_day(self, day: date | None) -> date:
-        now = self._clock()
-        if day is None:
-            return day_of(now)
-        try:
-            check_day(day, now)
-        except DayError as error:
-            raise TournamentDayError(str(error)) from error
-        return day
 
     async def _standings(self, day: date) -> list[Standing]:
         bests = await self._matches.best_credited_scores(day_start(day), day_end(day))
@@ -127,6 +129,7 @@ class TournamentService:
     async def _board(
         self,
         day: date,
+        now: datetime,
         standings: Sequence[Standing],
         me: Standing | None,
         entries: Sequence[Standing],
@@ -136,7 +139,7 @@ class TournamentService:
         return LeaderboardView(
             day=day,
             ends_at=day_end(day),
-            final=is_final(day, self._clock(), RESULTS_SETTLE),
+            final=is_final(day, now, RESULTS_SETTLE),
             players=len(standings),
             me=_view(me, nicknames) if me else None,
             entries=[_view(standing, nicknames) for standing in entries],

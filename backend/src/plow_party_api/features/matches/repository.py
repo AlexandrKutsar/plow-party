@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from plow_party_api.features.matches.models import Match, MatchParticipant
+from plow_party_api.features.matches.rules import MatchStatus
 
 
 class MatchRepository:
@@ -22,13 +23,13 @@ class MatchRepository:
             statement = statement.with_for_update().execution_options(populate_existing=True)
         return await self._session.scalar(statement)
 
-    async def lock_registered_between(
-        self, registered_from: datetime, registered_before: datetime, status: str
+    async def lock_open_registered_between(
+        self, registered_from: datetime, registered_before: datetime
     ) -> Sequence[Match]:
         statement = (
             select(Match)
             .where(
-                Match.status == status,
+                Match.status == MatchStatus.OPEN,
                 Match.registered_at >= registered_from,
                 Match.registered_at < registered_before,
             )
@@ -49,6 +50,7 @@ class MatchRepository:
             .where(
                 Match.registered_at >= registered_from,
                 Match.registered_at < registered_before,
+                Match.status == MatchStatus.ACCEPTED,
                 MatchParticipant.credited_score.is_not(None),
             )
             .ext(distinct_on(MatchParticipant.account_id))

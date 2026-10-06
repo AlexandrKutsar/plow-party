@@ -213,8 +213,8 @@ class MatchService:
         self, registered_from: datetime, registered_before: datetime
     ) -> None:
         now = self._clock()
-        overdue = await self._matches.lock_registered_between(
-            registered_from, min(registered_before, now - RESULTS_SETTLE), MatchStatus.OPEN
+        overdue = await self._matches.lock_open_registered_between(
+            registered_from, min(registered_before, now - RESULTS_SETTLE)
         )
         if not overdue:
             return

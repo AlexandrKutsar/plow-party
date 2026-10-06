@@ -1,4 +1,6 @@
 import uuid
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import date
 from typing import Annotated
 
@@ -58,8 +60,14 @@ def _leaderboard(board: LeaderboardView) -> LeaderboardResponse:
     )
 
 
-def _day_error(error: TournamentDayError) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error))
+@contextmanager
+def _http_errors() -> Generator[None]:
+    try:
+        yield
+    except TournamentDayError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)
+        ) from error
 
 
 @router.get(
@@ -81,10 +89,8 @@ async def get_leaderboard(
         int, Query(ge=1, le=MAX_TOP, description="How many top Standings to return")
     ] = DEFAULT_TOP,
 ) -> LeaderboardResponse:
-    try:
+    with _http_errors():
         return _leaderboard(await service.leaderboard(account.id, day, limit))
-    except TournamentDayError as error:
-        raise _day_error(error) from error
 
 
 @router.get(
@@ -105,10 +111,8 @@ async def get_leaderboard_around_me(
         int, Query(ge=0, le=MAX_RADIUS, description="Ranks to show above and below the caller")
     ] = DEFAULT_RADIUS,
 ) -> LeaderboardResponse:
-    try:
+    with _http_errors():
         return _leaderboard(await service.around_me(account.id, day, radius))
-    except TournamentDayError as error:
-        raise _day_error(error) from error
 
 
 @router.get(
