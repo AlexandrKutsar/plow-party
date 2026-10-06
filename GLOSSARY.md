@@ -45,6 +45,10 @@ _Avoid_: Car, plow, truck
 The cosmetic animal riding a Vehicle; no gameplay effect.
 _Avoid_: Hero, character, pet
 
+**Critter Species** (вид зверюшки):
+The animal a Critter depicts: Fox, Bear, Rabbit, Raccoon, Penguin, or Beaver; each has its own model `SM_Critter_<Species>`.
+_Avoid_: Skin, character type
+
 **Snow Grid** (сетка снега):
 The map-wide grid of cells tracking how much Snow lies on the ground.
 
@@ -143,6 +147,10 @@ _Avoid_: Power-up, item, weapon
 
 **Immunity** (иммунитет):
 A short window after any enemy effect during which a Participant ignores new enemy effects.
+
+**Snowball** (снежок):
+A throwable Gadget; its projectile knocks the hit Vehicle back and causes a Spill.
+_Avoid_: Projectile (as the Gadget's name), ball
 
 **Trap Pile** (куча-ловушка):
 A Gadget that leaves a disguised pile behind the Vehicle, visible as a trap only to its owner.

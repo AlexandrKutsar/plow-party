@@ -48,6 +48,23 @@ def cylinder(name, radius, depth, location, collection, parent=None, axis="X", s
     return _object(name, build, location, collection, parent)
 
 
+def cone(name, radius_bottom, radius_top, depth, location, collection, parent=None, segments=4, offset=(0, 0, 0)):
+    def build(bm):
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=segments, radius1=radius_bottom, radius2=radius_top, depth=depth)
+        bmesh.ops.translate(bm, vec=(offset[0], offset[1], offset[2] + depth / 2), verts=bm.verts)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
+
+    return _object(name, build, location, collection, parent)
+
+
+def ball(name, radius, location, collection, parent=None, scale=(1, 1, 1), subdivisions=1):
+    def build(bm):
+        bmesh.ops.create_icosphere(bm, subdivisions=subdivisions, radius=radius)
+        bmesh.ops.scale(bm, vec=scale, verts=bm.verts)
+
+    return _object(name, build, location, collection, parent)
+
+
 def extruded_profile(name, profile_yz, width, location, collection, parent=None):
     def build(bm):
         half = width / 2

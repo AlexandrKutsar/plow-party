@@ -11,14 +11,41 @@ PALETTE_OUTPUT = "client/Assets/_Project/Art/Shared/T_Palette.png"
 if BLENDER_DIR not in sys.path:
     sys.path.insert(0, BLENDER_DIR)
 
-from plow_art import export, palette, shapes
-from models import vehicle
+from plow_art import critter, export, imported, palette, shapes
+from models import (
+    barn, cart, chicken_coop, critter_bear, critter_beaver, critter_fox, critter_penguin, critter_rabbit, critter_raccoon,
+    drift, drop_off_zone, fence, hay_bale, house, loot, loot_gadget, pine, shed, snowball, steam_puff, vehicle, well, wood_pile,
+)
 
-MODELS = {"vehicle": vehicle}
+MODELS = {
+    "vehicle": vehicle,
+    "critter_fox": critter_fox,
+    "critter_bear": critter_bear,
+    "critter_rabbit": critter_rabbit,
+    "critter_raccoon": critter_raccoon,
+    "critter_penguin": critter_penguin,
+    "critter_beaver": critter_beaver,
+    "barn": barn,
+    "shed": shed,
+    "chicken_coop": chicken_coop,
+    "house": house,
+    "fence": fence,
+    "well": well,
+    "wood_pile": wood_pile,
+    "hay_bale": hay_bale,
+    "cart": cart,
+    "pine": pine,
+    "drop_off_zone": drop_off_zone,
+    "drift": drift,
+    "steam_puff": steam_puff,
+    "loot": loot,
+    "loot_gadget": loot_gadget,
+    "snowball": snowball,
+}
 
 
 def reload_modules():
-    for module in (palette, shapes, export, *MODELS.values()):
+    for module in (palette, shapes, critter, imported, export, *MODELS.values()):
         importlib.reload(module)
 
 
@@ -39,7 +66,8 @@ def build(name, write_files=True):
     collection = bpy.data.collections.new(model.NAME)
     bpy.context.scene.collection.children.link(collection)
     root = model.build(collection)
-    shapes.center_footprint(root)
+    if not getattr(model, "KEEP_ORIGIN", False):
+        shapes.center_footprint(root)
     if write_files:
         palette.save_image(image, os.path.join(REPO_ROOT, PALETTE_OUTPUT))
         export.export_fbx(root, os.path.join(REPO_ROOT, model.OUTPUT))
