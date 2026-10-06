@@ -45,6 +45,10 @@ _Avoid_: Car, plow, truck
 The cosmetic animal riding a Vehicle; no gameplay effect.
 _Avoid_: Hero, character, pet
 
+**Critter Species** (вид зверюшки):
+The animal a Critter depicts: Fox, Bear, Rabbit, Raccoon, Penguin, or Beaver; each has its own model `SM_Critter_<Species>`.
+_Avoid_: Skin, character type
+
 **Snow Grid** (сетка снега):
 The map-wide grid of cells tracking how much Snow lies on the ground.
 

@@ -11,14 +11,22 @@ PALETTE_OUTPUT = "client/Assets/_Project/Art/Shared/T_Palette.png"
 if BLENDER_DIR not in sys.path:
     sys.path.insert(0, BLENDER_DIR)
 
-from plow_art import export, palette, shapes
-from models import vehicle
+from plow_art import critter, export, palette, shapes
+from models import critter_bear, critter_beaver, critter_fox, critter_penguin, critter_rabbit, critter_raccoon, vehicle
 
-MODELS = {"vehicle": vehicle}
+MODELS = {
+    "vehicle": vehicle,
+    "critter_fox": critter_fox,
+    "critter_bear": critter_bear,
+    "critter_rabbit": critter_rabbit,
+    "critter_raccoon": critter_raccoon,
+    "critter_penguin": critter_penguin,
+    "critter_beaver": critter_beaver,
+}
 
 
 def reload_modules():
-    for module in (palette, shapes, export, *MODELS.values()):
+    for module in (palette, shapes, critter, export, *MODELS.values()):
         importlib.reload(module)
 
 
@@ -39,7 +47,8 @@ def build(name, write_files=True):
     collection = bpy.data.collections.new(model.NAME)
     bpy.context.scene.collection.children.link(collection)
     root = model.build(collection)
-    shapes.center_footprint(root)
+    if not getattr(model, "ANCHORED", False):
+        shapes.center_footprint(root)
     if write_files:
         palette.save_image(image, os.path.join(REPO_ROOT, PALETTE_OUTPUT))
         export.export_fbx(root, os.path.join(REPO_ROOT, model.OUTPUT))

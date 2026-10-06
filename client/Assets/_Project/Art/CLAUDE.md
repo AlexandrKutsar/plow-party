@@ -8,7 +8,7 @@ All visual content of the game, and nothing else: models, textures, materials, s
 Art/
   Shared/                 used by many assets: T_Palette.png, M_Palette.mat, shaders
   Vehicles/<Asset>/       Vehicle/  → SM_Vehicle.fbx, V_Vehicle.prefab
-  Critters/<Asset>/       planned
+  Critters/<Asset>/       Critter_Fox/ → SM_Critter_Fox.fbx, V_Critter_Fox.prefab (one per Critter Species)
   Environment/<Asset>/    planned: ground, buildings, Drifts, Drop-Off Zone
   Props/<Asset>/          planned: Loot, Gadget pickups, snowballs
   VFX/<Effect>/           planned: particle prefabs and their textures
@@ -75,3 +75,9 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 |---|---|---|
 | Palette | `Shared/` | `art/blender/plow_art/palette.py` (texture), `M_Palette.mat` is a normal asset |
 | Vehicle | `Vehicles/Vehicle/` | `art/blender/models/vehicle.py` |
+| Critter_Fox | `Critters/Critter_Fox/` | `art/blender/models/critter_fox.py` |
+| Critter_Bear | `Critters/Critter_Bear/` | `art/blender/models/critter_bear.py` |
+| Critter_Rabbit | `Critters/Critter_Rabbit/` | `art/blender/models/critter_rabbit.py` |
+| Critter_Raccoon | `Critters/Critter_Raccoon/` | `art/blender/models/critter_raccoon.py` |
+| Critter_Penguin | `Critters/Critter_Penguin/` | `art/blender/models/critter_penguin.py` |
+| Critter_Beaver | `Critters/Critter_Beaver/` | `art/blender/models/critter_beaver.py` |
