@@ -31,13 +31,15 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
-        public void Tick_CertainRegrowth_NeverRaisesSnowFreeCell()
+        public void Tick_LongAfterScrape_NeverRaisesSnowFreeCell()
         {
             var settings = SnowTestSettings.Create();
-            settings.RegrowthChance = 1f;
+            settings.RegrowthStep = 1f;
             var grid = Create(settings, FirstCell, SnowTestSettings.Seed);
+            grid.Spill(new Vector2(0.25f, 0.25f), 2);
+            grid.Scrape(WholeGrid, int.MaxValue);
 
-            grid.Tick(10f);
+            grid.Tick(100f);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
         }

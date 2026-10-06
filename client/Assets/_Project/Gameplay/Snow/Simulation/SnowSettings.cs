@@ -12,9 +12,13 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public int FullDepth { get; set; }
 
-        public float RegrowthInterval { get; set; }
+        public float RegrowthDelay { get; set; }
 
-        public float RegrowthChance { get; set; }
+        public float RegrowthStep { get; set; }
+
+        public int PileStepsPerScrape { get; set; }
+
+        public float PileSpeedPenalty { get; set; }
 
         public float[] BlizzardTimes { get; set; }
 

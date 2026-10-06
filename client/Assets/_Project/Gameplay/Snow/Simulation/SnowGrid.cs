@@ -20,7 +20,8 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private readonly bool[] _snowFree;
         private readonly int _seed;
         private readonly float[] _blizzardProgress;
-        private int _regrowthStepsApplied;
+        private readonly float[] _nextRegrowthTime;
+        private float _now;
 
         public SnowGrid(SnowSettings settings, VehicleArena arena, int seed)
             : this(settings, arena, null, seed)
@@ -37,8 +38,10 @@ namespace PlowParty.Gameplay.Snow.Simulation
             _words = new int[(Width * Height + CellsPerWord - 1) / CellsPerWord];
             _masked = new bool[Width * Height];
             _snowFree = new bool[Width * Height];
+            _nextRegrowthTime = new float[Width * Height];
             for (var index = 0; index < Width * Height; index++)
             {
+                _nextRegrowthTime[index] = float.PositiveInfinity;
                 var centre = CellCentre(index);
                 _masked[index] = arena.Contains(centre);
                 _snowFree[index] = snowFree != null && snowFree.Contains(centre);
@@ -75,35 +78,37 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public int Scrape(SnowBlade blade, int room)
         {
-            var forward = blade.Forward.normalized;
-            var right = new Vector2(forward.y, -forward.x);
-            var halfWidth = blade.Width * 0.5f;
-            var halfDepth = blade.Depth * 0.5f;
-            var reach = new Vector2(
-                Mathf.Abs(right.x) * halfWidth + Mathf.Abs(forward.x) * halfDepth,
-                Mathf.Abs(right.y) * halfWidth + Mathf.Abs(forward.y) * halfDepth);
-            var min = CellFloor(blade.Centre - reach);
-            var max = CellFloor(blade.Centre + reach);
+            var footprint = new BladeFootprint(blade);
+            var min = ClampedCell(footprint.Min);
+            var max = ClampedCell(footprint.Max);
+            var pileRoom = _settings.PileStepsPerScrape;
             var taken = 0;
-            for (var y = Mathf.Max(min.y, 0); y <= Mathf.Min(max.y, Height - 1); y++)
+            for (var y = min.y; y <= max.y; y++)
             {
-                for (var x = Mathf.Max(min.x, 0); x <= Mathf.Min(max.x, Width - 1) && taken < room; x++)
+                for (var x = min.x; x <= max.x && taken < room; x++)
                 {
                     var index = IndexOf(x, y);
-                    var offset = CellCentre(index) - blade.Centre;
-                    if (Mathf.Abs(Vector2.Dot(offset, right)) > halfWidth || Mathf.Abs(Vector2.Dot(offset, forward)) > halfDepth)
+                    if (!footprint.Covers(CellCentre(index)))
                     {
                         continue;
                     }
 
                     var depth = GetDepth(index);
-                    var removed = Mathf.Min(depth, room - taken);
-                    SetDepth(index, depth - removed);
+                    var pileSteps = Mathf.Max(depth - _settings.FullDepth, 0);
+                    var reachable = pileSteps > pileRoom ? pileRoom : depth;
+                    var removed = Mathf.Min(reachable, room - taken);
+                    pileRoom -= Mathf.Min(removed, pileSteps);
                     taken += removed;
+                    Lower(index, depth - removed);
                 }
             }
 
             return taken;
+        }
+
+        public float SpeedMultiplierUnder(SnowBlade blade)
+        {
+            return IsOverPile(blade) ? 1f - _settings.PileSpeedPenalty : 1f;
         }
 
         public int Spill(Vector2 point, int steps)
@@ -131,6 +136,12 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public void Tick(float elapsedPlayingTime)
         {
+            if (elapsedPlayingTime < _now)
+            {
+                return;
+            }
+
+            _now = elapsedPlayingTime;
             ApplyRegrowthDueBy(elapsedPlayingTime);
             for (var wave = 0; wave < _blizzardProgress.Length; wave++)
             {
@@ -143,19 +154,69 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
         }
 
+        private bool IsOverPile(SnowBlade blade)
+        {
+            var footprint = new BladeFootprint(blade);
+            var min = ClampedCell(footprint.Min);
+            var max = ClampedCell(footprint.Max);
+            for (var y = min.y; y <= max.y; y++)
+            {
+                for (var x = min.x; x <= max.x; x++)
+                {
+                    var index = IndexOf(x, y);
+                    if (GetDepth(index) > _settings.FullDepth && footprint.Covers(CellCentre(index)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private void Lower(int index, int depth)
+        {
+            SetDepth(index, depth);
+            if (depth < _settings.FullDepth)
+            {
+                _nextRegrowthTime[index] = _now + _settings.RegrowthDelay;
+            }
+        }
+
         private void ApplyRegrowthDueBy(float elapsedPlayingTime)
         {
-            if (_settings.RegrowthInterval <= 0f)
+            if (_settings.RegrowthStep <= 0f)
             {
                 return;
             }
 
-            var regrowthStepsDue = Mathf.FloorToInt(elapsedPlayingTime / _settings.RegrowthInterval);
-            while (_regrowthStepsApplied < regrowthStepsDue)
+            for (var index = 0; index < _nextRegrowthTime.Length; index++)
             {
-                _regrowthStepsApplied++;
-                ApplyRegrowthStep(_regrowthStepsApplied);
+                if (_nextRegrowthTime[index] <= elapsedPlayingTime)
+                {
+                    RegrowCell(index, elapsedPlayingTime);
+                }
             }
+        }
+
+        private void RegrowCell(int index, float elapsedPlayingTime)
+        {
+            if (!TakesSnowfall(index))
+            {
+                _nextRegrowthTime[index] = float.PositiveInfinity;
+                return;
+            }
+
+            var depth = GetDepth(index);
+            var next = _nextRegrowthTime[index];
+            while (next <= elapsedPlayingTime && depth < _settings.FullDepth)
+            {
+                depth++;
+                next += _settings.RegrowthStep;
+            }
+
+            SetDepth(index, depth);
+            _nextRegrowthTime[index] = depth < _settings.FullDepth ? next : float.PositiveInfinity;
         }
 
         private float BlizzardProgress(int wave, float elapsedPlayingTime)
@@ -245,23 +306,6 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
         }
 
-        private void ApplyRegrowthStep(int step)
-        {
-            for (var index = 0; index < _masked.Length; index++)
-            {
-                if (!TakesSnowfall(index))
-                {
-                    continue;
-                }
-
-                var depth = GetDepth(index);
-                if (depth < _settings.FullDepth && SnowHash.Chance(_seed, index, step) < _settings.RegrowthChance)
-                {
-                    SetDepth(index, depth + 1);
-                }
-            }
-        }
-
         private int RaiseTowardsMax(int x, int y, int steps)
         {
             if (x < 0 || y < 0 || x >= Width || y >= Height)
@@ -290,6 +334,12 @@ namespace PlowParty.Gameplay.Snow.Simulation
         {
             var local = (point - _settings.Origin) / _settings.CellSize;
             return new Vector2Int(Mathf.FloorToInt(local.x), Mathf.FloorToInt(local.y));
+        }
+
+        private Vector2Int ClampedCell(Vector2 point)
+        {
+            var cell = CellFloor(point);
+            return new Vector2Int(Mathf.Clamp(cell.x, 0, Width - 1), Mathf.Clamp(cell.y, 0, Height - 1));
         }
 
         private Vector2 CellCentre(int index)

@@ -61,7 +61,8 @@ namespace PlowParty.Gameplay.Snow.Tests
         private static SnowGrid Play(int seed)
         {
             var settings = SnowTestSettings.Create();
-            settings.RegrowthChance = 0.3f;
+            settings.RegrowthDelay = 0.5f;
+            settings.RegrowthStep = 0.2f;
             settings.BlizzardTimes = new[] { 4f };
             var grid = new SnowGrid(settings, VehicleArena.Create(), seed);
             for (var tick = 1; tick <= 100; tick++)
