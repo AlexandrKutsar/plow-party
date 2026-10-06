@@ -9,9 +9,9 @@ Art/
   Shared/                 used by many assets: T_Palette.png, M_Palette.mat, shaders
   Vehicles/<Asset>/       Vehicle/  → SM_Vehicle.fbx, V_Vehicle.prefab
   Critters/<Asset>/       Critter_Fox/ → SM_Critter_Fox.fbx, V_Critter_Fox.prefab (one per Critter Species)
-  Environment/<Asset>/    planned: ground, buildings, Drifts, Drop-Off Zone
+  Environment/<Asset>/    Barn/ → SM_Barn.fbx, V_Barn.prefab; buildings, field Obstacles, Drift, Drop-Off Zone
   Props/<Asset>/          planned: Loot, Gadget pickups, snowballs
-  VFX/<Effect>/           planned: particle prefabs and their textures
+  VFX/<Effect>/           Steam/ → SM_SteamPuff.fbx, FX_Steam.prefab; particle prefabs and their meshes or textures
   UI/                     planned: sprites, icons, fonts (imported as sprites)
 ```
 
@@ -31,7 +31,7 @@ Asset names are PascalCase after a type prefix; the name after the prefix is the
 | `A_` | animation clip | `A_Critter_Cheer.anim` |
 | `AC_` | animator controller | `AC_Critter.controller` |
 | `V_` | visual prefab | `V_Vehicle.prefab` |
-| `FX_` | VFX prefab | `FX_RamImpact.prefab` |
+| `FX_` | VFX prefab | `FX_Steam.prefab` |
 | `UI_` | UI sprite or atlas | `UI_GadgetButton.png` |
 
 Variants append `_<Variant>`: `SK_Critter_Fox`, `T_Snow_Normal`.
@@ -81,3 +81,16 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 | Critter_Raccoon | `Critters/Critter_Raccoon/` | `art/blender/models/critter_raccoon.py` |
 | Critter_Penguin | `Critters/Critter_Penguin/` | `art/blender/models/critter_penguin.py` |
 | Critter_Beaver | `Critters/Critter_Beaver/` | `art/blender/models/critter_beaver.py` |
+| Barn | `Environment/Barn/` | `art/blender/models/barn.py` |
+| Shed | `Environment/Shed/` | `art/blender/models/shed.py` |
+| ChickenCoop | `Environment/ChickenCoop/` | `art/blender/models/chicken_coop.py` |
+| House | `Environment/House/` | `art/blender/models/house.py` |
+| Fence | `Environment/Fence/` | `art/blender/models/fence.py` |
+| Well | `Environment/Well/` | `art/blender/models/well.py` |
+| WoodPile | `Environment/WoodPile/` | `art/blender/models/wood_pile.py` |
+| HayBale | `Environment/HayBale/` | `art/blender/models/hay_bale.py` |
+| Cart | `Environment/Cart/` | `art/blender/models/cart.py` |
+| Pine | `Environment/Pine/` | `art/blender/models/pine.py` |
+| DropOffZone | `Environment/DropOffZone/` | `art/blender/models/drop_off_zone.py`; `V_DropOffZone` nests `FX_Steam` under `SteamOrigin` |
+| Drift | `Environment/Drift/` | `art/blender/models/drift.py` |
+| Steam | `VFX/Steam/` | `art/blender/models/steam_puff.py` (puff mesh); `FX_Steam.prefab` is a normal asset: mesh particles drawn with `M_Palette`, no transparency |

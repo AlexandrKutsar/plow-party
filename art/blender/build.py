@@ -11,8 +11,11 @@ PALETTE_OUTPUT = "client/Assets/_Project/Art/Shared/T_Palette.png"
 if BLENDER_DIR not in sys.path:
     sys.path.insert(0, BLENDER_DIR)
 
-from plow_art import critter, export, palette, shapes
-from models import critter_bear, critter_beaver, critter_fox, critter_penguin, critter_rabbit, critter_raccoon, vehicle
+from plow_art import critter, export, imported, palette, shapes
+from models import (
+    barn, cart, chicken_coop, critter_bear, critter_beaver, critter_fox, critter_penguin, critter_rabbit, critter_raccoon,
+    drift, drop_off_zone, fence, hay_bale, house, pine, shed, steam_puff, vehicle, well, wood_pile,
+)
 
 MODELS = {
     "vehicle": vehicle,
@@ -22,11 +25,24 @@ MODELS = {
     "critter_raccoon": critter_raccoon,
     "critter_penguin": critter_penguin,
     "critter_beaver": critter_beaver,
+    "barn": barn,
+    "shed": shed,
+    "chicken_coop": chicken_coop,
+    "house": house,
+    "fence": fence,
+    "well": well,
+    "wood_pile": wood_pile,
+    "hay_bale": hay_bale,
+    "cart": cart,
+    "pine": pine,
+    "drop_off_zone": drop_off_zone,
+    "drift": drift,
+    "steam_puff": steam_puff,
 }
 
 
 def reload_modules():
-    for module in (palette, shapes, critter, export, *MODELS.values()):
+    for module in (palette, shapes, critter, imported, export, *MODELS.values()):
         importlib.reload(module)
 
 
