@@ -6,7 +6,7 @@ Match registration, Player confirmation, Votes on the Match Result, and the Verd
 
 - `POST /matches` — the Host registers the Roster at the start of Countdown (201). The Host is a Confirmed Player at once; 422 if a Roster rule breaks, the Host holds no Slot, or an Account does not exist.
 - `POST /matches/{id}/confirm` — a Player in the Roster confirms within 15 s of registration (204, repeatable). An unconfirmed seat counts as a Bot: no Vote, no Credited Score.
-- `POST /matches/{id}/votes` — a Confirmed Player submits Score per Slot and, for an Interrupted Match, the second the Host left. Same Vote again succeeds; a different one is 409. The last Confirmed Player's Vote reaches the Verdict.
+- `POST /matches/{id}/votes` — a Confirmed Player submits Score per Slot and, for an Interrupted Match, the second the Host left. Refused (409) while confirmation is open or too soon for the claimed play time. Same Vote again succeeds, even after the Verdict; a different one is 409. The last Confirmed Player's Vote reaches the Verdict.
 - `GET /matches/{id}` — the Match and its Verdict; reaches the Verdict first if the submission window (303 s after registration) has closed.
 - Errors: 404 unknown Match, 403 not in the Roster / not a Confirmed Player, 409 wrong phase, 422 malformed input.
 
@@ -20,7 +20,7 @@ Match registration, Player confirmation, Votes on the Match Result, and the Verd
 - `match_participants` — one row per Slot: Account (null for a Bot), `confirmed`, and after acceptance `score`, `placement`, `credited_score` (Confirmed Players only).
 - `match_votes` — one per Confirmed Player: Scores as JSONB keyed by Slot, interrupted second, server `submitted_at`.
 
-Every write locks the `matches` row (`SELECT … FOR UPDATE`), so simultaneous last Votes reach one Verdict. Time comes only from `core.clock`; tests replace it.
+Every write locks the `matches` row (`SELECT … FOR UPDATE`), so simultaneous last Votes reach one Verdict; no test covers this, because the in-process test transport serialises requests. Time comes only from `core.clock`; tests replace it.
 
 ## For the Tournament
 

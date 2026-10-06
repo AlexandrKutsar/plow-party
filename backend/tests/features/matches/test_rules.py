@@ -7,7 +7,7 @@ from plow_party_api.features.matches.rules import (
     Accepted,
     Rejected,
     RosterError,
-    Seat,
+    RosterSlot,
     Vote,
     VoteError,
     VoteTimingError,
@@ -16,8 +16,8 @@ from plow_party_api.features.matches.rules import (
     confirmation_open,
     credited_score,
     decide,
-    finalization_due,
     placements,
+    verdict_due,
 )
 
 REGISTERED_AT = datetime(2026, 10, 6, 12, 0, tzinfo=UTC)
@@ -34,56 +34,56 @@ def vote(scores: dict[int, int] | None = None, interrupted_at: int | None = None
     )
 
 
-def seats(*slots: int) -> list[Seat]:
-    return [Seat(slot=slot, account_id=uuid.uuid4()) for slot in slots]
+def roster_of(*slots: int) -> list[RosterSlot]:
+    return [RosterSlot(slot=slot, account_id=uuid.uuid4()) for slot in slots]
 
 
 @pytest.mark.parametrize("slots", [(0, 1, 2, 3), (0, 1, 2, 3, 4), (5, 4, 3, 2, 1, 0)])
 def test_check_roster_four_to_six_distinct_slots_is_accepted(slots: tuple[int, ...]) -> None:
-    roster = seats(*slots)
+    roster = roster_of(*slots)
 
     assert check_roster(roster) == sorted(roster, key=lambda seat: seat.slot)
 
 
 @pytest.mark.parametrize("slots", [(), (0, 1, 2)])
-def test_check_roster_fewer_than_four_seats_is_rejected(slots: tuple[int, ...]) -> None:
+def test_check_roster_fewer_than_four_slots_is_rejected(slots: tuple[int, ...]) -> None:
     with pytest.raises(RosterError, match="at least 4"):
-        check_roster(seats(*slots))
+        check_roster(roster_of(*slots))
 
 
-def test_check_roster_more_than_six_seats_is_rejected() -> None:
+def test_check_roster_more_than_six_slots_is_rejected() -> None:
     with pytest.raises(RosterError, match="at most 6"):
-        check_roster(seats(0, 1, 2, 3, 4, 5, 5))
+        check_roster(roster_of(0, 1, 2, 3, 4, 5, 5))
 
 
 @pytest.mark.parametrize("slot", [-1, 6])
 def test_check_roster_slot_outside_zero_to_five_is_rejected(slot: int) -> None:
     with pytest.raises(RosterError, match="Slot must be within 0-5"):
-        check_roster(seats(0, 1, 2, slot))
+        check_roster(roster_of(0, 1, 2, slot))
 
 
 def test_check_roster_repeated_slot_is_rejected() -> None:
     with pytest.raises(RosterError, match="Slots must be distinct"):
-        check_roster(seats(0, 1, 2, 2))
+        check_roster(roster_of(0, 1, 2, 2))
 
 
 def test_check_roster_same_account_twice_is_rejected() -> None:
     account_id = uuid.uuid4()
-    roster = [Seat(slot=0, account_id=account_id), Seat(slot=1, account_id=account_id)]
+    roster = [RosterSlot(slot=0, account_id=account_id), RosterSlot(slot=1, account_id=account_id)]
 
     with pytest.raises(RosterError, match="Account may hold only one Slot"):
-        check_roster([*roster, *seats(2, 3)])
+        check_roster([*roster, *roster_of(2, 3)])
 
 
 def test_check_roster_bots_may_repeat_the_empty_account() -> None:
-    roster = [Seat(slot=slot, account_id=None) for slot in (1, 2, 3)]
+    roster = [RosterSlot(slot=slot, account_id=None) for slot in (1, 2, 3)]
 
-    assert check_roster([*seats(0), *roster])[1:] == roster
+    assert check_roster([*roster_of(0), *roster])[1:] == roster
 
 
 def test_check_roster_only_bots_is_rejected() -> None:
     with pytest.raises(RosterError, match="at least one Player"):
-        check_roster([Seat(slot=slot, account_id=None) for slot in range(4)])
+        check_roster([RosterSlot(slot=slot, account_id=None) for slot in range(4)])
 
 
 @pytest.mark.parametrize("seconds", [0, 14.9, 15])
@@ -111,6 +111,15 @@ def test_check_vote_interrupted_match_may_arrive_after_its_own_played_time() -> 
 def test_check_vote_interrupted_match_sooner_than_its_played_time_is_too_early() -> None:
     with pytest.raises(VoteTimingError, match="too early"):
         check_vote({0, 1, 2, 3}, vote(interrupted_at=60), REGISTERED_AT, at(57.9))
+
+
+def test_check_vote_while_confirmation_is_open_is_too_early() -> None:
+    with pytest.raises(VoteTimingError, match="too early"):
+        check_vote({0, 1, 2, 3}, vote(interrupted_at=10), REGISTERED_AT, at(15))
+
+
+def test_check_vote_right_after_confirmation_closes_is_accepted() -> None:
+    check_vote({0, 1, 2, 3}, vote(interrupted_at=10), REGISTERED_AT, at(15.001))
 
 
 def test_check_vote_at_window_close_is_accepted() -> None:
@@ -141,19 +150,17 @@ def test_check_vote_interrupted_second_outside_1_to_179_is_rejected(second: int)
         check_vote({0, 1, 2, 3}, vote(interrupted_at=second), REGISTERED_AT, at(200))
 
 
-def test_finalization_due_when_every_confirmed_player_voted() -> None:
-    assert finalization_due(confirmed_players=3, votes=3, registered_at=REGISTERED_AT, now=at(200))
+def test_verdict_due_when_every_confirmed_player_voted() -> None:
+    assert verdict_due(confirmed_players=3, votes=3, registered_at=REGISTERED_AT, now=at(200))
 
 
-def test_finalization_not_due_while_votes_missing_and_window_open() -> None:
-    assert not finalization_due(
-        confirmed_players=3, votes=2, registered_at=REGISTERED_AT, now=at(303)
-    )
+def test_verdict_not_due_while_votes_missing_and_window_open() -> None:
+    assert not verdict_due(confirmed_players=3, votes=2, registered_at=REGISTERED_AT, now=at(303))
 
 
 @pytest.mark.parametrize("votes", [0, 2])
-def test_finalization_due_after_window_closes_whatever_the_votes(votes: int) -> None:
-    assert finalization_due(
+def test_verdict_due_after_window_closes_whatever_the_votes(votes: int) -> None:
+    assert verdict_due(
         confirmed_players=3, votes=votes, registered_at=REGISTERED_AT, now=at(303.001)
     )
 

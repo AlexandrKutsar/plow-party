@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter
 
 from plow_party_api.features.accounts.schemas import (
@@ -9,15 +7,12 @@ from plow_party_api.features.accounts.schemas import (
     RenameRequest,
 )
 from plow_party_api.features.accounts.service import (
+    UNAUTHORIZED_RESPONSE,
     AccountServiceDep,
     CurrentAccountDep,
 )
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
-
-UNAUTHORIZED: dict[int | str, dict[str, Any]] = {
-    401: {"description": "Missing, malformed, or superseded Auth Token"}
-}
 
 
 @router.post(
@@ -40,7 +35,7 @@ async def login(request: LoginRequest, service: AccountServiceDep) -> LoginRespo
     "/me",
     summary="The calling Account",
     response_model=AccountResponse,
-    responses=UNAUTHORIZED,
+    responses=UNAUTHORIZED_RESPONSE,
 )
 async def get_me(account: CurrentAccountDep) -> AccountResponse:
     return AccountResponse(account_id=account.id, nickname=account.nickname)
@@ -51,7 +46,7 @@ async def get_me(account: CurrentAccountDep) -> AccountResponse:
     summary="Change the calling Account's Nickname",
     description="Nicknames are not unique; a rejected Nickname answers 422 naming the broken rule.",
     response_model=AccountResponse,
-    responses=UNAUTHORIZED,
+    responses=UNAUTHORIZED_RESPONSE,
 )
 async def rename_me(
     request: RenameRequest, account: CurrentAccountDep, service: AccountServiceDep

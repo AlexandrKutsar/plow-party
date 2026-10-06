@@ -1,12 +1,10 @@
 import uuid
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from plow_party_api.features.accounts.service import CurrentAccountDep
-from plow_party_api.features.matches.rules import Seat, Vote
+from plow_party_api.features.accounts.service import UNAUTHORIZED_RESPONSE, CurrentAccountDep
 from plow_party_api.features.matches.schemas import (
     MatchResponse,
     ParticipantResponse,
@@ -31,10 +29,7 @@ ERROR_STATUS: dict[type[Exception], int] = {
     MatchInvalidError: status.HTTP_422_UNPROCESSABLE_CONTENT,
 }
 
-UNAUTHORIZED: dict[int | str, dict[str, Any]] = {
-    401: {"description": "Missing, malformed, or superseded Auth Token"}
-}
-NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"description": "No Match with this id"}}
+NOT_FOUND_RESPONSE = {404: {"description": "No Match with this id"}}
 
 
 @contextmanager
@@ -78,14 +73,13 @@ def _response(match: MatchView) -> MatchResponse:
         "Host holds no Slot, or an Account does not exist."
     ),
     response_model=MatchResponse,
-    responses=UNAUTHORIZED,
+    responses=UNAUTHORIZED_RESPONSE,
 )
 async def register_match(
     request: RegisterMatchRequest, account: CurrentAccountDep, service: MatchServiceDep
 ) -> MatchResponse:
-    roster = [Seat(slot=seat.slot, account_id=seat.account_id) for seat in request.roster]
     with _http_errors():
-        return _response(await service.register(account.id, roster))
+        return _response(await service.register(account.id, request.to_roster()))
 
 
 @router.post(
@@ -97,8 +91,8 @@ async def register_match(
         "Confirming again succeeds."
     ),
     responses={
-        **UNAUTHORIZED,
-        **NOT_FOUND,
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
         403: {"description": "The Account holds no Slot in this Match"},
         409: {"description": "Confirmation closed when Countdown ended"},
     },
@@ -116,12 +110,13 @@ async def confirm_match(
     description=(
         "One Vote per Confirmed Player; resubmitting the same table succeeds, a different one "
         "answers 409. The Verdict is reached when every Confirmed Player has voted, or on the "
-        "first read after the submission window closes (303 s after registration)."
+        "first read after the submission window closes (303 s after registration). "
+        "Votes are refused while confirmation is still open."
     ),
     response_model=MatchResponse,
     responses={
-        **UNAUTHORIZED,
-        **NOT_FOUND,
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
         403: {"description": "The Account is not a Confirmed Player of this Match"},
         409: {
             "description": (
@@ -137,12 +132,8 @@ async def submit_vote(
     account: CurrentAccountDep,
     service: MatchServiceDep,
 ) -> MatchResponse:
-    vote = Vote(
-        scores={entry.slot: entry.score for entry in request.scores},
-        interrupted_at_seconds=request.interrupted_at_seconds,
-    )
     with _http_errors():
-        return _response(await service.vote(match_id, account.id, vote))
+        return _response(await service.vote(match_id, account.id, request.to_vote()))
 
 
 @router.get(
@@ -150,7 +141,7 @@ async def submit_vote(
     summary="A Match with its Verdict",
     description="Reaches the Verdict first if the submission window has closed.",
     response_model=MatchResponse,
-    responses={**UNAUTHORIZED, **NOT_FOUND},
+    responses={**UNAUTHORIZED_RESPONSE, **NOT_FOUND_RESPONSE},
 )
 async def get_match(
     match_id: uuid.UUID, _: CurrentAccountDep, service: MatchServiceDep

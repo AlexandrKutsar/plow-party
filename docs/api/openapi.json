@@ -255,7 +255,7 @@
           "matches"
         ],
         "summary": "Submit the calling Player's Match Result as a Vote",
-        "description": "One Vote per Confirmed Player; resubmitting the same table succeeds, a different one answers 409. The Verdict is reached when every Confirmed Player has voted, or on the first read after the submission window closes (303 s after registration).",
+        "description": "One Vote per Confirmed Player; resubmitting the same table succeeds, a different one answers 409. The Verdict is reached when every Confirmed Player has voted, or on the first read after the submission window closes (303 s after registration). Votes are refused while confirmation is still open.",
         "operationId": "submit_vote",
         "security": [
           {
@@ -642,11 +642,11 @@
         "properties": {
           "roster": {
             "items": {
-              "$ref": "#/components/schemas/SeatRequest"
+              "$ref": "#/components/schemas/RosterSlotRequest"
             },
             "type": "array",
             "title": "Roster",
-            "description": "Every Slot of the Match: 4-6 seats, distinct Slots 0-5, each Account at most once, and the calling Host among them"
+            "description": "Every Slot of the Match: 4-6 distinct Slots 0-5, each Account at most once, and the calling Host among them"
           }
         },
         "type": "object",
@@ -669,7 +669,7 @@
         ],
         "title": "RenameRequest"
       },
-      "SeatRequest": {
+      "RosterSlotRequest": {
         "properties": {
           "slot": {
             "type": "integer",
@@ -695,7 +695,7 @@
           "slot",
           "account_id"
         ],
-        "title": "SeatRequest"
+        "title": "RosterSlotRequest"
       },
       "SlotScore": {
         "properties": {

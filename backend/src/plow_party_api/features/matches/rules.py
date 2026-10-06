@@ -5,6 +5,7 @@ from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
+from typing import NamedTuple
 
 MIN_PARTICIPANTS = 4
 MAX_PARTICIPANTS = 6
@@ -40,26 +41,31 @@ class VoteTimingError(ValueError):
 
 
 @dataclass(frozen=True)
-class Seat:
+class RosterSlot:
     slot: int
     account_id: uuid.UUID | None
 
 
-def check_roster(seats: Sequence[Seat]) -> list[Seat]:
-    if len(seats) < MIN_PARTICIPANTS:
-        raise RosterError(f"Roster must have at least {MIN_PARTICIPANTS} seats")
-    if len(seats) > MAX_PARTICIPANTS:
-        raise RosterError(f"Roster must have at most {MAX_PARTICIPANTS} seats")
-    if any(seat.slot not in SLOTS for seat in seats):
+def check_roster(roster: Sequence[RosterSlot]) -> list[RosterSlot]:
+    if len(roster) < MIN_PARTICIPANTS:
+        raise RosterError(f"Roster must have at least {MIN_PARTICIPANTS} Slots")
+    if len(roster) > MAX_PARTICIPANTS:
+        raise RosterError(f"Roster must have at most {MAX_PARTICIPANTS} Slots")
+    if any(entry.slot not in SLOTS for entry in roster):
         raise RosterError(f"Slot must be within {SLOTS[0]}-{SLOTS[-1]}")
-    if len({seat.slot for seat in seats}) != len(seats):
+    if len({entry.slot for entry in roster}) != len(roster):
         raise RosterError("Slots must be distinct")
-    accounts = [seat.account_id for seat in seats if seat.account_id is not None]
+    accounts = [entry.account_id for entry in roster if entry.account_id is not None]
     if not accounts:
         raise RosterError("Roster must have at least one Player")
     if len(set(accounts)) != len(accounts):
         raise RosterError("An Account may hold only one Slot")
-    return sorted(seats, key=lambda seat: seat.slot)
+    return sorted(roster, key=lambda entry: entry.slot)
+
+
+class ResultVersion(NamedTuple):
+    scores: tuple[tuple[int, int], ...]
+    interrupted: bool
 
 
 @dataclass(frozen=True)
@@ -72,8 +78,11 @@ class Vote:
         return self.interrupted_at_seconds or MATCH_SECONDS
 
     @property
-    def version(self) -> tuple[tuple[tuple[int, int], ...], bool]:
-        return tuple(sorted(self.scores.items())), self.interrupted_at_seconds is not None
+    def version(self) -> ResultVersion:
+        return ResultVersion(
+            scores=tuple(sorted(self.scores.items())),
+            interrupted=self.interrupted_at_seconds is not None,
+        )
 
 
 @dataclass(frozen=True)
@@ -114,16 +123,14 @@ def check_vote(
         raise VoteError(
             f"Interrupted second must be within {INTERRUPTED_SECONDS[0]}-{INTERRUPTED_SECONDS[-1]}"
         )
-    earliest = registered_at + COUNTDOWN + timedelta(seconds=vote.played_seconds)
-    if now < earliest - TIMING_TOLERANCE:
+    played_by = registered_at + COUNTDOWN + timedelta(seconds=vote.played_seconds)
+    if confirmation_open(registered_at, now) or now < played_by - TIMING_TOLERANCE:
         raise VoteTimingError("Vote arrived too early for the Match to have been played")
     if now > submission_deadline(registered_at):
         raise VoteTimingError("Submission window is closed")
 
 
-def finalization_due(
-    confirmed_players: int, votes: int, registered_at: datetime, now: datetime
-) -> bool:
+def verdict_due(confirmed_players: int, votes: int, registered_at: datetime, now: datetime) -> bool:
     return votes >= confirmed_players or now > submission_deadline(registered_at)
 
 
@@ -134,7 +141,7 @@ def decide(votes: Sequence[Vote]) -> Verdict:
     if count * 2 <= len(votes):
         return Rejected("Votes have no majority")
     winners = [vote for vote in votes if vote.version == version]
-    interrupted = version[1]
+    interrupted = version.interrupted
     played_seconds = min(vote.played_seconds for vote in winners)
     if interrupted and played_seconds < MIN_INTERRUPTED_SECONDS:
         return Rejected(f"Interrupted Match is shorter than {MIN_INTERRUPTED_SECONDS} s")

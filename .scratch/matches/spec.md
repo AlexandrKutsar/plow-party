@@ -29,7 +29,7 @@ A Match is registered by its Host at the start of Countdown with its full Roster
 15. As a Confirmed Player, I want resubmitting the same table to succeed and a different table to be refused, so that retries are safe but nobody can change their Vote.
 16. As a backend, I want a Vote refused when it arrives sooner than Countdown plus the claimed play time after registration, so that a Host cannot fake a Match in seconds.
 17. As a backend, I want Votes refused after the submission window closes (2 minutes after a full Match would end), so that a Match does not stay open forever.
-18. As a backend, I want Votes refused once the Match has a Verdict, so that a Verdict never changes.
+18. As a backend, I want new or different Votes refused once the Match has a Verdict (an identical retry still succeeds), so that a Verdict never changes.
 19. As a Player in a Match with several live Players, I want the version that a strict majority of Votes agree on to win, so that one cheating Host cannot outvote the rest.
 20. As a Player, I want the Match rejected when Votes split without a strict majority, so that a 1-vs-1 or 2-vs-2 dispute never credits a forged table.
 21. As a Player in "me + bots", I want my single Vote accepted after plausibility checks, so that solo Matches count in the Tournament (GDD 9.2).
@@ -47,7 +47,7 @@ A Match is registered by its Host at the start of Countdown with its full Roster
 33. As a client developer, I want 404 for an unknown Match, 403 when I am not allowed to act on it, and 409 when the Match is in the wrong phase, so that I can react to each case.
 34. As a backend developer, I want every decision as a pure function with exhaustive unit tests, so that the anti-cheat logic is safe to change.
 35. As a backend developer building the Tournament, I want accepted Matches to carry Credited Score per Account, so that the Tournament only sums and ranks.
-36. As a maintainer, I want the weak points (solo Matches, collusion) written down, so that the README describes the protection honestly.
+36. As a maintainer, I want the weak points (solo Matches, collusion) written down in ADR-0013, so that the future README can describe the protection honestly.
 
 ## Implementation Decisions
 
@@ -56,7 +56,7 @@ A Match is registered by its Host at the start of Countdown with its full Roster
 - **Clock:** a small core dependency returning the current UTC time; the matches service reads time only through it, and tests override it.
 - **Constants (rules):** Countdown 3 s, Match 180 s, confirmation window 15 s after registration, timing tolerance 5 s, submission window closes 120 s after a full Match would end (303 s after registration), minimum Interrupted Match 30 s, Interrupted Match Weight 0.5, maximum Score per second 30 (a full Bucket is worth 200 and takes well over 6 s to fill and unload).
 - **Roster rules (pure):** 4–6 seats, Slots distinct and within 0–5, each Account at most once, at least one Account. Run in the request schema, so a broken rule is a 422 naming it. Host-in-Roster and Accounts-exist are checked by the service and answer 422.
-- **Vote rules (pure):** Vote Slots equal the Roster Slots; Scores are non-negative integers; interrupted second, if present, is within 1–179; the Vote's played time is 180 or the interrupted second; it is refused (409) earlier than registration + Countdown + played time − tolerance, or after the window closes.
+- **Vote rules (pure):** Vote Slots equal the Roster Slots; Scores are non-negative integers; interrupted second, if present, is within 1–179; the Vote's played time is 180 or the interrupted second; it is refused (409) while confirmation is still open, earlier than registration + Countdown + played time − tolerance, or after the window closes. Refusing Votes during confirmation keeps a Host from reaching a Verdict before the other Players can confirm.
 - **Verdict rules (pure):** Votes agree when their Scores per Slot and their interrupted flag are equal. A version wins with strictly more than half of the Votes; otherwise rejected "no majority". No Votes: rejected. Played time is 180, or the smallest interrupted second among the winning Votes; under 30 s is rejected. Any Score over 30 × played time rejects the whole Match. Accepted: Weight 1 or 0.5, placement by Score with ties sharing the higher place (1, 2, 2, 4), Credited Score = floor(Score × Weight) for Confirmed Players only.
 - **Finalization:** when the number of Votes equals the number of Confirmed Players, or on read after the window closes. The Match row is locked (`SELECT … FOR UPDATE`) in every write path and in finalization.
 - **API contract:**
@@ -74,6 +74,7 @@ A Match is registered by its Host at the start of Countdown with its full Roster
 - Seams: the pure rules (no fixtures, no database) and the HTTP API on a real Postgres via testcontainers. Nothing reaches into tables.
 - Rules tests cover every Roster rule, Vote timing edges (exactly at the bounds), majority with 1–6 Votes including ties, plausibility bounds, the Interrupted Match minimum and Weight, placements with ties, Credited Score rounding, and when finalization is due.
 - HTTP tests drive full flows with a controllable clock: register → confirm → votes → Verdict; solo Match; split Votes; unconfirmed seat; Interrupted Match; lazy finalization after the window; each error status.
+- Simultaneous last Votes are not covered by a test: the in-process ASGI transport serialises the requests, so such a test passes even without the row lock. The lock is a reviewed guarantee, not a tested one.
 - Prior art: accounts' `test_rules.py` and `test_accounts_api.py`; the `client` fixture, extended for matches with a clock override.
 
 ## Out of Scope

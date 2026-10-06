@@ -8,30 +8,38 @@ from plow_party_api.features.matches.rules import (
     INTERRUPTED_SECONDS,
     SLOTS,
     MatchStatus,
-    Seat,
+    RosterSlot,
+    Vote,
     check_roster,
 )
 
 
-class SeatRequest(BaseModel):
+class RosterSlotRequest(BaseModel):
     slot: int = Field(description="Slot number, 0-5")
     account_id: uuid.UUID | None = Field(
         description="Account of the Player holding the Slot, or null for a Bot"
     )
 
 
-def _checked_roster(seats: list[SeatRequest]) -> list[SeatRequest]:
-    check_roster([Seat(slot=seat.slot, account_id=seat.account_id) for seat in seats])
-    return sorted(seats, key=lambda seat: seat.slot)
+def _roster(entries: list[RosterSlotRequest]) -> list[RosterSlot]:
+    return [RosterSlot(slot=entry.slot, account_id=entry.account_id) for entry in entries]
+
+
+def _checked_roster(entries: list[RosterSlotRequest]) -> list[RosterSlotRequest]:
+    check_roster(_roster(entries))
+    return entries
 
 
 class RegisterMatchRequest(BaseModel):
-    roster: Annotated[list[SeatRequest], AfterValidator(_checked_roster)] = Field(
+    roster: Annotated[list[RosterSlotRequest], AfterValidator(_checked_roster)] = Field(
         description=(
-            "Every Slot of the Match: 4-6 seats, distinct Slots 0-5, each Account at most once, "
+            "Every Slot of the Match: 4-6 distinct Slots 0-5, each Account at most once, "
             "and the calling Host among them"
         )
     )
+
+    def to_roster(self) -> list[RosterSlot]:
+        return _roster(self.roster)
 
 
 class SlotScore(BaseModel):
@@ -55,6 +63,12 @@ class VoteRequest(BaseModel):
         le=INTERRUPTED_SECONDS[-1],
         description="Second of play at which the Host left, or null for a full 180-second Match",
     )
+
+    def to_vote(self) -> Vote:
+        return Vote(
+            scores={entry.slot: entry.score for entry in self.scores},
+            interrupted_at_seconds=self.interrupted_at_seconds,
+        )
 
 
 class ParticipantResponse(BaseModel):

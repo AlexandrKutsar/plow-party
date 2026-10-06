@@ -14,16 +14,18 @@ from plow_party_api.features.matches.repository import MatchRepository
 from plow_party_api.features.matches.rules import (
     Accepted,
     MatchStatus,
-    Seat,
+    RosterError,
+    RosterSlot,
     Vote,
     VoteError,
     VoteTimingError,
+    check_roster,
     check_vote,
     confirmation_open,
     credited_score,
     decide,
-    finalization_due,
     placements,
+    verdict_due,
 )
 
 
@@ -99,6 +101,10 @@ def _is_confirmed_player(participant: MatchParticipant) -> bool:
     return participant.account_id is not None and participant.confirmed
 
 
+def _participant(match: Match, account_id: uuid.UUID) -> MatchParticipant | None:
+    return next((p for p in match.participants if p.account_id == account_id), None)
+
+
 class MatchService:
     def __init__(self, session: SessionDep, clock: ClockDep) -> None:
         self._session = session
@@ -106,8 +112,12 @@ class MatchService:
         self._matches = MatchRepository(session)
         self._accounts = AccountService(session)
 
-    async def register(self, host_account_id: uuid.UUID, roster: Sequence[Seat]) -> MatchView:
-        account_ids = {seat.account_id for seat in roster if seat.account_id is not None}
+    async def register(self, host_account_id: uuid.UUID, roster: Sequence[RosterSlot]) -> MatchView:
+        try:
+            ordered = check_roster(roster)
+        except RosterError as error:
+            raise MatchInvalidError(str(error)) from error
+        account_ids = {entry.account_id for entry in ordered if entry.account_id is not None}
         if host_account_id not in account_ids:
             raise MatchInvalidError("The Host must hold a Slot in the Roster")
         if await self._accounts.existing_ids(account_ids) != account_ids:
@@ -118,11 +128,11 @@ class MatchService:
             status=MatchStatus.OPEN,
             participants=[
                 MatchParticipant(
-                    slot=seat.slot,
-                    account_id=seat.account_id,
-                    confirmed=seat.account_id == host_account_id,
+                    slot=entry.slot,
+                    account_id=entry.account_id,
+                    confirmed=entry.account_id == host_account_id,
                 )
-                for seat in roster
+                for entry in ordered
             ],
             votes=[],
         )
@@ -131,22 +141,21 @@ class MatchService:
         return _view(match)
 
     async def confirm(self, match_id: uuid.UUID, account_id: uuid.UUID) -> None:
-        match = await self._locked(match_id)
-        participant = next((p for p in match.participants if p.account_id == account_id), None)
+        match = await self._find(match_id, for_update=True)
+        participant = _participant(match, account_id)
         if participant is None:
             raise MatchForbiddenError("The Account holds no Slot in this Match")
         if participant.confirmed:
             return
         if not confirmation_open(match.registered_at, self._clock()):
-            raise MatchConflictError("Confirmation closed when Countdown ended")
+            raise MatchConflictError("Confirmation closed 15 s after registration")
         participant.confirmed = True
         await self._session.commit()
 
     async def vote(self, match_id: uuid.UUID, account_id: uuid.UUID, vote: Vote) -> MatchView:
-        match = await self._locked(match_id)
-        if not any(
-            _is_confirmed_player(p) and p.account_id == account_id for p in match.participants
-        ):
+        match = await self._find(match_id, for_update=True)
+        participant = _participant(match, account_id)
+        if participant is None or not _is_confirmed_player(participant):
             raise MatchForbiddenError("Only a Confirmed Player of this Match may vote")
         previous = next((v for v in match.votes if v.account_id == account_id), None)
         if previous is not None:
@@ -170,36 +179,34 @@ class MatchService:
                 interrupted_at_seconds=vote.interrupted_at_seconds,
             )
         )
-        self._finalize_if_due(match, now)
+        self._reach_verdict_if_due(match, now)
         await self._session.commit()
         return _view(match)
 
     async def get(self, match_id: uuid.UUID) -> MatchView:
-        match = await self._matches.find(match_id)
-        if match is None:
-            raise MatchNotFoundError("Match not found")
-        if self._due(match, self._clock()):
-            match = await self._locked(match_id)
-            self._finalize_if_due(match, self._clock())
+        match = await self._find(match_id)
+        if self._verdict_due(match, self._clock()):
+            match = await self._find(match_id, for_update=True)
+            self._reach_verdict_if_due(match, self._clock())
             await self._session.commit()
         return _view(match)
 
-    async def _locked(self, match_id: uuid.UUID) -> Match:
-        match = await self._matches.find(match_id, for_update=True)
+    async def _find(self, match_id: uuid.UUID, *, for_update: bool = False) -> Match:
+        match = await self._matches.find(match_id, for_update=for_update)
         if match is None:
             raise MatchNotFoundError("Match not found")
         return match
 
-    def _due(self, match: Match, now: datetime) -> bool:
-        return match.status == MatchStatus.OPEN and finalization_due(
+    def _verdict_due(self, match: Match, now: datetime) -> bool:
+        return match.status == MatchStatus.OPEN and verdict_due(
             confirmed_players=sum(_is_confirmed_player(p) for p in match.participants),
             votes=len(match.votes),
             registered_at=match.registered_at,
             now=now,
         )
 
-    def _finalize_if_due(self, match: Match, now: datetime) -> None:
-        if not self._due(match, now):
+    def _reach_verdict_if_due(self, match: Match, now: datetime) -> None:
+        if not self._verdict_due(match, now):
             return
         verdict = decide([_as_vote(stored) for stored in match.votes])
         match.decided_at = now
