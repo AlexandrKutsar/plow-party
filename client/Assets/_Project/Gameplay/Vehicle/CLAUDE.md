@@ -8,7 +8,7 @@ The snowplow every Participant drives: movement, collisions, and Rams (GDD 3.4, 
 - `VehicleInput` — stick vector (clamped to length 1) and gadget flag; the only control surface, identical for Players and Bots.
 - `VehicleModifiers` — how other features steer a Vehicle without Vehicle knowing them: speed multiplier (Bucket Load, Turbo), immobilised (Freeze, Countdown), one-shot impulse (snowball, Turbo Rocket), Ram strength multiplier.
 - `RamEvent` — rammer index, victim index, strength; `VehicleWorld.Rams` holds this tick's events and is cleared on the next `Tick`. Bucket turns them into a Spill.
-- `VehicleArena` — static obstacles of the map: axis-aligned boxes and circles, passed to `VehicleWorld` at construction.
+- `VehicleArena` — static obstacles of the map: axis-aligned boxes and circles, passed to `VehicleWorld` at construction. `Contains(point)` tells whether a point lies inside any obstacle; Snow masks Cells with it.
 - `VehicleSettings` — tunable numbers, filled from the config asset.
 - `SegmentMath` — allocation-free closest points for point–segment, segment–segment, and segment–box; the geometry behind capsule contacts.
 

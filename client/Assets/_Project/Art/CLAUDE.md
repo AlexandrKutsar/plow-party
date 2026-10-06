@@ -97,3 +97,4 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 | Loot | `Props/Loot/` | `art/blender/models/loot.py` |
 | Loot_Gadget | `Props/Loot_Gadget/` | `art/blender/models/loot_gadget.py` |
 | Snowball | `Props/Snowball/` | `art/blender/models/snowball.py` |
+| SnowGrid | `Environment/SnowGrid/` | none: a Unity quad with `M_SnowGrid` (Simple Lit, base map written at runtime by Snow's View; reason in ADR-0012) |

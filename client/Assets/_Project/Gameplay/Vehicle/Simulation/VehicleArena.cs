@@ -17,6 +17,28 @@ namespace PlowParty.Gameplay.Vehicle.Simulation
 
         public IReadOnlyList<CircleObstacle> Circles => _circles;
 
+        public bool Contains(Vector2 point)
+        {
+            for (var i = 0; i < _boxes.Count; i++)
+            {
+                var offset = point - _boxes[i].Center;
+                if (Mathf.Abs(offset.x) <= _boxes[i].HalfExtents.x && Mathf.Abs(offset.y) <= _boxes[i].HalfExtents.y)
+                {
+                    return true;
+                }
+            }
+
+            for (var i = 0; i < _circles.Count; i++)
+            {
+                if ((point - _circles[i].Center).sqrMagnitude <= _circles[i].Radius * _circles[i].Radius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public VehicleArena AddBox(Vector2 center, Vector2 halfExtents)
         {
             _boxes.Add(new BoxObstacle(center, halfExtents));

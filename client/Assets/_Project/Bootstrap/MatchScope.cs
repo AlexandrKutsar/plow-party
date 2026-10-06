@@ -1,3 +1,5 @@
+using PlowParty.Gameplay.Snow.Network;
+using PlowParty.Gameplay.Snow.View;
 using PlowParty.Gameplay.Vehicle.Network;
 using PlowParty.Infrastructure.Network;
 using VContainer;
@@ -15,6 +17,8 @@ namespace PlowParty.Bootstrap
             builder.RegisterEntryPoint<VehicleInputPoller>();
             builder.RegisterComponentInHierarchy<VehicleSpawner>();
             builder.RegisterComponentInHierarchy<VehicleWorldDriver>();
+            builder.RegisterComponentInHierarchy<SnowGridDriver>();
+            builder.RegisterComponentInHierarchy<SnowGridView>();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
     }

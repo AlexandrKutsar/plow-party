@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e902bf4fc1b7e224b81eaa98c0c6a1a5, type: 3}
+  m_Name: SnowConfig
+  m_EditorClassIdentifier: 
+  _origin: {x: -15, y: -15}
+  _size: {x: 30, y: 30}
+  _cellSize: 0.5
+  _fullDepth: 3
+  _regrowthInterval: 0.5
+  _regrowthChance: 0.05
+  _blizzardTimes:
+  - 45
+  - 90
+  - 135
+  _blizzardDuration: 2.5
+  _blizzardPilesPerWave: 3
+  _blizzardPileSteps: 150
+  _bladeWidth: 1.08
+  _bladeDepth: 0.5
+  _bladeForwardOffset: 0.85
+  _preClearDuration: 0.4

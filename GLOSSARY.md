@@ -75,14 +75,25 @@ _Avoid_: Points (as a type name)
 Losing a share of Load when rammed or hit, which leaves a Snow Pile.
 
 **Snow Pile** (кучка):
-Spilled Snow lying on the ground that any Participant can collect.
-_Avoid_: Heap (that is the Trap Pile)
+Extra Snow lying on the ground above full cover, left by a Spill or a Blizzard, that any Participant can collect; holds no Loot and has no owner.
+_Avoid_: Heap (that is the Trap Pile), Drift (that holds Loot)
+
+**Cell** (клетка):
+One square of the Snow Grid; its Depth is the unit of Snow tracking.
+
+**Depth** (глубина снега):
+How much Snow lies on a Cell, in whole steps from cleared to fully covered, with Snow Piles stacking above full.
+_Avoid_: Height, amount, level (as a type name)
+
+**Blade** (отвал ковша):
+The strip in front of a Vehicle that scrapes Cells clear and feeds their Snow into the Bucket.
+_Avoid_: Footprint, collector
 
 **Regrowth** (восстановление):
 The slow continuous return of Snow onto cleared cells.
 
 **Blizzard** (метель):
-A scheduled wave that rapidly re-covers the whole map with Snow.
+A scheduled wave that rapidly re-covers the whole map with Snow and leaves a few Snow Piles in its wake.
 _Avoid_: Storm, snowfall
 
 ## Collisions
@@ -135,7 +146,7 @@ A one-tick velocity change applied to a Vehicle, such as a snowball knockback or
 
 **Drift** (сугроб):
 A large breakable snow mound that drops Loot when a Vehicle drives into it.
-_Avoid_: Snowbank, crate, chest
+_Avoid_: Snowbank, crate, chest, loot pile
 
 **Loot** (лут):
 An item dropped from a Drift, owned by the Participant who broke it and collectable only by them.

@@ -1,0 +1,21 @@
+{
+    "name": "PlowParty.Gameplay.Snow.Tests",
+    "rootNamespace": "PlowParty.Gameplay.Snow.Tests",
+    "references": [
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Vehicle",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}
