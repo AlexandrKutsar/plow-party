@@ -3,14 +3,14 @@ using PlowParty.Gameplay.Hud.Simulation;
 
 namespace PlowParty.Gameplay.Hud.Tests
 {
-    public sealed class ScoreRiseTests
+    public sealed class ScorePopupBatchTests
     {
-        private ScoreRise _rise;
+        private ScorePopupBatch _rise;
 
         [SetUp]
         public void SetUp()
         {
-            _rise = new ScoreRise(0.25f);
+            _rise = new ScorePopupBatch(0.25f);
         }
 
         [Test]

@@ -18,18 +18,7 @@ namespace PlowParty.Gameplay.Hud.View
 
         public void Show(int slot, bool isLocal, int score)
         {
-            Show(0, slot, isLocal, score);
-        }
-
-        public void Show(int place, int slot, bool isLocal, int score)
-        {
             gameObject.SetActive(true);
-            if (_placeLabel != null && place != _shownPlace)
-            {
-                _shownPlace = place;
-                _placeLabel.text = HudText.Place(place);
-            }
-
             if (slot != _shownSlot || isLocal != _shownLocal)
             {
                 _shownSlot = slot;
@@ -42,6 +31,15 @@ namespace PlowParty.Gameplay.Hud.View
             {
                 _shownScore = score;
                 _scoreLabel.text = score.ToString();
+            }
+        }
+
+        public void ShowPlace(int place)
+        {
+            if (place != _shownPlace)
+            {
+                _shownPlace = place;
+                _placeLabel.text = HudText.Place(place);
             }
         }
 

@@ -1,6 +1,6 @@
 namespace PlowParty.Gameplay.Hud.Simulation
 {
-    public sealed class ScoreRise
+    public sealed class ScorePopupBatch
     {
         private readonly float _popupInterval;
         private bool _hasScore;
@@ -8,7 +8,7 @@ namespace PlowParty.Gameplay.Hud.Simulation
         private int _pending;
         private float _sinceLastPopup;
 
-        public ScoreRise(float popupInterval)
+        public ScorePopupBatch(float popupInterval)
         {
             _popupInterval = popupInterval;
         }

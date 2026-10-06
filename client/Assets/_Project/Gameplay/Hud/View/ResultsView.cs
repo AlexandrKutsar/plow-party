@@ -50,7 +50,7 @@ namespace PlowParty.Gameplay.Hud.View
             }
 
             ShowPlacements();
-            ShowNextMatch(HudText.WholeSecondsLeft(_match.PhaseRemaining));
+            ShowNextMatch(_results.WaitsForHost ? 0 : Mathf.Max(1, HudText.WholeSecondsLeft(_match.PhaseRemaining)));
             _restartButton.gameObject.SetActive(_results.CanRequestRestart);
         }
 
@@ -66,7 +66,8 @@ namespace PlowParty.Gameplay.Hud.View
                 }
 
                 var placement = _results.GetPlacement(i);
-                _rows[i].Show(placement.Place, placement.Slot, placement.Slot == localSlot, placement.Score);
+                _rows[i].Show(placement.Slot, placement.Slot == localSlot, placement.Score);
+                _rows[i].ShowPlace(placement.Place);
             }
         }
 

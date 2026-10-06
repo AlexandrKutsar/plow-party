@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce7a0182f7547554da0161fb9f9a77bf, type: 3}
   m_Name: HudConfig
   m_EditorClassIdentifier: 
-  _blizzardWarningLead: 5
+  _blizzardAnnouncementLead: 5
   _goBannerDuration: 1
   _loadBarHeight: 2.2
   _scorePopupInterval: 0.3

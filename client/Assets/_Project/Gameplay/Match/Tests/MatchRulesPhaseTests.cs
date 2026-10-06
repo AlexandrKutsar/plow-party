@@ -72,6 +72,27 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
+        public void WaitsForRestartRequest_ResultsDuration_TrueOnlyWhenZero()
+        {
+            Assert.That(MatchTestSettings.CreateRules(8f).WaitsForRestartRequest, Is.False);
+            Assert.That(MatchTestSettings.CreateRules(0f).WaitsForRestartRequest, Is.True);
+        }
+
+        [Test]
+        public void StartsNextMatch_ResultsToCountdown_IsTrue()
+        {
+            Assert.That(MatchRules.StartsNextMatch(MatchPhase.Results, MatchPhase.Countdown), Is.True);
+        }
+
+        [Test]
+        public void StartsNextMatch_OtherTransitions_AreFalse()
+        {
+            Assert.That(MatchRules.StartsNextMatch(MatchPhase.Countdown, MatchPhase.Countdown), Is.False);
+            Assert.That(MatchRules.StartsNextMatch(MatchPhase.Countdown, MatchPhase.Playing), Is.False);
+            Assert.That(MatchRules.StartsNextMatch(MatchPhase.Playing, MatchPhase.Results), Is.False);
+        }
+
+        [Test]
         public void IsInputLocked_EachPhase_UnlockedOnlyWhilePlaying()
         {
             Assert.That(MatchRules.IsInputLocked(MatchPhase.Countdown), Is.True);

@@ -40,12 +40,12 @@ namespace PlowParty.Gameplay.Hud.View
         {
             var screenPoint = _camera.WorldToScreenPoint(PlaneProjection.ToWorld(_zone.Centre, 0f));
             var margin = _config.DropOffArrowMargin * _canvas.scaleFactor;
-            var screenSize = new Vector2(Screen.width, Screen.height);
+            var bounds = SafeAreaFitter.ClampedSafeArea();
             var position = Vector2.zero;
             var angle = 0f;
             var visible = _match.IsRunning
                 && _match.Phase != MatchPhase.Results
-                && EdgeArrow.TryPlace(screenPoint, screenSize, margin, out position, out angle);
+                && DropOffArrow.TryPlace(screenPoint, bounds, margin, out position, out angle);
             _arrow.gameObject.SetActive(visible);
             if (visible)
             {

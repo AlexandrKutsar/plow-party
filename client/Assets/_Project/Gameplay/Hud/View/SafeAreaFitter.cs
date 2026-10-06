@@ -7,7 +7,16 @@ namespace PlowParty.Gameplay.Hud.View
     {
         private RectTransform _rect;
         private Rect _applied;
-        private Vector2Int _appliedScreen;
+
+        public static Rect ClampedSafeArea()
+        {
+            var safeArea = Screen.safeArea;
+            var xMin = Mathf.Clamp(safeArea.xMin, 0f, Screen.width);
+            var yMin = Mathf.Clamp(safeArea.yMin, 0f, Screen.height);
+            var xMax = Mathf.Clamp(safeArea.xMax, xMin, Screen.width);
+            var yMax = Mathf.Clamp(safeArea.yMax, yMin, Screen.height);
+            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
+        }
 
         private void Awake()
         {
@@ -16,24 +25,18 @@ namespace PlowParty.Gameplay.Hud.View
 
         private void Update()
         {
-            var safeArea = Screen.safeArea;
-            var screen = new Vector2Int(Screen.width, Screen.height);
-            if (safeArea == _applied && screen == _appliedScreen)
+            var safeArea = ClampedSafeArea();
+            if (safeArea == _applied)
             {
                 return;
             }
 
             _applied = safeArea;
-            _appliedScreen = screen;
-            _rect.anchorMin = Normalised(new Vector2(safeArea.xMin, safeArea.yMin), screen);
-            _rect.anchorMax = Normalised(new Vector2(safeArea.xMax, safeArea.yMax), screen);
+            var screen = new Vector2(Screen.width, Screen.height);
+            _rect.anchorMin = safeArea.min / screen;
+            _rect.anchorMax = safeArea.max / screen;
             _rect.offsetMin = Vector2.zero;
             _rect.offsetMax = Vector2.zero;
-        }
-
-        private static Vector2 Normalised(Vector2 point, Vector2Int screen)
-        {
-            return new Vector2(Mathf.Clamp01(point.x / screen.x), Mathf.Clamp01(point.y / screen.y));
         }
     }
 }

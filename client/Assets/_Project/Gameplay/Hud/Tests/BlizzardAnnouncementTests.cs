@@ -3,14 +3,14 @@ using PlowParty.Gameplay.Hud.Simulation;
 
 namespace PlowParty.Gameplay.Hud.Tests
 {
-    public sealed class BlizzardWarningTests
+    public sealed class BlizzardAnnouncementTests
     {
-        private BlizzardWarning _warning;
+        private BlizzardAnnouncement _warning;
 
         [SetUp]
         public void SetUp()
         {
-            _warning = new BlizzardWarning(new[] { 45f, 90f, 135f }, 5f);
+            _warning = new BlizzardAnnouncement(new[] { 45f, 90f, 135f }, 5f);
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace PlowParty.Gameplay.Hud.Tests
         [Test]
         public void TryGetSecondsLeft_NoWaves_IsFalse()
         {
-            Assert.That(new BlizzardWarning(new float[0], 5f).TryGetSecondsLeft(10f, out _), Is.False);
+            Assert.That(new BlizzardAnnouncement(new float[0], 5f).TryGetSecondsLeft(10f, out _), Is.False);
         }
     }
 }

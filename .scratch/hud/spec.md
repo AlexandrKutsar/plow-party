@@ -8,7 +8,7 @@ A phone Player has no way to drive (the only input is a keyboard or gamepad) and
 
 ## Solution
 
-A Hud feature in Gameplay: one uGUI canvas prefab with a safe-area root and small view scripts, each reading one read-only seam: `IMatchClock` and `IMatchResults` (Match), `IScoreReader` and `DropOffZone` (DropOff), `BucketRegistry` (Bucket), `VehicleRegistry` (Vehicle), and `SnowConfig` (Blizzard schedule). The pure presentation rules (time formatting, Blizzard warning window, Score rise batching, off-screen arrow placement) live in `Simulation/` and are covered by EditMode tests. The left virtual stick is Input System's `OnScreenStick` bound to `<Gamepad>/leftStick`, which Vehicle's existing `Player/Move` action already reads, so Vehicle's input source is unchanged.
+A Hud feature in Gameplay: one uGUI canvas prefab with a safe-area root and small view scripts, each reading one read-only seam: `IMatchClock` and `IMatchResults` (Match), `IScoreReader` and `DropOffZone` (DropOff), `BucketRegistry` (Bucket), `VehicleRegistry` (Vehicle), and `SnowConfig` (Blizzard schedule). The pure presentation rules (time formatting, Blizzard Announcement window, Score Popup batching, off-screen arrow placement) live in `Simulation/` and are covered by EditMode tests. The left virtual stick is Input System's `OnScreenStick` bound to `<Gamepad>/leftStick`, which Vehicle's existing `Player/Move` action already reads, so Vehicle's input source is unchanged.
 
 ## User Stories
 
@@ -31,17 +31,17 @@ A Hud feature in Gameplay: one uGUI canvas prefab with a safe-area root and smal
 - **Canvas:** Screen Space Overlay, `CanvasScaler` scale with screen size, 1920×1080, match height. Children: `EventSystem` (Input System UI module), `WorldAnchored` (Load bar, popups, arrow; full screen, positioned in screen pixels), `SafeArea` (`SafeAreaFitter` clamps `Screen.safeArea` to the screen; timer, Score list, Blizzard banner, stick), `Results` (full-screen dim panel that blocks the stick).
 - **Local Vehicle:** the registered `NetworkVehicle` with input authority. Names are placeholders: "You" and "Player N" (Slot + 1) until Nicknames reach the Match.
 - **Load bar:** screen point of the Vehicle position plus `LoadBarHeight` metres up; fill = Load / Bucket capacity; full colour when `IsFull`. Multiplier badge (`×1`, `×1.5`, `×2`) while `IsDelivering`.
-- **Score popups:** client-side deltas of the local Score (`ScoreRise`): the first observed Score and any drop (a new Match) reset the baseline; rises are batched so at most one popup per `ScorePopupInterval` (0.3 s), because DropOff credits Score every tick during a Delivery. Pool of six labels rising `ScorePopupRise` units over `ScorePopupDuration`. Only the local Player's Score pops.
+- **Score popups:** client-side deltas of the local Score (`ScorePopupBatch`): the first observed Score and any drop (a new Match) reset the baseline; rises are batched so at most one popup per `ScorePopupInterval` (0.3 s), because DropOff credits Score every tick during a Delivery. Pool of six labels rising `ScorePopupRise` units over `ScorePopupDuration`. Only the local Player's Score pops.
 - **Timer:** remaining Playing time rounded up (`m:ss`); Countdown shows the ceiling of the phase remaining (3, 2, 1), then "GO!" for `GoBannerDuration` of Playing. Labels rewrite only when the shown second changes.
-- **Blizzard warning:** `BlizzardWarning` over `SnowConfig.ToSettings().BlizzardTimes` (already public, no Snow change) against `IMatchClock.PlayingElapsed`; shown while 0 < wave − elapsed ≤ `BlizzardWarningLead` (5 s).
-- **Drop-Off arrow:** `EdgeArrow.TryPlace` hides the arrow when the zone centre projects inside the screen minus a margin; otherwise pins it to the margin rectangle along the ray from the screen centre (flipped when the point is behind the camera) and rotates the pointer.
+- **Blizzard Announcement:** `BlizzardAnnouncement` over `SnowConfig.ToSettings().BlizzardTimes` (already public, no Snow change) against `IMatchClock.PlayingElapsed`; shown while 0 < wave − elapsed ≤ `BlizzardAnnouncementLead` (5 s).
+- **Drop-Off arrow:** `DropOffArrow.TryPlace` hides the arrow when the zone centre projects inside the screen minus a margin; otherwise pins it to the safe area shrunk by the margin, along the ray from its centre (flipped when the point is behind the camera) and rotates the pointer.
 - **Results:** rows from `IMatchResults` (place ordinals, local row highlighted), "Next match in N" or "Waiting for the host" when Results has no time limit, "Play again" button visible only when `CanRequestRestart` (Host in Results).
 - **DI:** the views are scene components registered in `MatchScope` with `RegisterComponentInHierarchy`, plus the scene `Camera` (needed for world-to-screen). `HudConfig` asset in `_Project/Configs/`, registered in `RootLifetimeScope`.
 
 ## Testing Decisions
 
-- EditMode tests on `HudText`, `BlizzardWarning`, `ScoreRise`, `EdgeArrow`. Assembly `PlowParty.Gameplay.Hud.Tests`.
-- Views checked in Play Mode on the Host; screenshots `.scratch/hud/playing.png`, `.scratch/hud/results.png`.
+- EditMode tests on `HudText`, `BlizzardAnnouncement`, `ScorePopupBatch`, `DropOffArrow`. Assembly `PlowParty.Gameplay.Hud.Tests`.
+- Views checked in Play Mode on the Host; screenshots `.scratch/hud/playing.png` (timer, Score list, Load Bar, Score Popups, stick), `.scratch/hud/blizzard.png` (Blizzard Announcement, two Participants), `.scratch/hud/delivery.png`, `.scratch/hud/results.png`.
 
 ## Out of Scope
 

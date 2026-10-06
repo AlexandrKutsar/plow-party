@@ -71,6 +71,9 @@ The last phase of a Match: the Placement table is frozen and shown until the nex
 How many Matches the current Session has started, counting from 1; a restart after Results starts the next one.
 _Avoid_: Round
 
+**Match Clock** (часы матча):
+The Match's read-only time: its phase, remaining phase time, and elapsed Playing time, the same on every device.
+
 **Placement** (место):
 A Participant's place in the Match Result by Score, ties sharing a place and skipping the next (1, 2, 2, 4).
 _Avoid_: Rank (as a type name), position
@@ -196,6 +199,16 @@ _Avoid_: Joystick (as a type name)
 
 **Blizzard Announcement** (анонс метели):
 The HUD banner counting down the last 5 seconds before a Blizzard wave.
+
+**Load Bar** (шкала груза):
+The HUD bar over the local Player's Vehicle showing its Load against capacity.
+_Avoid_: Gauge, fill bar
+
+**Score Popup** (всплывающие очки):
+The floating "+N" the HUD shows over the local Vehicle as its Score rises during a Delivery.
+
+**Drop-Off Arrow** (стрелка к зоне сдачи):
+The HUD arrow pinned to the screen edge, pointing at the Drop-Off Zone while it is off screen.
 
 ## Loot and Gadgets
 

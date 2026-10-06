@@ -11,11 +11,16 @@ namespace PlowParty.Gameplay.Match.Simulation
             _settings = settings;
         }
 
-        public float PlayingDuration => _settings.PlayingDuration;
+        public bool WaitsForRestartRequest => _settings.ResultsDuration <= 0f;
 
         public static bool IsInputLocked(MatchPhase phase)
         {
             return phase != MatchPhase.Playing;
+        }
+
+        public static bool StartsNextMatch(MatchPhase from, MatchPhase to)
+        {
+            return from == MatchPhase.Results && to == MatchPhase.Countdown;
         }
 
         public static float PhaseElapsed(int tick, int phaseStartTick, float deltaTime)
@@ -74,7 +79,7 @@ namespace PlowParty.Gameplay.Match.Simulation
 
         private bool ResultsTimedOut(float phaseElapsed)
         {
-            return _settings.ResultsDuration > 0f && phaseElapsed >= _settings.ResultsDuration;
+            return !WaitsForRestartRequest && phaseElapsed >= _settings.ResultsDuration;
         }
     }
 }

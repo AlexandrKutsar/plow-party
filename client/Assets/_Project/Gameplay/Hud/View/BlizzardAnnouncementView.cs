@@ -15,14 +15,14 @@ namespace PlowParty.Gameplay.Hud.View
         [SerializeField] private Text _label;
 
         private IMatchClock _match;
-        private BlizzardWarning _warning;
+        private BlizzardAnnouncement _schedule;
         private int _shownSeconds = -1;
 
         [Inject]
         public void Construct(IMatchClock match, SnowConfig snowConfig, HudConfig config)
         {
             _match = match;
-            _warning = new BlizzardWarning(snowConfig.ToSettings().BlizzardTimes, config.BlizzardWarningLead);
+            _schedule = new BlizzardAnnouncement(snowConfig.ToSettings().BlizzardTimes, config.BlizzardAnnouncementLead);
         }
 
         private void Update()
@@ -30,7 +30,7 @@ namespace PlowParty.Gameplay.Hud.View
             var secondsLeft = 0f;
             var visible = _match.IsRunning
                 && _match.Phase == MatchPhase.Playing
-                && _warning.TryGetSecondsLeft(_match.PlayingElapsed, out secondsLeft);
+                && _schedule.TryGetSecondsLeft(_match.PlayingElapsed, out secondsLeft);
             _banner.SetActive(visible);
             if (visible)
             {

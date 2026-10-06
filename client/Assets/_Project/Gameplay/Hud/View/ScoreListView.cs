@@ -66,7 +66,7 @@ namespace PlowParty.Gameplay.Hud.View
                 var vehicle = vehicles[i];
                 var score = _scores.ScoreOf(vehicle);
                 var index = i;
-                while (index > 0 && _orderScores[index - 1] < score)
+                while (index > 0 && RanksAbove(score, vehicle.Slot, _orderScores[index - 1], _order[index - 1].Slot))
                 {
                     _order[index] = _order[index - 1];
                     _orderScores[index] = _orderScores[index - 1];
@@ -78,6 +78,11 @@ namespace PlowParty.Gameplay.Hud.View
             }
 
             return count;
+        }
+
+        private static bool RanksAbove(int score, int slot, int otherScore, int otherSlot)
+        {
+            return score > otherScore || (score == otherScore && slot < otherSlot);
         }
     }
 }

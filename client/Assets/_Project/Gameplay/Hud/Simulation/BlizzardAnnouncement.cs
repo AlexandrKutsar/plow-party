@@ -1,11 +1,11 @@
 namespace PlowParty.Gameplay.Hud.Simulation
 {
-    public sealed class BlizzardWarning
+    public sealed class BlizzardAnnouncement
     {
         private readonly float[] _blizzardTimes;
         private readonly float _lead;
 
-        public BlizzardWarning(float[] blizzardTimes, float lead)
+        public BlizzardAnnouncement(float[] blizzardTimes, float lead)
         {
             _blizzardTimes = blizzardTimes;
             _lead = lead;

@@ -1,6 +1,8 @@
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.Config;
 using PlowParty.Gameplay.Hud.Simulation;
+using PlowParty.Gameplay.Match.Network;
+using PlowParty.Gameplay.Match.Simulation;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,9 +16,10 @@ namespace PlowParty.Gameplay.Hud.View
 
         private VehicleRegistry _vehicles;
         private IScoreReader _scores;
+        private IMatchClock _match;
         private Camera _camera;
         private HudConfig _config;
-        private ScoreRise _rise;
+        private ScorePopupBatch _batch;
         private Vector2[] _origins;
         private float[] _ages;
         private Color[] _colors;
@@ -24,13 +27,14 @@ namespace PlowParty.Gameplay.Hud.View
         private int _next;
 
         [Inject]
-        public void Construct(VehicleRegistry vehicles, IScoreReader scores, Camera worldCamera, HudConfig config)
+        public void Construct(VehicleRegistry vehicles, IScoreReader scores, IMatchClock match, Camera worldCamera, HudConfig config)
         {
+            _match = match;
             _vehicles = vehicles;
             _scores = scores;
             _camera = worldCamera;
             _config = config;
-            _rise = new ScoreRise(config.ScorePopupInterval);
+            _batch = new ScorePopupBatch(config.ScorePopupInterval);
         }
 
         private void Awake()
@@ -54,20 +58,21 @@ namespace PlowParty.Gameplay.Hud.View
 
         private void ObserveLocalScore(float deltaTime)
         {
-            if (!LocalVehicle.TryFind(_vehicles, out var vehicle))
+            var playing = _match.IsRunning && _match.Phase == MatchPhase.Playing;
+            if (!playing || !LocalVehicle.TryFind(_vehicles, out var vehicle))
             {
                 _tracked = null;
-                _rise.Forget();
+                _batch.Forget();
                 return;
             }
 
             if (vehicle != _tracked)
             {
                 _tracked = vehicle;
-                _rise.Forget();
+                _batch.Forget();
             }
 
-            var gained = _rise.Observe(_scores.ScoreOf(vehicle), deltaTime);
+            var gained = _batch.Observe(_scores.ScoreOf(vehicle), deltaTime);
             if (gained > 0 && LocalVehicle.TryProjectAbove(_camera, vehicle, _config.LoadBarHeight, out var screenPoint))
             {
                 Launch(gained, screenPoint);

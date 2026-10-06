@@ -3,6 +3,8 @@ using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.Config;
 using PlowParty.Gameplay.Hud.Simulation;
+using PlowParty.Gameplay.Match.Network;
+using PlowParty.Gameplay.Match.Simulation;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +24,7 @@ namespace PlowParty.Gameplay.Hud.View
         private VehicleRegistry _vehicles;
         private BucketRegistry _buckets;
         private IScoreReader _scores;
+        private IMatchClock _match;
         private Camera _camera;
         private HudConfig _config;
         private float _capacity;
@@ -32,6 +35,7 @@ namespace PlowParty.Gameplay.Hud.View
             VehicleRegistry vehicles,
             BucketRegistry buckets,
             IScoreReader scores,
+            IMatchClock match,
             Camera worldCamera,
             HudConfig config,
             BucketConfig bucketConfig)
@@ -39,6 +43,7 @@ namespace PlowParty.Gameplay.Hud.View
             _vehicles = vehicles;
             _buckets = buckets;
             _scores = scores;
+            _match = match;
             _camera = worldCamera;
             _config = config;
             _capacity = bucketConfig.ToSettings().Capacity;
@@ -46,7 +51,9 @@ namespace PlowParty.Gameplay.Hud.View
 
         private void LateUpdate()
         {
-            if (!LocalVehicle.TryFind(_vehicles, out var vehicle)
+            if (!_match.IsRunning
+                || _match.Phase == MatchPhase.Results
+                || !LocalVehicle.TryFind(_vehicles, out var vehicle)
                 || !_buckets.TryGet(vehicle, out var bucket)
                 || !LocalVehicle.TryProjectAbove(_camera, vehicle, _config.LoadBarHeight, out var screenPoint))
             {
