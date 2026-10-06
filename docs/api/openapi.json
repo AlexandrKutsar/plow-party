@@ -144,6 +144,236 @@
           }
         ]
       }
+    },
+    "/matches": {
+      "post": {
+        "tags": [
+          "matches"
+        ],
+        "summary": "Register a Match with its Roster",
+        "description": "Called by the Host when Countdown starts. The Host becomes a Confirmed Player; every other Player must confirm within 15 s. Answers 422 if the Roster breaks a rule, the Host holds no Slot, or an Account does not exist.",
+        "operationId": "register_match",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/matches/{match_id}/confirm": {
+      "post": {
+        "tags": [
+          "matches"
+        ],
+        "summary": "Confirm the calling Player's seat in a Match",
+        "description": "Must arrive within 15 s of registration; a seat left unconfirmed counts as a Bot. Confirming again succeeds.",
+        "operationId": "confirm_match",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "404": {
+            "description": "No Match with this id"
+          },
+          "403": {
+            "description": "The Account holds no Slot in this Match"
+          },
+          "409": {
+            "description": "Confirmation closed when Countdown ended"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/{match_id}/votes": {
+      "post": {
+        "tags": [
+          "matches"
+        ],
+        "summary": "Submit the calling Player's Match Result as a Vote",
+        "description": "One Vote per Confirmed Player; resubmitting the same table succeeds, a different one answers 409. The Verdict is reached when every Confirmed Player has voted, or on the first read after the submission window closes (303 s after registration).",
+        "operationId": "submit_vote",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "404": {
+            "description": "No Match with this id"
+          },
+          "403": {
+            "description": "The Account is not a Confirmed Player of this Match"
+          },
+          "409": {
+            "description": "Too early for the Match to have been played, window closed, Verdict already reached, or the Vote differs from the one already submitted"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/{match_id}": {
+      "get": {
+        "tags": [
+          "matches"
+        ],
+        "summary": "A Match with its Verdict",
+        "description": "Reaches the Verdict first if the submission window has closed.",
+        "operationId": "get_match",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "404": {
+            "description": "No Match with this id"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -238,6 +468,193 @@
         ],
         "title": "LoginResponse"
       },
+      "MatchResponse": {
+        "properties": {
+          "match_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Match Id",
+            "description": "Id the Host hands to every client"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MatchStatus",
+            "description": "open until the Verdict, then accepted or rejected"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason",
+            "description": "Why the Match was rejected"
+          },
+          "registered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Registered At",
+            "description": "Server time of registration"
+          },
+          "interrupted": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interrupted",
+            "description": "Whether the accepted Match was interrupted"
+          },
+          "played_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Played Seconds",
+            "description": "Seconds of play the Verdict counted"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight",
+            "description": "1 for a full Match, 0.5 for an Interrupted Match"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantResponse"
+            },
+            "type": "array",
+            "title": "Participants",
+            "description": "Every Slot, ordered by Slot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "match_id",
+          "status",
+          "rejection_reason",
+          "registered_at",
+          "interrupted",
+          "played_seconds",
+          "weight",
+          "participants"
+        ],
+        "title": "MatchResponse"
+      },
+      "MatchStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "accepted",
+          "rejected"
+        ],
+        "title": "MatchStatus"
+      },
+      "ParticipantResponse": {
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "title": "Slot",
+            "description": "Slot number, 0-5"
+          },
+          "account_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Id",
+            "description": "Account holding the Slot; null for a Bot"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "description": "Whether the Player confirmed in time; false for a Bot"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "Accepted Score; null until the Match is accepted"
+          },
+          "placement": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement",
+            "description": "Place by Score, ties share the higher place; null until accepted"
+          },
+          "credited_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credited Score",
+            "description": "Score times Weight, rounded down, credited to the Tournament; null for Bots, unconfirmed seats, and Matches not accepted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot",
+          "account_id",
+          "confirmed",
+          "score",
+          "placement",
+          "credited_score"
+        ],
+        "title": "ParticipantResponse"
+      },
+      "RegisterMatchRequest": {
+        "properties": {
+          "roster": {
+            "items": {
+              "$ref": "#/components/schemas/SeatRequest"
+            },
+            "type": "array",
+            "title": "Roster",
+            "description": "Every Slot of the Match: 4-6 seats, distinct Slots 0-5, each Account at most once, and the calling Host among them"
+          }
+        },
+        "type": "object",
+        "required": [
+          "roster"
+        ],
+        "title": "RegisterMatchRequest"
+      },
       "RenameRequest": {
         "properties": {
           "nickname": {
@@ -251,6 +668,57 @@
           "nickname"
         ],
         "title": "RenameRequest"
+      },
+      "SeatRequest": {
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "title": "Slot",
+            "description": "Slot number, 0-5"
+          },
+          "account_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Id",
+            "description": "Account of the Player holding the Slot, or null for a Bot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot",
+          "account_id"
+        ],
+        "title": "SeatRequest"
+      },
+      "SlotScore": {
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Slot",
+            "description": "Slot number, 0-5"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Score of the Participant in that Slot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot",
+          "score"
+        ],
+        "title": "SlotScore"
       },
       "ValidationError": {
         "properties": {
@@ -291,6 +759,37 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VoteRequest": {
+        "properties": {
+          "scores": {
+            "items": {
+              "$ref": "#/components/schemas/SlotScore"
+            },
+            "type": "array",
+            "title": "Scores",
+            "description": "Score of every Slot in the Roster, exactly once each"
+          },
+          "interrupted_at_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 179.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interrupted At Seconds",
+            "description": "Second of play at which the Host left, or null for a full 180-second Match"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scores"
+        ],
+        "title": "VoteRequest"
       }
     },
     "securitySchemes": {

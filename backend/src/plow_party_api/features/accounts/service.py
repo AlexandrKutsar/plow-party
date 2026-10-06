@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 import uuid
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Annotated
 
@@ -54,6 +55,9 @@ class AccountService:
         account.nickname = nickname
         await self._session.commit()
         return _current(account)
+
+    async def existing_ids(self, account_ids: Collection[uuid.UUID]) -> set[uuid.UUID]:
+        return await self._accounts.existing_ids(account_ids)
 
 
 AccountServiceDep = Annotated[AccountService, Depends()]

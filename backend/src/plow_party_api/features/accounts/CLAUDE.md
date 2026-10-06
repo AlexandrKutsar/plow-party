@@ -7,6 +7,7 @@ Guest Accounts (GDD 9.1): login by Device Id, the Account's Nickname, and the Au
 - `POST /accounts/login` — `{device_id}` → `{account_id, nickname, token}`. Creates the Account on first sight of a Device Id (upsert, race-safe) and rotates the Auth Token on every call.
 - `GET /accounts/me`, `PATCH /accounts/me` — read the calling Account; change its Nickname.
 - `service.CurrentAccountDep` — the only way other features learn who is calling: resolves `Authorization: Bearer` to a `CurrentAccount`, or answers 401.
+- `AccountService.existing_ids` — which of a set of Account ids exist; matches uses it to validate a Roster.
 
 ## Rules
 
