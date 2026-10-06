@@ -206,6 +206,29 @@ _Avoid_: League (reserved for the post-MVP weekly league)
 **Medal** (медаль):
 A cosmetic portrait frame awarded at Tournament reset.
 
+**Tournament Day** (турнирные сутки):
+One UTC calendar day of the Tournament; a Match counts for the day its result settles on (registration plus the submission window), so a day is final at midnight.
+_Avoid_: Season, round
+
+**Daily Best** (лучший результат дня):
+An Account's highest Credited Score among the Matches of one Tournament Day; what the Leaderboard ranks.
+_Avoid_: High score, record
+
+**Leaderboard** (таблица турнира):
+The Standings of one Tournament Day, shown as the top and "around me".
+_Avoid_: Scoreboard, Match Result
+
+**Standing** (строка таблицы):
+One Account's Rank, Nickname and Daily Best on the Leaderboard.
+_Avoid_: Entry, row (as a type name)
+
+**Rank** (место):
+An Account's unique position on the Leaderboard; equal Daily Bests go to whoever reached the score first.
+_Avoid_: Placement (that is a Match's)
+
+**Medal Day** (день медалей):
+Yesterday's Tournament Day, final since midnight; its top three Ranks hold gold, silver and bronze Medals until the next midnight.
+
 **Account** (аккаунт):
 A person's identity on the backend, created on first guest login and owning their Nickname and Tournament results.
 _Avoid_: User, profile, Player (that is a Participant in a Match)

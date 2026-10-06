@@ -24,4 +24,4 @@ Every write locks the `matches` row (`SELECT … FOR UPDATE`), so simultaneous l
 
 ## For the Tournament
 
-Accepted Matches carry `credited_score` per Account on `match_participants`. The Tournament reads them through a method this service will expose, and must reach the Verdict of overdue open Matches first, as `GET` does.
+`MatchService.best_credited_scores(registered_from, registered_before)` returns one `AccountBest` per Account: its highest `credited_score` among Matches registered in the range and the registration time of the earliest Match reaching it. It first reaches the Verdict of every overdue open Match in the range, locked like every other write. `RESULTS_SETTLE` (303 s, registration to closed submission window) lives in `rules.py`; the Tournament imports it through `service.py`, the only module it may import, to place each Match on the day its result settles. `matches.registered_at` is indexed for these range reads. ADR-0014.

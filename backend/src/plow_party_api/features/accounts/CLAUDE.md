@@ -8,6 +8,7 @@ Guest Accounts (GDD 9.1): login by Device Id, the Account's Nickname, and the Au
 - `GET /accounts/me`, `PATCH /accounts/me` — read the calling Account; change its Nickname.
 - `service.CurrentAccountDep` — the only way other features learn who is calling: resolves `Authorization: Bearer` to a `CurrentAccount`, or answers 401.
 - `AccountService.existing_ids` — which of a set of Account ids exist; matches uses it to validate a Roster.
+- `AccountService.nicknames` — current Nickname per Account id; the Tournament uses it for Standings.
 
 ## Rules
 

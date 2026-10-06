@@ -59,6 +59,9 @@ class AccountService:
     async def existing_ids(self, account_ids: Collection[uuid.UUID]) -> set[uuid.UUID]:
         return await self._accounts.existing_ids(account_ids)
 
+    async def nicknames(self, account_ids: Collection[uuid.UUID]) -> dict[uuid.UUID, str]:
+        return await self._accounts.nicknames(account_ids)
+
 
 AccountServiceDep = Annotated[AccountService, Depends()]
 
