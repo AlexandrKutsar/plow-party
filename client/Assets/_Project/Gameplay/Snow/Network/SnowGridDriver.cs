@@ -18,6 +18,7 @@ namespace PlowParty.Gameplay.Snow.Network
 
         private VehicleRegistry _registry;
         private IScrapeLimit _limit;
+        private ISnowFreeArea _snowFree;
         private SnowConfig _config;
         private SnowSettings _settings;
         private SnowGrid _grid;
@@ -32,18 +33,19 @@ namespace PlowParty.Gameplay.Snow.Network
         public bool IsReady => _grid != null;
 
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit)
+        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit, ISnowFreeArea snowFree)
         {
             _registry = registry;
             _config = config;
             _limit = limit;
+            _snowFree = snowFree;
         }
 
         public override void Spawned()
         {
             _settings = _config.ToSettings();
             var seed = HasStateAuthority ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : 0;
-            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), seed);
+            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), _snowFree, seed);
             if (_grid.WordCount > MaxWords)
             {
                 throw new InvalidOperationException($"Snow Grid needs {_grid.WordCount} words, {nameof(MaxWords)} is {MaxWords}");

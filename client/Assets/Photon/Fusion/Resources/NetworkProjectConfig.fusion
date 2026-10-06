@@ -99,7 +99,8 @@
         "Assembly-CSharp-firstpass",
         "PlowParty.Gameplay.Vehicle",
         "PlowParty.Gameplay.Snow",
-        "PlowParty.Gameplay.Bucket"
+        "PlowParty.Gameplay.Bucket",
+        "PlowParty.Gameplay.DropOff"
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,

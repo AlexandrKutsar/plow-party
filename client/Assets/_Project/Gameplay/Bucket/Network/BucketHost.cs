@@ -19,6 +19,8 @@ namespace PlowParty.Gameplay.Bucket.Network
             _snow = snow;
         }
 
+        public event Action<NetworkVehicle> Spilled;
+
         public void Start()
         {
             _snow.Scraped += OnScraped;
@@ -42,6 +44,7 @@ namespace PlowParty.Gameplay.Bucket.Network
             if (steps > 0)
             {
                 _snow.Spill(point, steps);
+                Spilled?.Invoke(vehicle);
             }
         }
 
