@@ -23,7 +23,7 @@ class Match(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     host_account_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("accounts.id"))
-    registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     status: Mapped[str] = mapped_column(Text)
     rejection_reason: Mapped[str | None] = mapped_column(Text)
     interrupted: Mapped[bool | None] = mapped_column(Boolean)

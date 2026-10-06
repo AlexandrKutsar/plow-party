@@ -1,9 +1,12 @@
 import uuid
+from collections.abc import Sequence
+from datetime import datetime
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from plow_party_api.features.matches.models import Match
+from plow_party_api.features.matches.models import Match, MatchParticipant
 
 
 class MatchRepository:
@@ -18,3 +21,45 @@ class MatchRepository:
         if for_update:
             statement = statement.with_for_update().execution_options(populate_existing=True)
         return await self._session.scalar(statement)
+
+    async def lock_registered_between(
+        self, registered_from: datetime, registered_before: datetime, status: str
+    ) -> Sequence[Match]:
+        statement = (
+            select(Match)
+            .where(
+                Match.status == status,
+                Match.registered_at >= registered_from,
+                Match.registered_at < registered_before,
+            )
+            .order_by(Match.id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return (await self._session.scalars(statement)).all()
+
+    async def best_credited_scores(
+        self, registered_from: datetime, registered_before: datetime
+    ) -> list[tuple[uuid.UUID, int, datetime]]:
+        statement = (
+            select(
+                MatchParticipant.account_id, MatchParticipant.credited_score, Match.registered_at
+            )
+            .join(Match, Match.id == MatchParticipant.match_id)
+            .where(
+                Match.registered_at >= registered_from,
+                Match.registered_at < registered_before,
+                MatchParticipant.credited_score.is_not(None),
+            )
+            .ext(distinct_on(MatchParticipant.account_id))
+            .order_by(
+                MatchParticipant.account_id,
+                MatchParticipant.credited_score.desc(),
+                Match.registered_at,
+            )
+        )
+        return [
+            (account_id, score, registered_at)
+            for account_id, score, registered_at in await self._session.execute(statement)
+            if account_id is not None and score is not None
+        ]

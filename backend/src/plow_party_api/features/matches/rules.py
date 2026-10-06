@@ -20,6 +20,7 @@ MIN_INTERRUPTED_SECONDS = 30
 FULL_WEIGHT = 1.0
 INTERRUPTED_WEIGHT = 0.5
 MAX_SCORE_PER_SECOND = 30
+RESULTS_SETTLE = COUNTDOWN + timedelta(seconds=MATCH_SECONDS) + SUBMISSION_GRACE
 
 
 class MatchStatus(StrEnum):
@@ -106,7 +107,7 @@ def confirmation_open(registered_at: datetime, now: datetime) -> bool:
 
 
 def submission_deadline(registered_at: datetime) -> datetime:
-    return registered_at + COUNTDOWN + timedelta(seconds=MATCH_SECONDS) + SUBMISSION_GRACE
+    return registered_at + RESULTS_SETTLE
 
 
 def check_vote(

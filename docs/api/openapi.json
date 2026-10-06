@@ -374,6 +374,194 @@
           }
         }
       }
+    },
+    "/tournament/leaderboard": {
+      "get": {
+        "tags": [
+          "tournament"
+        ],
+        "summary": "Top of a day's Leaderboard",
+        "description": "Ranks every Account's best Credited Score of the Tournament Day; ties go to whoever reached the score first. A Match counts for the UTC day it was registered on. Reaches the Verdict of overdue Matches first.",
+        "operationId": "get_leaderboard",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tournament Day (UTC date) to read; today when omitted, never in the future",
+              "title": "Day"
+            },
+            "description": "Tournament Day (UTC date) to read; today when omitted, never in the future"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "How many top Standings to return",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "How many top Standings to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "422": {
+            "description": "Future day or parameter out of range"
+          }
+        }
+      }
+    },
+    "/tournament/leaderboard/me": {
+      "get": {
+        "tags": [
+          "tournament"
+        ],
+        "summary": "The calling Account's Standing with its neighbours",
+        "description": "Standings within `radius` Ranks above and below the caller; empty with `me` null when the caller has no Daily Best that day.",
+        "operationId": "get_leaderboard_around_me",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tournament Day (UTC date) to read; today when omitted, never in the future",
+              "title": "Day"
+            },
+            "description": "Tournament Day (UTC date) to read; today when omitted, never in the future"
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 25,
+              "minimum": 0,
+              "description": "Ranks to show above and below the caller",
+              "default": 3,
+              "title": "Radius"
+            },
+            "description": "Ranks to show above and below the caller"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "422": {
+            "description": "Future day or parameter out of range"
+          }
+        }
+      }
+    },
+    "/tournament/medals": {
+      "get": {
+        "tags": [
+          "tournament"
+        ],
+        "summary": "Current Medals of a set of Accounts",
+        "description": "Medals come from the Medal Day, the latest Tournament Day whose results are final: gold, silver and bronze for Rank 1-3 with a Daily Best above 0. Pass the Roster's Accounts to frame HUD portraits; unknown Accounts get no Medal.",
+        "operationId": "get_medals",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 1,
+              "maxItems": 20,
+              "description": "Accounts, repeated",
+              "title": "Account Id"
+            },
+            "description": "Accounts, repeated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedalsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or superseded Auth Token"
+          },
+          "422": {
+            "description": "No Account or more than 20"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -425,6 +613,61 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "LeaderboardResponse": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day",
+            "description": "Tournament Day (UTC date) the Leaderboard ranks"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At",
+            "description": "Midnight UTC that ends the Tournament Day"
+          },
+          "final": {
+            "type": "boolean",
+            "title": "Final",
+            "description": "Whether the day's results can no longer change (303 s after it ends)"
+          },
+          "players": {
+            "type": "integer",
+            "title": "Players",
+            "description": "Number of Accounts ranked that day"
+          },
+          "me": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StandingResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The calling Account's Standing, or null if it has no Daily Best that day"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/StandingResponse"
+            },
+            "type": "array",
+            "title": "Entries",
+            "description": "Standings ordered by Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "ends_at",
+          "final",
+          "players",
+          "me",
+          "entries"
+        ],
+        "title": "LeaderboardResponse"
       },
       "LoginRequest": {
         "properties": {
@@ -564,6 +807,66 @@
           "rejected"
         ],
         "title": "MatchStatus"
+      },
+      "Medal": {
+        "type": "string",
+        "enum": [
+          "gold",
+          "silver",
+          "bronze"
+        ],
+        "title": "Medal"
+      },
+      "MedalResponse": {
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Account Id",
+            "description": "Requested Account"
+          },
+          "medal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Medal"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Medal from the Medal Day for Rank 1, 2 or 3, or null for none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_id",
+          "medal"
+        ],
+        "title": "MedalResponse"
+      },
+      "MedalsResponse": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day",
+            "description": "Medal Day: the latest Tournament Day whose results are final"
+          },
+          "medals": {
+            "items": {
+              "$ref": "#/components/schemas/MedalResponse"
+            },
+            "type": "array",
+            "title": "Medals",
+            "description": "One entry per distinct requested Account, in request order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "medals"
+        ],
+        "title": "MedalsResponse"
       },
       "ParticipantResponse": {
         "properties": {
@@ -719,6 +1022,39 @@
           "score"
         ],
         "title": "SlotScore"
+      },
+      "StandingResponse": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "title": "Rank",
+            "description": "Place on the Leaderboard, unique; 1 is the leader"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Account Id",
+            "description": "Account holding the Standing"
+          },
+          "nickname": {
+            "type": "string",
+            "title": "Nickname",
+            "description": "Current Nickname of the Account"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "description": "Daily Best: the Account's best Credited Score of the day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank",
+          "account_id",
+          "nickname",
+          "score"
+        ],
+        "title": "StandingResponse"
       },
       "ValidationError": {
         "properties": {

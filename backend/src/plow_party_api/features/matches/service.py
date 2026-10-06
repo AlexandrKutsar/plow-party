@@ -12,6 +12,7 @@ from plow_party_api.features.accounts.service import AccountService
 from plow_party_api.features.matches.models import Match, MatchParticipant, MatchVote
 from plow_party_api.features.matches.repository import MatchRepository
 from plow_party_api.features.matches.rules import (
+    RESULTS_SETTLE,
     Accepted,
     MatchStatus,
     RosterError,
@@ -53,6 +54,13 @@ class ParticipantView:
     score: int | None
     placement: int | None
     credited_score: int | None
+
+
+@dataclass(frozen=True)
+class AccountBest:
+    account_id: uuid.UUID
+    score: int
+    achieved_at: datetime
 
 
 @dataclass(frozen=True)
@@ -190,6 +198,29 @@ class MatchService:
             self._reach_verdict_if_due(match, self._clock())
             await self._session.commit()
         return _view(match)
+
+    async def best_credited_scores(
+        self, registered_from: datetime, registered_before: datetime
+    ) -> list[AccountBest]:
+        await self._reach_overdue_verdicts(registered_from, registered_before)
+        rows = await self._matches.best_credited_scores(registered_from, registered_before)
+        return [
+            AccountBest(account_id=account_id, score=score, achieved_at=registered_at)
+            for account_id, score, registered_at in rows
+        ]
+
+    async def _reach_overdue_verdicts(
+        self, registered_from: datetime, registered_before: datetime
+    ) -> None:
+        now = self._clock()
+        overdue = await self._matches.lock_registered_between(
+            registered_from, min(registered_before, now - RESULTS_SETTLE), MatchStatus.OPEN
+        )
+        if not overdue:
+            return
+        for match in overdue:
+            self._reach_verdict_if_due(match, now)
+        await self._session.commit()
 
     async def _find(self, match_id: uuid.UUID, *, for_update: bool = False) -> Match:
         match = await self._matches.find(match_id, for_update=for_update)

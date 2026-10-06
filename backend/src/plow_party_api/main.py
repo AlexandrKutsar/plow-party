@@ -9,6 +9,7 @@ from plow_party_api.core.settings import Settings
 from plow_party_api.features.accounts.router import router as accounts_router
 from plow_party_api.features.health.router import router as health_router
 from plow_party_api.features.matches.router import router as matches_router
+from plow_party_api.features.tournament.router import router as tournament_router
 
 
 def operation_id(route: APIRoute) -> str:
@@ -33,4 +34,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(accounts_router)
     app.include_router(matches_router)
+    app.include_router(tournament_router)
     return app

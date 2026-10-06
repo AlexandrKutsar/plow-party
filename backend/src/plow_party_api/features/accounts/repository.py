@@ -36,3 +36,7 @@ class AccountRepository:
     async def existing_ids(self, account_ids: Collection[uuid.UUID]) -> set[uuid.UUID]:
         statement = select(Account.id).where(Account.id.in_(account_ids))
         return set(await self._session.scalars(statement))
+
+    async def nicknames(self, account_ids: Collection[uuid.UUID]) -> dict[uuid.UUID, str]:
+        statement = select(Account.id, Account.nickname).where(Account.id.in_(account_ids))
+        return dict((await self._session.execute(statement)).all())
