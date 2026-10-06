@@ -1,10 +1,13 @@
 using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.DropOff.Network;
+using PlowParty.Gameplay.Hud.View;
+using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Snow.Network;
 using PlowParty.Gameplay.Snow.Simulation;
 using PlowParty.Gameplay.Snow.View;
 using PlowParty.Gameplay.Vehicle.Network;
 using PlowParty.Infrastructure.Network;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -28,7 +31,21 @@ namespace PlowParty.Bootstrap
             builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
+            builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().AsSelf();
+            RegisterHud(builder);
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
+        }
+
+        private static void RegisterHud(IContainerBuilder builder)
+        {
+            builder.RegisterComponentInHierarchy<Camera>();
+            builder.RegisterComponentInHierarchy<MatchTimerView>();
+            builder.RegisterComponentInHierarchy<LoadBarView>();
+            builder.RegisterComponentInHierarchy<ScorePopupView>();
+            builder.RegisterComponentInHierarchy<ScoreListView>();
+            builder.RegisterComponentInHierarchy<BlizzardAnnouncementView>();
+            builder.RegisterComponentInHierarchy<DropOffArrowView>();
+            builder.RegisterComponentInHierarchy<ResultsView>();
         }
     }
 }

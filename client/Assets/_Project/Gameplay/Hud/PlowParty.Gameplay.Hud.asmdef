@@ -1,0 +1,14 @@
+{
+    "name": "PlowParty.Gameplay.Hud",
+    "rootNamespace": "PlowParty.Gameplay.Hud",
+    "references": [
+        "PlowParty.Gameplay.Match",
+        "PlowParty.Gameplay.DropOff",
+        "PlowParty.Gameplay.Bucket",
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Vehicle",
+        "VContainer",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": false
+}

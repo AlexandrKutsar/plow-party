@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce7a0182f7547554da0161fb9f9a77bf, type: 3}
+  m_Name: HudConfig
+  m_EditorClassIdentifier: 
+  _blizzardWarningLead: 5
+  _goBannerDuration: 1
+  _loadBarHeight: 2.2
+  _scorePopupInterval: 0.3
+  _scorePopupDuration: 1.2
+  _scorePopupRise: 120
+  _dropOffArrowMargin: 90
