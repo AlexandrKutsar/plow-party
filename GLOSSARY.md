@@ -87,6 +87,46 @@ _Avoid_: Storm, snowfall
 A collision into another Vehicle's side or rear that causes a Spill.
 _Avoid_: Hit, bump, crash
 
+**Rammer** (таранящий):
+The Vehicle that delivers a Ram; it bounces back by the Recoil.
+
+**Victim** (протараненный):
+The Vehicle hit by a Ram; it is pushed away by the Knockback and Spills Load.
+_Avoid_: Target (reserved for targeted Gadgets)
+
+**Knockback** (отбрасывание):
+The extra push a Victim receives along the Ram direction.
+
+**Recoil** (отдача):
+The push back a Rammer receives after a Ram.
+
+**Arena** (арена):
+The static layout a Match is played on, as the Vehicle simulation sees it: a set of Obstacles.
+_Avoid_: Level, map (as a code type)
+
+**Obstacle** (препятствие):
+A static shape in the Arena that Vehicles bounce off: an axis-aligned box or a circle.
+_Avoid_: Wall (one kind of Obstacle), collider
+
+**Slot** (слот участника):
+A Participant's seat number in a Match, 0 to 5; fixes their Spawn Point and Ram cooldown pairing.
+
+**Spawn Point** (точка старта):
+The fixed position and facing where the Vehicle of a given Slot appears.
+
+## Vehicle control
+
+**Modifier** (модификатор):
+A per-Vehicle adjustment other features apply to driving: speed multiplier, Immobilised, Impulse, Ram strength multiplier.
+_Avoid_: Buff, effect (as a type name)
+
+**Immobilised** (обездвижен):
+A Vehicle state where it ignores the stick and stays in place, used by Freeze and Countdown.
+_Avoid_: Stunned, frozen (Freeze is the Gadget)
+
+**Impulse** (импульс):
+A one-tick velocity change applied to a Vehicle, such as a snowball knockback or a Turbo Rocket dash.
+
 ## Loot and Gadgets
 
 **Drift** (сугроб):

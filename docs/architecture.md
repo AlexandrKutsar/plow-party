@@ -24,6 +24,8 @@ Arrows point down: a module references only modules below it, never sideways acr
 | Gameplay | `_Project/Gameplay/<Feature>/` | Everything inside a match, from Countdown to Results | Shared, Infrastructure, other Gameplay features |
 | Bootstrap | `_Project/Bootstrap/` | Lifetime scopes and composition; the only module that sees everything | all |
 
+Visual content lives outside these areas in `_Project/Art/`, grouped by kind of content, one folder per asset, and holds no code. Each asset has a script-free visual prefab `V_<Asset>`; a feature's gameplay prefab nests it as `Model`. Editor-only tooling lives in `_Project/Editor/` (asmdef `PlowParty.Editor`, referenced by no runtime assembly). Rules: `_Project/Art/CLAUDE.md`, ADR-0008, ADR-0009.
+
 Asmdef naming: `PlowParty.<Area>` or `PlowParty.<Area>.<Feature>`; namespaces match. Feature-to-feature references inside an area are allowed but must stay acyclic; prefer depending on another feature's interface over its concrete types.
 
 ## Gameplay/Meta boundary
@@ -51,8 +53,9 @@ Gameplay/Bucket/
   PlowParty.Gameplay.Bucket.asmdef
   Simulation/                    pure C#: rules, math, state transitions
   Network/                       NetworkBehaviour adapters
-  View/                          MonoBehaviour presentation
-  Config/                        ScriptableObject config types
+  View/                          MonoBehaviour presentation scripts (animator, VFX, feedback)
+  Config/                        ScriptableObject config types (assets live in _Project/Configs/)
+  Prefabs/                       gameplay prefabs; each nests its Art visual prefab as Model
   Tests/                         EditMode tests, own asmdef
 ```
 
@@ -62,17 +65,21 @@ Folders appear only when they have content.
 
 **Network** holds `NetworkBehaviour`s. Each one is a thin adapter: in `FixedUpdateNetwork` it reads `[Networked]` state and input, calls Simulation, writes the result back. Visual reaction to state changes uses `ChangeDetector` in `Render`.
 
-**View** reads state and plays it back to the player (animation, VFX, UI). It never writes simulation state.
+**View** reads state and plays it back to the player (animation, VFX, UI). It never writes simulation state. View scripts live in the feature; the meshes, materials, and effects they drive live in `Art/`.
 
 ## Fusion and DI
 
-Fusion, not VContainer, instantiates networked prefabs. `MatchScope` registers a custom `INetworkObjectProvider` that instantiates through the scope's `IObjectResolver`, so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike. See ADR-0004.
+Fusion, not VContainer, instantiates networked prefabs. The session adds a `ResolverNetworkObjectProvider` that instantiates through `MatchScope`'s `IObjectResolver`, so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike; scene `NetworkObject`s are injected through `RegisterComponentInHierarchy`. See ADR-0004.
+
+Every assembly that declares a `NetworkBehaviour` or `INetworkInput` must be listed in `AssembliesToWeave` in `NetworkProjectConfig.fusion`.
 
 Players and bots drive a vehicle through the same input-source abstraction; the vehicle cannot tell them apart. Bots run on the host only.
 
 ## Configuration
 
-Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...), each defined in its feature's `Config/`. The asset instances are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
+Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...). The config type is code and lives in its feature's `Config/`; the asset instance is data and lives in `_Project/Configs/`, one `<Feature>Config.asset` each, so the whole game is balanced from one folder and balance changes show up as their own diffs. The assets are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
+
+Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` next to its scene, once maps exist.
 
 ## Feature index
 
@@ -81,14 +88,16 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Module | Path | Status | Purpose |
 |---|---|---|---|
 | Bootstrap | `_Project/Bootstrap/` | active | Lifetime scopes, app start |
-| Infrastructure | `_Project/Infrastructure/` | active | Scene loading; later backend client, persistence, network object provider |
+| Infrastructure | `_Project/Infrastructure/` | active | Scene loading, Fusion session, DI-aware network object provider; later backend client, persistence |
 | Shared | `_Project/Shared/` | active | Cross-boundary types |
+| Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
+| Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules |
 | Account | `_Project/Meta/Account/` | planned | Guest login by device id, nickname (GDD 9.1) |
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
 | Match | `_Project/Gameplay/Match/` | planned | Match state machine Countdown → Playing → Results, timer, scoring table (GDD 3.2) |
-| Vehicle | `_Project/Gameplay/Vehicle/` | planned | Kinematics, collisions, ramming, input source (GDD 5) |
+| Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | planned | Snow grid, regrowth, blizzard waves, snow piles (GDD 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | planned | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
 | DropOff | `_Project/Gameplay/DropOff/` | planned | Drop-off zone, unloading, multipliers (GDD 4.2) |

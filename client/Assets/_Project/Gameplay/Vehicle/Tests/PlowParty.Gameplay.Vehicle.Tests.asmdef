@@ -1,0 +1,20 @@
+{
+    "name": "PlowParty.Gameplay.Vehicle.Tests",
+    "rootNamespace": "PlowParty.Gameplay.Vehicle.Tests",
+    "references": [
+        "PlowParty.Gameplay.Vehicle",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}
