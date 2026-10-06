@@ -9,14 +9,20 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private const int CellsPerWord = 32 / BitsPerCell;
         private const int DepthMask = (1 << BitsPerCell) - 1;
         private const int MaxDepth = DepthMask;
+        private const int BlizzardSalt = -1;
 
         private readonly SnowSettings _settings;
         private readonly int[] _words;
         private readonly bool[] _masked;
+        private readonly int _seed;
+        private readonly float[] _blizzardProgress;
+        private int _regrowthStepsApplied;
 
         public SnowGrid(SnowSettings settings, VehicleArena arena, int seed)
         {
             _settings = settings;
+            _seed = seed;
+            _blizzardProgress = new float[settings.BlizzardTimes.Length];
             Width = Mathf.RoundToInt(settings.Size.x / settings.CellSize);
             Height = Mathf.RoundToInt(settings.Size.y / settings.CellSize);
             _words = new int[(Width * Height + CellsPerWord - 1) / CellsPerWord];
@@ -32,9 +38,21 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public int Height { get; }
 
+        public int WordCount => _words.Length;
+
         public int GetDepth(int x, int y)
         {
             return GetDepth(y * Width + x);
+        }
+
+        public int GetWord(int index)
+        {
+            return _words[index];
+        }
+
+        public void SetWord(int index, int value)
+        {
+            _words[index] = value;
         }
 
         public int Scrape(SnowBlade blade, int room)
@@ -91,6 +109,83 @@ namespace PlowParty.Gameplay.Snow.Simulation
             }
 
             return placed;
+        }
+
+        public void Tick(float elapsedPlayingTime)
+        {
+            var regrowthStepsDue = Mathf.FloorToInt(elapsedPlayingTime / _settings.RegrowthInterval);
+            while (_regrowthStepsApplied < regrowthStepsDue)
+            {
+                _regrowthStepsApplied++;
+                ApplyRegrowthStep(_regrowthStepsApplied);
+            }
+
+            for (var wave = 0; wave < _blizzardProgress.Length; wave++)
+            {
+                var progress = Mathf.Clamp01((elapsedPlayingTime - _settings.BlizzardTimes[wave]) / _settings.BlizzardDuration);
+                if (progress > _blizzardProgress[wave])
+                {
+                    SweepBlizzardFront(wave, _blizzardProgress[wave], progress);
+                    _blizzardProgress[wave] = progress;
+                }
+            }
+        }
+
+        private void SweepBlizzardFront(int wave, float fromProgress, float toProgress)
+        {
+            var direction = BlizzardDirection(wave);
+            for (var index = 0; index < _masked.Length; index++)
+            {
+                var position = PositionAlong(direction, index);
+                if (_masked[index] || position <= fromProgress || position > toProgress)
+                {
+                    continue;
+                }
+
+                if (GetDepth(index) < _settings.FullDepth)
+                {
+                    SetDepth(index, _settings.FullDepth);
+                }
+            }
+        }
+
+        private int BlizzardDirection(int wave)
+        {
+            return (int)(SnowHash.Mix(_seed, wave, BlizzardSalt) % 4);
+        }
+
+        private float PositionAlong(int direction, int index)
+        {
+            var x = index % Width + 0.5f;
+            var y = index / Width + 0.5f;
+            switch (direction)
+            {
+                case 0:
+                    return x / Width;
+                case 1:
+                    return 1f - x / Width;
+                case 2:
+                    return y / Height;
+                default:
+                    return 1f - y / Height;
+            }
+        }
+
+        private void ApplyRegrowthStep(int step)
+        {
+            for (var index = 0; index < _masked.Length; index++)
+            {
+                if (_masked[index])
+                {
+                    continue;
+                }
+
+                var depth = GetDepth(index);
+                if (depth < _settings.FullDepth && SnowHash.Chance(_seed, index, step) < _settings.RegrowthChance)
+                {
+                    SetDepth(index, depth + 1);
+                }
+            }
         }
 
         private int RaiseTowardsMax(int x, int y, int steps)
