@@ -37,9 +37,9 @@ Regrowth becomes age-based: the Host remembers when each Cell was last lowered, 
 - **Plowing signal:** `SnowGridDriver` holds `[Networked, Capacity(MaxVehicles)] NetworkArray<NetworkBool>` indexed by Slot; on the Host a Slot is plowing a Pile in a tick when its Blade was over a Pile Cell and scraped at least one step. `IsPlowingPile(NetworkVehicle)` reads it on every peer. Camera reads it for shake later; Snow implements no shake.
 - **Capacity:** `SnowGridDriver.MaxWords` = 1024 (80 × 80 Cells need 800). Spawning a grid that needs more throws with the grid size and both word counts. Config origin and size are not changed here.
 - **Rendering (new ADR-0015):** `SnowGridView` builds at runtime a grid mesh of `VerticesPerCell` vertices per Cell edge over the grid rectangle and an R8 height texture (one texel per Cell). Each Cell's shown height eases toward the height of its Depth (`LowerTime` fast, `RaiseTime` slower, exponential), only for Cells whose word changed or that are still moving; the texture uploads only on frames where a texel changed. Depth → metres is piecewise linear: `SnowHeight` at `FullDepth`, `SnowHeight + PileHeight` at `MaxDepth`. The shader `SH_SnowSurface` (URP, HLSL) samples the texture in the vertex stage with a 4-tap cubic B-spline, displaces Y, derives normals by central differences, and colours by height (ground → snow → pile tint) with main-light shadows received. Cosmetic pre-clear unchanged.
-- **Art:** `Art/Environment/SnowGrid/SH_SnowSurface.shader`, `M_SnowSurface.mat` replacing `M_SnowGrid.mat`; `V_SnowGrid.prefab` keeps a MeshFilter and MeshRenderer (mesh replaced at runtime) with `M_SnowSurface`. `Art/VFX/SnowBurst/FX_SnowBurst.prefab`: mesh particles of `SM_SteamPuff` with `M_Palette`, no transparency. New naming prefix `SH_` for hand-written shaders.
-- **Burst view:** `SnowPileBurstView` (Snow/View) instantiates one `FX_SnowBurst` per Slot under itself and emits at each Vehicle's Blade while `IsPlowingPile` is set. Added to the `SnowGrid` scene object at integration.
-- **Config:** `SnowConfig` gains `RegrowthDelay` (6 s), `RegrowthStep` (3 s), `PileSpeedPenalty` (0.4), `PileStepsPerScrape` (2), `VerticesPerCell` (2), `SnowHeight` (0.12 m), `PileHeight` (0.9 m), `LowerTime` (0.05 s), `RaiseTime` (0.35 s); loses `RegrowthInterval` and `RegrowthChance`.
+- **Art:** `Art/Environment/SnowGrid/SH_SnowSurface.shader`; the existing `M_SnowGrid.mat` switches to it (same GUID, so nothing re-links); `V_SnowGrid.prefab` keeps its MeshFilter and MeshRenderer (mesh replaced at runtime), loses its 90° quad rotation, and does not cast shadows. `Art/VFX/SnowBurst/FX_SnowBurst.prefab`: mesh particles of `SM_SteamPuff` with `M_Palette`, no transparency. New naming prefix `SH_` for hand-written shaders.
+- **Burst view:** `SnowGridView` gains an optional `Pile Burst` field; `SnowPileBursts` (plain C#, owned by the view) instantiates one `FX_SnowBurst` per Slot and emits at each Vehicle's rendered Blade while `IsPlowingPile` is set. No new component, so no new `MatchScope` registration; integration assigns the field in `Match.unity`.
+- **Config:** `SnowConfig` gains `RegrowthDelay` (6 s), `RegrowthStep` (3 s), `PileSpeedPenalty` (0.4), `PileStepsPerScrape` (1, i.e. 64 Pile steps per second at the 64 Hz tick), `VerticesPerCell` (2), `SnowHeight` (0.15 m), `PileHeight` (0.9 m), `LowerTime` (0.05 s), `RaiseTime` (0.35 s); loses `RegrowthInterval` and `RegrowthChance`.
 
 ## Testing Decisions
 
@@ -51,7 +51,7 @@ Regrowth becomes age-based: the Host remembers when each Cell was last lowered, 
 - Camera shake (Camera module reads `IsPlowingPile`).
 - Wiring Snow's clock to the Match clock.
 - Changing the Arena size or `SnowConfig` origin and size.
-- Scene wiring in `Match.unity` (integration adds `SnowPileBurstView` and its prefab).
+- Scene wiring in `Match.unity` (integration assigns `FX_SnowBurst` to `SnowGridView.Pile Burst`).
 
 ## Further Notes
 

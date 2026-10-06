@@ -121,7 +121,7 @@ The strip in front of a Vehicle that scrapes Cells clear and feeds their Snow in
 _Avoid_: Footprint, collector
 
 **Regrowth** (восстановление):
-The slow continuous return of Snow onto cleared cells.
+The slow return of Snow onto a lowered Cell: after a delay it gains one Depth step at a fixed pace up to full, so the oldest part of a track refills first.
 
 **Blizzard** (метель):
 A scheduled wave that rapidly re-covers the whole map with Snow and leaves a few Snow Piles in its wake.

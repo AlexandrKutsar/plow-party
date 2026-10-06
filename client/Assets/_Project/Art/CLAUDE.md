@@ -28,6 +28,7 @@ Asset names are PascalCase after a type prefix; the name after the prefix is the
 | `T_` | texture | `T_Palette.png` |
 | `M_` | material | `M_Palette.mat` |
 | `SG_` | Shader Graph | `SG_SnowSurface.shadergraph` |
+| `SH_` | hand-written shader (`.shader`, HLSL) | `SH_SnowSurface.shader` |
 | `A_` | animation clip | `A_Critter_Cheer.anim` |
 | `AC_` | animator controller | `AC_Critter.controller` |
 | `V_` | visual prefab | `V_Vehicle.prefab` |
@@ -97,4 +98,5 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 | Loot | `Props/Loot/` | `art/blender/models/loot.py` |
 | Loot_Gadget | `Props/Loot_Gadget/` | `art/blender/models/loot_gadget.py` |
 | Snowball | `Props/Snowball/` | `art/blender/models/snowball.py` |
-| SnowGrid | `Environment/SnowGrid/` | none: a Unity quad with `M_SnowGrid` (Simple Lit, base map written at runtime by Snow's View; reason in ADR-0012) |
+| SnowGrid | `Environment/SnowGrid/` | none: `SH_SnowSurface.shader` (URP HLSL; displaces a mesh by a height texture with B-spline smoothing, colours by height), `M_SnowGrid` on it, and `V_SnowGrid` (a `MeshFilter` whose mesh and height texture Snow's View builds at runtime; reasons in ADR-0012 and ADR-0015) |
+| SnowBurst | `VFX/SnowBurst/` | none: `FX_SnowBurst.prefab` is a normal asset: mesh particles of `VFX/Steam/SM_SteamPuff` drawn with `M_Palette`, no transparency, emission off until Snow's View turns it on |

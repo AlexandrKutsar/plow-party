@@ -98,7 +98,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
 | Match | `_Project/Gameplay/Match/` | planned | Match state machine Countdown → Playing → Results, timer, scoring table (GDD 3.2) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
-| Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles (GDD 4.1, 4.3, 4.4) |
+| Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | active | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
 | DropOff | `_Project/Gameplay/DropOff/` | active | Drop-Off Zone, Delivery, Multipliers, per-Vehicle Score, Snow-Free Area (GDD 4.2) |
 | Drifts | `_Project/Gameplay/Drifts/` | planned | Breakable drifts and respawn (GDD 6) |

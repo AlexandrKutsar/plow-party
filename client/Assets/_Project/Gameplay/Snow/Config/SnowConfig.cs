@@ -12,7 +12,7 @@ namespace PlowParty.Gameplay.Snow.Config
         [SerializeField, Range(1, SnowGrid.MaxDepth - 1)] private int _fullDepth = 3;
         [SerializeField, Min(0f)] private float _regrowthDelay = 6f;
         [SerializeField, Min(0f)] private float _regrowthStep = 3f;
-        [SerializeField, Min(1)] private int _pileStepsPerScrape = 2;
+        [SerializeField, Min(1)] private int _pileStepsPerScrape = 1;
         [SerializeField, Range(0f, 1f)] private float _pileSpeedPenalty = 0.4f;
         [SerializeField] private float[] _blizzardTimes = { 45f, 90f, 135f };
         [SerializeField, Min(0f)] private float _blizzardDuration = 2.5f;
@@ -23,7 +23,7 @@ namespace PlowParty.Gameplay.Snow.Config
         [SerializeField, Min(0f)] private float _bladeForwardOffset = 0.85f;
         [SerializeField, Min(0f)] private float _preClearDuration = 0.4f;
         [SerializeField, Range(1, 4)] private int _verticesPerCell = 2;
-        [SerializeField, Min(0f)] private float _snowHeight = 0.12f;
+        [SerializeField, Min(0f)] private float _snowHeight = 0.15f;
         [SerializeField, Min(0f)] private float _pileHeight = 0.9f;
         [SerializeField, Min(0f)] private float _lowerTime = 0.05f;
         [SerializeField, Min(0f)] private float _raiseTime = 0.35f;
