@@ -1,0 +1,12 @@
+{
+    "name": "PlowParty.Gameplay.DropOff",
+    "rootNamespace": "PlowParty.Gameplay.DropOff",
+    "references": [
+        "PlowParty.Gameplay.Bucket",
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Vehicle",
+        "Fusion.Unity",
+        "VContainer"
+    ],
+    "autoReferenced": false
+}

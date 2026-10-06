@@ -56,6 +56,14 @@ namespace PlowParty.Gameplay.Bucket.Network
             SetLoad(_rules.Collect(LoadSteps, steps));
         }
 
+        public void Unload(int steps)
+        {
+            if (HasStateAuthority)
+            {
+                SetLoad(LoadSteps - _rules.UnloadSteps(LoadSteps, steps));
+            }
+        }
+
         public int TakeSpill()
         {
             if (!HasStateAuthority)

@@ -100,7 +100,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles (GDD 4.1, 4.3, 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | active | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
-| DropOff | `_Project/Gameplay/DropOff/` | planned | Drop-off zone, unloading, multipliers (GDD 4.2) |
+| DropOff | `_Project/Gameplay/DropOff/` | active | Drop-Off Zone, Delivery, Multipliers, per-Vehicle Score, Snow-Free Area (GDD 4.2) |
 | Drifts | `_Project/Gameplay/Drifts/` | planned | Breakable drifts and respawn (GDD 6) |
 | Loot | `_Project/Gameplay/Loot/` | planned | Owned loot drops, pickup, expiry (GDD 6) |
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |

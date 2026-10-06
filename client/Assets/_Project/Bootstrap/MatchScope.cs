@@ -1,5 +1,7 @@
 using PlowParty.Gameplay.Bucket.Network;
+using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Snow.Network;
+using PlowParty.Gameplay.Snow.Simulation;
 using PlowParty.Gameplay.Snow.View;
 using PlowParty.Gameplay.Vehicle.Network;
 using PlowParty.Infrastructure.Network;
@@ -22,6 +24,10 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<SnowGridView>();
             builder.Register<BucketRegistry>(Lifetime.Singleton).AsSelf().As<IScrapeLimit>();
             builder.RegisterEntryPoint<BucketHost>().AsSelf();
+            builder.RegisterComponentInHierarchy<DropOffZone>();
+            builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
+            builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
+            builder.RegisterEntryPoint<DropOffHost>();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
     }

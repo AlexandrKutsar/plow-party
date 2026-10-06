@@ -87,6 +87,14 @@ _Avoid_: Cargo, fill
 The area where a Vehicle unloads its Bucket to earn Score.
 _Avoid_: Base, melter, deposit zone
 
+**Delivery** (сдача):
+One continuous unloading of a Bucket in the Drop-Off Zone, from the tick a Vehicle with Load is inside until the Bucket is empty, the Vehicle leaves, or a Spill interrupts it; its Multiplier is locked when it starts.
+_Avoid_: Unload (as a type name), deposit
+
+**Snow-Free Area** (зона без снега):
+The ground around the Drop-Off Zone where Snow never falls: no initial cover, no Regrowth, no Blizzard refill; Snow Piles may still land there.
+_Avoid_: Clearing, mask (the Arena mask is Obstacles)
+
 **Multiplier** (множитель):
 The Score factor fixed by the Load at the moment a Vehicle enters the Drop-Off Zone.
 

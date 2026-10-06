@@ -17,11 +17,17 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private readonly SnowSettings _settings;
         private readonly int[] _words;
         private readonly bool[] _masked;
+        private readonly bool[] _snowFree;
         private readonly int _seed;
         private readonly float[] _blizzardProgress;
         private int _regrowthStepsApplied;
 
         public SnowGrid(SnowSettings settings, VehicleArena arena, int seed)
+            : this(settings, arena, null, seed)
+        {
+        }
+
+        public SnowGrid(SnowSettings settings, VehicleArena arena, ISnowFreeArea snowFree, int seed)
         {
             _settings = settings;
             _seed = seed;
@@ -30,10 +36,13 @@ namespace PlowParty.Gameplay.Snow.Simulation
             Height = Mathf.RoundToInt(settings.Size.y / settings.CellSize);
             _words = new int[(Width * Height + CellsPerWord - 1) / CellsPerWord];
             _masked = new bool[Width * Height];
+            _snowFree = new bool[Width * Height];
             for (var index = 0; index < Width * Height; index++)
             {
-                _masked[index] = arena.Contains(CellCentre(index));
-                SetDepth(index, _masked[index] ? 0 : settings.FullDepth);
+                var centre = CellCentre(index);
+                _masked[index] = arena.Contains(centre);
+                _snowFree[index] = snowFree != null && snowFree.Contains(centre);
+                SetDepth(index, TakesSnowfall(index) ? settings.FullDepth : 0);
             }
         }
 
@@ -166,7 +175,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             for (var index = 0; index < _masked.Length; index++)
             {
                 var position = PositionFrom(side, index);
-                if (_masked[index] || position <= fromProgress || position > toProgress)
+                if (!TakesSnowfall(index) || position <= fromProgress || position > toProgress)
                 {
                     continue;
                 }
@@ -204,7 +213,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             for (var offset = 0; offset < _masked.Length; offset++)
             {
                 var cell = (start + offset) % _masked.Length;
-                if (!_masked[cell])
+                if (TakesSnowfall(cell))
                 {
                     return cell;
                 }
@@ -240,7 +249,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
         {
             for (var index = 0; index < _masked.Length; index++)
             {
-                if (_masked[index])
+                if (!TakesSnowfall(index))
                 {
                     continue;
                 }
@@ -270,6 +279,11 @@ namespace PlowParty.Gameplay.Snow.Simulation
             var added = Mathf.Min(MaxDepth - depth, steps);
             SetDepth(index, depth + added);
             return added;
+        }
+
+        private bool TakesSnowfall(int index)
+        {
+            return !_masked[index] && !_snowFree[index];
         }
 
         private Vector2Int CellFloor(Vector2 point)

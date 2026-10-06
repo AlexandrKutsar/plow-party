@@ -24,6 +24,11 @@ namespace PlowParty.Gameplay.Bucket.Simulation
             return Mathf.Min(loadSteps + steps, CapacitySteps);
         }
 
+        public int UnloadSteps(int loadSteps, int steps)
+        {
+            return Mathf.Clamp(steps, 0, loadSteps);
+        }
+
         public int SpillSteps(int loadSteps)
         {
             var exact = loadSteps * _settings.SpillShare;
