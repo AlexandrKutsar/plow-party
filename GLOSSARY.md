@@ -155,3 +155,19 @@ _Avoid_: League (reserved for the post-MVP weekly league)
 
 **Medal** (медаль):
 A cosmetic portrait frame awarded at Tournament reset.
+
+**Account** (аккаунт):
+A person's identity on the backend, created on first guest login and owning their Nickname and Tournament results.
+_Avoid_: User, profile, Player (that is a Participant in a Match)
+
+**Nickname** (ник):
+The display name of an Account shown in the HUD and the Tournament; not unique.
+_Avoid_: Name, username
+
+**Device Id** (идентификатор устройства):
+The identifier a device generates once and presents to log in to its Account as a guest.
+_Avoid_: Hardware id, install id
+
+**Auth Token** (токен):
+The bearer credential issued at login that a client presents to act as its Account.
+_Avoid_: Session (that is the Fusion Session), API key
