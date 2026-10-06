@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" font-family="sans-serif">
+  <rect width="1200" height="560" fill="#E8F1F8"/>
+  <text x="20" y="32" font-size="22" fill="#15161A">Critters — reference sketch (front view on the seat, top view below)</text>
+  <defs>
+    <g id="seat">
+      <rect x="-45" y="70" width="90" height="16" rx="4" fill="#5A3E2B"/>
+      <rect x="-45" y="10" width="90" height="12" rx="3" fill="#5A3E2B" opacity="0.5"/>
+    </g>
+  </defs>
+
+  <g transform="translate(100,170)">
+    <use href="#seat"/>
+    <rect x="-34" y="10" width="68" height="62" rx="14" fill="#F28C28"/>
+    <rect x="-20" y="30" width="40" height="38" rx="10" fill="#F4F6F8"/>
+    <polygon points="-40,-48 -26,-90 -10,-50" fill="#F28C28"/><polygon points="40,-48 26,-90 10,-50" fill="#F28C28"/>
+    <polygon points="-33,-52 -26,-78 -17,-52" fill="#15161A"/><polygon points="33,-52 26,-78 17,-52" fill="#15161A"/>
+    <rect x="-44" y="-56" width="88" height="70" rx="16" fill="#F28C28"/>
+    <polygon points="-22,-4 22,-4 0,24" fill="#F4F6F8"/><circle cx="0" cy="20" r="5" fill="#15161A"/>
+    <circle cx="-16" cy="-24" r="5" fill="#15161A"/><circle cx="16" cy="-24" r="5" fill="#15161A"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Fox</text>
+  </g>
+
+  <g transform="translate(300,170)">
+    <use href="#seat"/>
+    <rect x="-40" y="6" width="80" height="66" rx="18" fill="#7A5232"/>
+    <circle cx="-34" cy="-54" r="15" fill="#7A5232"/><circle cx="34" cy="-54" r="15" fill="#7A5232"/>
+    <circle cx="-34" cy="-54" r="7" fill="#5A3E2B"/><circle cx="34" cy="-54" r="7" fill="#5A3E2B"/>
+    <rect x="-46" y="-56" width="92" height="70" rx="20" fill="#7A5232"/>
+    <rect x="-18" y="-8" width="36" height="24" rx="8" fill="#D9B48A"/><circle cx="0" cy="-4" r="6" fill="#15161A"/>
+    <circle cx="-17" cy="-26" r="5" fill="#15161A"/><circle cx="17" cy="-26" r="5" fill="#15161A"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Bear</text>
+  </g>
+
+  <g transform="translate(500,170)">
+    <use href="#seat"/>
+    <rect x="-32" y="10" width="64" height="62" rx="16" fill="#F4F6F8"/>
+    <rect x="-28" y="-130" width="18" height="84" rx="9" fill="#F4F6F8"/><rect x="10" y="-130" width="18" height="84" rx="9" fill="#F4F6F8"/>
+    <rect x="-23" y="-122" width="8" height="66" rx="4" fill="#F2A0B4"/><rect x="15" y="-122" width="8" height="66" rx="4" fill="#F2A0B4"/>
+    <rect x="-40" y="-56" width="80" height="68" rx="18" fill="#F4F6F8"/>
+    <circle cx="0" cy="-4" r="6" fill="#F2A0B4"/>
+    <circle cx="-15" cy="-24" r="5" fill="#15161A"/><circle cx="15" cy="-24" r="5" fill="#15161A"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Rabbit</text>
+  </g>
+
+  <g transform="translate(700,170)">
+    <use href="#seat"/>
+    <rect x="-34" y="10" width="68" height="62" rx="14" fill="#8A9099"/>
+    <polygon points="-40,-46 -30,-78 -14,-50" fill="#8A9099"/><polygon points="40,-46 30,-78 14,-50" fill="#8A9099"/>
+    <rect x="-44" y="-56" width="88" height="70" rx="16" fill="#8A9099"/>
+    <rect x="-40" y="-36" width="80" height="20" rx="8" fill="#2E2F33"/>
+    <rect x="-16" y="-8" width="32" height="22" rx="8" fill="#F4F6F8"/><circle cx="0" cy="-4" r="5" fill="#15161A"/>
+    <circle cx="-17" cy="-26" r="5" fill="#F4F6F8"/><circle cx="17" cy="-26" r="5" fill="#F4F6F8"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Raccoon</text>
+  </g>
+
+  <g transform="translate(900,170)">
+    <use href="#seat"/>
+    <rect x="-38" y="-50" width="76" height="122" rx="30" fill="#2E2F33"/>
+    <rect x="-26" y="-12" width="52" height="80" rx="22" fill="#F4F6F8"/>
+    <circle cx="-14" cy="-30" r="9" fill="#F4F6F8"/><circle cx="14" cy="-30" r="9" fill="#F4F6F8"/>
+    <circle cx="-14" cy="-30" r="4" fill="#15161A"/><circle cx="14" cy="-30" r="4" fill="#15161A"/>
+    <polygon points="-12,-16 12,-16 0,0" fill="#F6C945"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Penguin</text>
+  </g>
+
+  <g transform="translate(1100,170)">
+    <use href="#seat"/>
+    <rect x="-36" y="8" width="72" height="64" rx="18" fill="#A87445"/>
+    <circle cx="-36" cy="-46" r="9" fill="#A87445"/><circle cx="36" cy="-46" r="9" fill="#A87445"/>
+    <rect x="-42" y="-54" width="84" height="68" rx="20" fill="#A87445"/>
+    <rect x="-12" y="4" width="24" height="16" fill="#F4F6F8"/><line x1="0" y1="4" x2="0" y2="20" stroke="#A87445" stroke-width="2"/>
+    <rect x="-16" y="-10" width="32" height="16" rx="7" fill="#7A5232"/><circle cx="0" cy="-8" r="5" fill="#15161A"/>
+    <circle cx="-16" cy="-26" r="5" fill="#15161A"/><circle cx="16" cy="-26" r="5" fill="#15161A"/>
+    <text x="0" y="118" font-size="18" text-anchor="middle">Beaver</text>
+  </g>
+
+  <text x="20" y="345" font-size="16" fill="#555">Top view (front of the Vehicle is up): read by ear shape, color, and tail</text>
+
+  <g transform="translate(100,450)">
+    <ellipse cx="0" cy="40" rx="36" ry="20" fill="#F28C28"/><ellipse cx="0" cy="72" rx="12" ry="26" fill="#F28C28"/><ellipse cx="0" cy="92" rx="8" ry="8" fill="#F4F6F8"/>
+    <rect x="-44" y="-30" width="88" height="62" rx="16" fill="#F28C28"/><polygon points="-40,-24 -26,-56 -12,-26" fill="#15161A"/><polygon points="40,-24 26,-56 12,-26" fill="#15161A"/>
+  </g>
+  <g transform="translate(300,450)">
+    <ellipse cx="0" cy="40" rx="40" ry="22" fill="#7A5232"/>
+    <rect x="-46" y="-30" width="92" height="62" rx="20" fill="#7A5232"/><circle cx="-34" cy="-30" r="14" fill="#5A3E2B"/><circle cx="34" cy="-30" r="14" fill="#5A3E2B"/>
+  </g>
+  <g transform="translate(500,450)">
+    <ellipse cx="0" cy="40" rx="32" ry="20" fill="#F4F6F8"/><circle cx="0" cy="66" r="10" fill="#F4F6F8"/>
+    <rect x="-40" y="-30" width="80" height="62" rx="18" fill="#F4F6F8"/><rect x="-28" y="-6" width="18" height="84" rx="9" fill="#F2A0B4"/><rect x="10" y="-6" width="18" height="84" rx="9" fill="#F2A0B4"/>
+  </g>
+  <g transform="translate(700,450)">
+    <ellipse cx="0" cy="40" rx="34" ry="20" fill="#8A9099"/>
+    <rect x="-8" y="56" width="16" height="44" rx="8" fill="#8A9099"/><rect x="-8" y="64" width="16" height="8" fill="#2E2F33"/><rect x="-8" y="80" width="16" height="8" fill="#2E2F33"/>
+    <rect x="-44" y="-30" width="88" height="62" rx="16" fill="#8A9099"/><polygon points="-40,-24 -30,-48 -14,-26" fill="#2E2F33"/><polygon points="40,-24 30,-48 14,-26" fill="#2E2F33"/>
+  </g>
+  <g transform="translate(900,450)">
+    <ellipse cx="0" cy="10" rx="40" ry="44" fill="#2E2F33"/><polygon points="-10,-30 10,-30 0,-48" fill="#F6C945"/>
+    <ellipse cx="-44" cy="16" rx="8" ry="20" fill="#2E2F33"/><ellipse cx="44" cy="16" rx="8" ry="20" fill="#2E2F33"/>
+  </g>
+  <g transform="translate(1100,450)">
+    <ellipse cx="0" cy="40" rx="36" ry="20" fill="#A87445"/><rect x="-16" y="54" width="32" height="44" rx="8" fill="#5A3E2B"/>
+    <rect x="-42" y="-30" width="84" height="62" rx="20" fill="#A87445"/><circle cx="-36" cy="-24" r="9" fill="#7A5232"/><circle cx="36" cy="-24" r="9" fill="#7A5232"/>
+  </g>
+</svg>
