@@ -17,7 +17,7 @@ MonoBehaviour:
   _cellSize: 0.5
   _fullDepth: 3
   _regrowthDelay: 6
-  _regrowthStep: 3
+  _regrowthStepInterval: 3
   _pileStepsPerScrape: 1
   _pileSpeedPenalty: 0.4
   _blizzardTimes:
@@ -32,7 +32,7 @@ MonoBehaviour:
   _bladeForwardOffset: 0.85
   _preClearDuration: 0.4
   _verticesPerCell: 2
-  _snowHeight: 0.15
-  _pileHeight: 0.9
-  _lowerTime: 0.05
-  _raiseTime: 0.35
+  _snowHeight: 0.2
+  _pileHeight: 1
+  _surfaceLowerTime: 0.05
+  _surfaceRaiseTime: 0.35

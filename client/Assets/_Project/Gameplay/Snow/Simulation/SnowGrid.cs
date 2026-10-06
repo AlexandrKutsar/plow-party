@@ -78,9 +78,9 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public int Scrape(SnowBlade blade, int room)
         {
-            var footprint = new BladeFootprint(blade);
-            var min = ClampedCell(footprint.Min);
-            var max = ClampedCell(footprint.Max);
+            var coverage = new BladeCoverage(blade);
+            var min = ClampedCell(coverage.Min);
+            var max = ClampedCell(coverage.Max);
             var pileRoom = _settings.PileStepsPerScrape;
             var taken = 0;
             for (var y = min.y; y <= max.y; y++)
@@ -88,7 +88,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
                 for (var x = min.x; x <= max.x && taken < room; x++)
                 {
                     var index = IndexOf(x, y);
-                    if (!footprint.Covers(CellCentre(index)))
+                    if (!coverage.Covers(CellCentre(index)))
                     {
                         continue;
                     }
@@ -98,8 +98,11 @@ namespace PlowParty.Gameplay.Snow.Simulation
                     var reachable = pileSteps > pileRoom ? pileRoom : depth;
                     var removed = Mathf.Min(reachable, room - taken);
                     pileRoom -= Mathf.Min(removed, pileSteps);
-                    taken += removed;
-                    Lower(index, depth - removed);
+                    if (removed > 0)
+                    {
+                        taken += removed;
+                        Lower(index, depth - removed);
+                    }
                 }
             }
 
@@ -156,15 +159,15 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public bool IsOverPile(SnowBlade blade)
         {
-            var footprint = new BladeFootprint(blade);
-            var min = ClampedCell(footprint.Min);
-            var max = ClampedCell(footprint.Max);
+            var coverage = new BladeCoverage(blade);
+            var min = ClampedCell(coverage.Min);
+            var max = ClampedCell(coverage.Max);
             for (var y = min.y; y <= max.y; y++)
             {
                 for (var x = min.x; x <= max.x; x++)
                 {
                     var index = IndexOf(x, y);
-                    if (GetDepth(index) > _settings.FullDepth && footprint.Covers(CellCentre(index)))
+                    if (GetDepth(index) > _settings.FullDepth && coverage.Covers(CellCentre(index)))
                     {
                         return true;
                     }
@@ -185,7 +188,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         private void ApplyRegrowthDueBy(float elapsedPlayingTime)
         {
-            if (_settings.RegrowthStep <= 0f)
+            if (_settings.RegrowthStepInterval <= 0f)
             {
                 return;
             }
@@ -212,7 +215,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
             while (next <= elapsedPlayingTime && depth < _settings.FullDepth)
             {
                 depth++;
-                next += _settings.RegrowthStep;
+                next += _settings.RegrowthStepInterval;
             }
 
             SetDepth(index, depth);

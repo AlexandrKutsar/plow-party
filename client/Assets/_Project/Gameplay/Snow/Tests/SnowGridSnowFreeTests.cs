@@ -34,7 +34,7 @@ namespace PlowParty.Gameplay.Snow.Tests
         public void Tick_LongAfterScrape_NeverRaisesSnowFreeCell()
         {
             var settings = SnowTestSettings.Create();
-            settings.RegrowthStep = 1f;
+            settings.RegrowthStepInterval = 1f;
             var grid = Create(settings, FirstCell, SnowTestSettings.Seed);
             grid.Spill(new Vector2(0.25f, 0.25f), 2);
             grid.Scrape(WholeGrid, int.MaxValue);

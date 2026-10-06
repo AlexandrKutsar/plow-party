@@ -69,7 +69,7 @@ namespace PlowParty.Gameplay.Snow.Network
 
         public bool IsPlowingPile(NetworkVehicle vehicle)
         {
-            return IsReady && vehicle.Slot >= 0 && vehicle.Slot < PlowingPileBySlot.Length && PlowingPileBySlot[vehicle.Slot];
+            return IsReady && HasSlot(vehicle) && PlowingPileBySlot[vehicle.Slot];
         }
 
         public void Spill(Vector2 point, int steps)
@@ -120,11 +120,16 @@ namespace PlowParty.Gameplay.Snow.Network
                 }
 
                 _scrapes[_scrapeCount++] = new VehicleScrape(vehicle, steps);
-                if (overPile && vehicle.Slot >= 0 && vehicle.Slot < _plowingSlots.Length)
+                if (overPile && HasSlot(vehicle))
                 {
                     _plowingSlots[vehicle.Slot] = true;
                 }
             }
+        }
+
+        private static bool HasSlot(NetworkVehicle vehicle)
+        {
+            return vehicle.Slot >= 0 && vehicle.Slot < VehicleWorldDriver.MaxVehicles;
         }
 
         private void ReportScrapes()

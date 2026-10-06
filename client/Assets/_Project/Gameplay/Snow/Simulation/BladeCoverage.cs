@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace PlowParty.Gameplay.Snow.Simulation
 {
-    internal readonly struct BladeFootprint
+    internal readonly struct BladeCoverage
     {
         private readonly Vector2 _centre;
         private readonly Vector2 _forward;
@@ -10,7 +10,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private readonly float _halfWidth;
         private readonly float _halfDepth;
 
-        public BladeFootprint(SnowBlade blade)
+        public BladeCoverage(SnowBlade blade)
         {
             _centre = blade.Centre;
             _forward = blade.Forward.normalized;

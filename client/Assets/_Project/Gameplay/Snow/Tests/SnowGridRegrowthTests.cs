@@ -97,7 +97,31 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
-        public void Tick_NeverTouchesSnowPile()
+        public void Tick_BladeOverEmptyCellAgain_KeepsOriginalDelay()
+        {
+            var grid = CreateCleared();
+            grid.Tick(Delay - 0.5f);
+            grid.Scrape(WholeGrid, int.MaxValue);
+
+            grid.Tick(Delay);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Tick_BladeWithNoRoomOverRegrowingCell_KeepsSchedule()
+        {
+            var grid = CreateCleared();
+            grid.Tick(Delay);
+            grid.Scrape(WholeGrid, 0);
+
+            grid.Tick(Delay + Step);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Tick_LongAfterScrape_NeverTouchesSnowPile()
         {
             var grid = CreateCleared();
             grid.Spill(new Vector2(0.25f, 0.25f), 10);
@@ -121,7 +145,7 @@ namespace PlowParty.Gameplay.Snow.Tests
         }
 
         [Test]
-        public void Tick_NeverFillsObstacleCells()
+        public void Tick_LongAfterScrape_NeverFillsObstacleCells()
         {
             var arena = VehicleArena.Create().AddBox(new Vector2(0.25f, 0.25f), new Vector2(0.1f, 0.1f));
             var grid = new SnowGrid(RegrowingSettings(), arena, SnowTestSettings.Seed);
@@ -136,7 +160,7 @@ namespace PlowParty.Gameplay.Snow.Tests
         public void Tick_ZeroRegrowthStep_DisablesRegrowth()
         {
             var settings = RegrowingSettings();
-            settings.RegrowthStep = 0f;
+            settings.RegrowthStepInterval = 0f;
             var grid = Create(settings);
             grid.Scrape(WholeGrid, int.MaxValue);
 
@@ -190,7 +214,7 @@ namespace PlowParty.Gameplay.Snow.Tests
         {
             var settings = SnowTestSettings.Create();
             settings.RegrowthDelay = Delay;
-            settings.RegrowthStep = Step;
+            settings.RegrowthStepInterval = Step;
             return settings;
         }
 

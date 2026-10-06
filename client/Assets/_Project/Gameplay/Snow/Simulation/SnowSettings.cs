@@ -14,7 +14,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public float RegrowthDelay { get; set; }
 
-        public float RegrowthStep { get; set; }
+        public float RegrowthStepInterval { get; set; }
 
         public int PileStepsPerScrape { get; set; }
 

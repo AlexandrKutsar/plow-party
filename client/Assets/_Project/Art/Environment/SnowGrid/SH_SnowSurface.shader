@@ -65,6 +65,18 @@ Shader "Plow Party/Snow Surface"
             height = SampleHeightBSpline(uv);
             return float3(positionOS.x, positionOS.y + height * _HeightScale, positionOS.z);
         }
+
+        float3 HeightNormalWS(float2 uv)
+        {
+            float2 texel = _HeightMap_TexelSize.xy;
+            float left = SampleHeightBSpline(uv - float2(texel.x, 0));
+            float right = SampleHeightBSpline(uv + float2(texel.x, 0));
+            float down = SampleHeightBSpline(uv - float2(0, texel.y));
+            float up = SampleHeightBSpline(uv + float2(0, texel.y));
+            float slopeX = (right - left) * _HeightScale / (2.0 * _CellSize);
+            float slopeZ = (up - down) * _HeightScale / (2.0 * _CellSize);
+            return normalize(float3(-slopeX, 1.0, -slopeZ));
+        }
         ENDHLSL
 
         Pass
@@ -96,18 +108,6 @@ Shader "Plow Party/Snow Surface"
                 float height : TEXCOORD2;
                 float fogFactor : TEXCOORD3;
             };
-
-            float3 HeightNormalWS(float2 uv)
-            {
-                float2 texel = _HeightMap_TexelSize.xy;
-                float left = SampleHeightBSpline(uv - float2(texel.x, 0));
-                float right = SampleHeightBSpline(uv + float2(texel.x, 0));
-                float down = SampleHeightBSpline(uv - float2(0, texel.y));
-                float up = SampleHeightBSpline(uv + float2(0, texel.y));
-                float slopeX = (right - left) * _HeightScale / (2.0 * _CellSize);
-                float slopeZ = (up - down) * _HeightScale / (2.0 * _CellSize);
-                return normalize(float3(-slopeX, 1.0, -slopeZ));
-            }
 
             Varyings Vert(Attributes input)
             {
@@ -183,6 +183,52 @@ Shader "Plow Party/Snow Surface"
             half DepthFrag(Varyings input) : SV_Target
             {
                 return input.positionCS.z;
+            }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthNormals"
+            Tags { "LightMode" = "DepthNormals" }
+            ZWrite On
+
+            HLSLPROGRAM
+            #pragma target 3.0
+            #pragma vertex DepthNormalsVert
+            #pragma fragment DepthNormalsFrag
+            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float2 uv : TEXCOORD0;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 normalWS : TEXCOORD0;
+            };
+
+            Varyings DepthNormalsVert(Attributes input)
+            {
+                Varyings output;
+                float height;
+                output.positionCS = TransformObjectToHClip(DisplacedObjectPosition(input.positionOS.xyz, input.uv, height));
+                output.normalWS = HeightNormalWS(input.uv);
+                return output;
+            }
+
+            half4 DepthNormalsFrag(Varyings input) : SV_Target
+            {
+                float3 normalWS = normalize(input.normalWS);
+                #if defined(_GBUFFER_NORMALS_OCT)
+                float2 packed = saturate(PackNormalOctQuadEncode(normalWS) * 0.5 + 0.5);
+                return half4(PackFloat2To888(packed), 0.0);
+                #else
+                return half4(normalWS, 0.0);
+                #endif
             }
             ENDHLSL
         }

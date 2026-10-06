@@ -14,7 +14,7 @@ The snow surface gets its own material instead of `M_Palette`, as `Art/CLAUDE.md
 
 ## Regrowth (amended by Snow polish)
 
-Regrowth was first a seeded per-Cell chance to gain one step every interval. Tracks then refilled as random speckles, not as a readable trail. It is now age-based and has no randomness: the Host keeps, per Cell, the time of its next Regrowth step; lowering a Cell below full sets it to now + `RegrowthDelay`, after which the Cell gains a step every `RegrowthStep` up to full. The oldest part of a track refills first, so a track fades as a tail, and the result still depends only on elapsed time, never on tick slicing. The per-Cell times are host-only, like Blizzard progress.
+Regrowth was first a seeded per-Cell chance to gain one step every interval. Tracks then refilled as random speckles, not as a readable trail. It is now age-based and has no randomness: the Host keeps, per Cell, the time of its next Regrowth step; lowering a Cell below full sets it to now + `RegrowthDelay`, after which the Cell gains a step every `RegrowthStepInterval` up to full. The oldest part of a track refills first, so a track fades as a tail, and the result still depends only on elapsed time, never on tick slicing. The per-Cell times are host-only, like Blizzard progress.
 
 ## Consequences
 

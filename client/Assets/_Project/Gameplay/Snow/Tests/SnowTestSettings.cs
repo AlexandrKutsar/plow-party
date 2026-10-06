@@ -16,7 +16,7 @@ namespace PlowParty.Gameplay.Snow.Tests
                 CellSize = 0.5f,
                 FullDepth = 3,
                 RegrowthDelay = 0f,
-                RegrowthStep = 0f,
+                RegrowthStepInterval = 0f,
                 PileStepsPerScrape = int.MaxValue,
                 PileSpeedPenalty = 0.4f,
                 BlizzardTimes = new float[0],

@@ -14,16 +14,16 @@ namespace PlowParty.Gameplay.Snow.View
         private readonly byte[] _texels;
         private readonly int[] _moving;
         private readonly bool[] _isMoving;
-        private readonly float _lowerTime;
-        private readonly float _raiseTime;
+        private readonly float _surfaceLowerTime;
+        private readonly float _surfaceRaiseTime;
         private int _movingCount;
 
         public SnowHeightField(SnowGrid grid, SnowSettings settings, SnowConfig config)
         {
             MaxHeight = Mathf.Max(config.SnowHeight + config.PileHeight, 1e-3f);
             FullSnowLine = config.SnowHeight / MaxHeight;
-            _lowerTime = config.LowerTime;
-            _raiseTime = config.RaiseTime;
+            _surfaceLowerTime = config.SurfaceLowerTime;
+            _surfaceRaiseTime = config.SurfaceRaiseTime;
             for (var depth = 0; depth <= SnowGrid.MaxDepth; depth++)
             {
                 _heightOfDepth[depth] = MetresOf(depth, settings.FullDepth, config) / MaxHeight;
@@ -80,8 +80,8 @@ namespace PlowParty.Gameplay.Snow.View
                 return;
             }
 
-            var lowerBlend = Blend(deltaTime, _lowerTime);
-            var raiseBlend = Blend(deltaTime, _raiseTime);
+            var lowerBlend = Blend(deltaTime, _surfaceLowerTime);
+            var raiseBlend = Blend(deltaTime, _surfaceRaiseTime);
             var changed = false;
             var kept = 0;
             for (var i = 0; i < _movingCount; i++)
