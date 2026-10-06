@@ -1,3 +1,4 @@
+using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.Snow.Network;
 using PlowParty.Gameplay.Snow.View;
 using PlowParty.Gameplay.Vehicle.Network;
@@ -19,6 +20,8 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<VehicleWorldDriver>();
             builder.RegisterComponentInHierarchy<SnowGridDriver>();
             builder.RegisterComponentInHierarchy<SnowGridView>();
+            builder.Register<BucketRegistry>(Lifetime.Singleton).AsSelf().As<IScrapeLimit>();
+            builder.RegisterEntryPoint<BucketHost>().AsSelf();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
     }

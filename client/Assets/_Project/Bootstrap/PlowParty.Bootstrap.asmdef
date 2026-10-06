@@ -6,7 +6,8 @@
         "UniTask",
         "PlowParty.Infrastructure",
         "PlowParty.Gameplay.Vehicle",
-        "PlowParty.Gameplay.Snow"
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Bucket"
     ],
     "autoReferenced": false
 }

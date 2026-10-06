@@ -12,13 +12,12 @@ namespace PlowParty.Gameplay.Snow.Network
     {
         public const int MaxWords = 512;
 
-        private const int UnlimitedRoom = int.MaxValue;
-
         [SerializeField] private Transform _arenaRoot;
 
         private readonly VehicleScrape[] _scrapes = new VehicleScrape[VehicleWorldDriver.MaxVehicles];
 
         private VehicleRegistry _registry;
+        private IScrapeLimit _limit;
         private SnowConfig _config;
         private SnowSettings _settings;
         private SnowGrid _grid;
@@ -33,10 +32,11 @@ namespace PlowParty.Gameplay.Snow.Network
         public bool IsReady => _grid != null;
 
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config)
+        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit)
         {
             _registry = registry;
             _config = config;
+            _limit = limit;
         }
 
         public override void Spawned()
@@ -97,7 +97,7 @@ namespace PlowParty.Gameplay.Snow.Network
             for (var i = 0; i < vehicles.Count; i++)
             {
                 var vehicle = vehicles[i];
-                var steps = _grid.Scrape(SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings), UnlimitedRoom);
+                var steps = _grid.Scrape(SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings), _limit.LimitFor(vehicle));
                 if (steps > 0)
                 {
                     _scrapes[_scrapeCount++] = new VehicleScrape(vehicle, steps);
