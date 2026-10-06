@@ -21,12 +21,7 @@ namespace PlowParty.Gameplay.DropOff.Simulation
 
         public bool IsInZone(Vector2 zoneCentre, Vector2 point)
         {
-            return IsWithin(zoneCentre, point, _settings.ZoneRadius);
-        }
-
-        public bool IsSnowFree(Vector2 zoneCentre, Vector2 point)
-        {
-            return IsWithin(zoneCentre, point, _settings.SnowFreeRadius);
+            return (point - zoneCentre).sqrMagnitude <= _settings.ZoneRadius * _settings.ZoneRadius;
         }
 
         public float MultiplierFor(int loadSteps)
@@ -85,11 +80,6 @@ namespace PlowParty.Gameplay.DropOff.Simulation
         private int ScoreFor(int deliveredSteps, float multiplier)
         {
             return Mathf.FloorToInt(deliveredSteps * multiplier / _stepsPerLoad + RoundingTolerance);
-        }
-
-        private static bool IsWithin(Vector2 centre, Vector2 point, float radius)
-        {
-            return (point - centre).sqrMagnitude <= radius * radius;
         }
     }
 }

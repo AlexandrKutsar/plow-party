@@ -26,7 +26,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterEntryPoint<BucketHost>().AsSelf();
             builder.RegisterComponentInHierarchy<DropOffZone>();
             builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
-            builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreboard>();
+            builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }

@@ -28,7 +28,7 @@ namespace PlowParty.Gameplay.DropOff.Network
 
         [Networked] private float DeliveryElapsed { get; set; }
 
-        public bool IsDelivering => Multiplier > 0f;
+        public bool IsDelivering => ReadDelivery().IsActive;
 
         [Inject]
         public void Construct(DropOffConfig config, BucketConfig bucketConfig, DropOffZone zone, DeliveryRegistry registry)

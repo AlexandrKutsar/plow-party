@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PlowParty.Gameplay.DropOff.Tests
 {
-    public sealed class DropOffRulesAreaTests
+    public sealed class DropOffRulesZoneTests
     {
         private static readonly Vector2 Centre = new Vector2(1f, -2f);
 
@@ -32,18 +32,6 @@ namespace PlowParty.Gameplay.DropOff.Tests
         public void IsInZone_PointBeyondRadius_IsFalse()
         {
             Assert.That(_rules.IsInZone(Centre, Centre + new Vector2(3.1f, 0f)), Is.False);
-        }
-
-        [Test]
-        public void IsSnowFree_BetweenZoneAndSnowFreeRadius_IsTrue()
-        {
-            Assert.That(_rules.IsSnowFree(Centre, Centre + new Vector2(-3.5f, 0f)), Is.True);
-        }
-
-        [Test]
-        public void IsSnowFree_BeyondSnowFreeRadius_IsFalse()
-        {
-            Assert.That(_rules.IsSnowFree(Centre, Centre + new Vector2(0f, -4.1f)), Is.False);
         }
     }
 }

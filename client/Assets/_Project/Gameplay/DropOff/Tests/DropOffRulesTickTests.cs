@@ -110,7 +110,7 @@ namespace PlowParty.Gameplay.DropOff.Tests
         }
 
         [Test]
-        public void Tick_AfterInterruptionStillInZone_RelocksByRemainingLoad()
+        public void Tick_ClearedDeliveryStillInZone_RelocksByRemainingLoad()
         {
             var tick = _rules.Tick(Delivery.None, true, 60, TickDelta);
 
