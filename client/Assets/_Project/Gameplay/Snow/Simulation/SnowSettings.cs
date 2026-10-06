@@ -20,6 +20,10 @@ namespace PlowParty.Gameplay.Snow.Simulation
 
         public float BlizzardDuration { get; set; }
 
+        public int BlizzardPilesPerWave { get; set; }
+
+        public int BlizzardPileSteps { get; set; }
+
         public float BladeWidth { get; set; }
 
         public float BladeDepth { get; set; }

@@ -11,6 +11,7 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private const int BitsPerCell = 4;
         private const int DepthMask = MaxDepth;
         private const int BlizzardSalt = -1;
+        private const int BlizzardPileSalt = -2;
         private const uint BlizzardSideCount = 4;
 
         private readonly SnowSettings _settings;
@@ -175,6 +176,41 @@ namespace PlowParty.Gameplay.Snow.Simulation
                     SetDepth(index, _settings.FullDepth);
                 }
             }
+
+            DropBlizzardPilesPassed(wave, side, fromProgress, toProgress);
+        }
+
+        private void DropBlizzardPilesPassed(int wave, BlizzardSide side, float fromProgress, float toProgress)
+        {
+            for (var pile = 0; pile < _settings.BlizzardPilesPerWave; pile++)
+            {
+                var cell = BlizzardPileCell(wave, pile);
+                if (cell < 0)
+                {
+                    return;
+                }
+
+                var position = PositionFrom(side, cell);
+                if (position > fromProgress && position <= toProgress)
+                {
+                    Spill(CellCentre(cell), _settings.BlizzardPileSteps);
+                }
+            }
+        }
+
+        private int BlizzardPileCell(int wave, int pile)
+        {
+            var start = (int)(SnowHash.Mix(_seed, wave, BlizzardPileSalt - pile) % (uint)_masked.Length);
+            for (var offset = 0; offset < _masked.Length; offset++)
+            {
+                var cell = (start + offset) % _masked.Length;
+                if (!_masked[cell])
+                {
+                    return cell;
+                }
+            }
+
+            return -1;
         }
 
         private BlizzardSide BlizzardSideOf(int wave)

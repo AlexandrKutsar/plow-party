@@ -23,6 +23,8 @@ MonoBehaviour:
   - 90
   - 135
   _blizzardDuration: 2.5
+  _blizzardPilesPerWave: 3
+  _blizzardPileSteps: 150
   _bladeWidth: 1.08
   _bladeDepth: 0.5
   _bladeForwardOffset: 0.85

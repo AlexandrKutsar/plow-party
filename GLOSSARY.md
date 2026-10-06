@@ -71,7 +71,7 @@ _Avoid_: Points (as a type name)
 Losing a share of Load when rammed or hit, which leaves a Snow Pile.
 
 **Snow Pile** (кучка):
-Spilled Snow lying on the ground that any Participant can collect; holds no Loot and has no owner.
+Extra Snow lying on the ground above full cover, left by a Spill or a Blizzard, that any Participant can collect; holds no Loot and has no owner.
 _Avoid_: Heap (that is the Trap Pile), Drift (that holds Loot)
 
 **Cell** (клетка):
@@ -89,7 +89,7 @@ _Avoid_: Footprint, collector
 The slow continuous return of Snow onto cleared cells.
 
 **Blizzard** (метель):
-A scheduled wave that rapidly re-covers the whole map with Snow.
+A scheduled wave that rapidly re-covers the whole map with Snow and leaves a few Snow Piles in its wake.
 _Avoid_: Storm, snowfall
 
 ## Collisions

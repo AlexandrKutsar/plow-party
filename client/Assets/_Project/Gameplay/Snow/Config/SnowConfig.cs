@@ -14,6 +14,8 @@ namespace PlowParty.Gameplay.Snow.Config
         [SerializeField, Range(0f, 1f)] private float _regrowthChance = 0.05f;
         [SerializeField] private float[] _blizzardTimes = { 45f, 90f, 135f };
         [SerializeField, Min(0f)] private float _blizzardDuration = 2.5f;
+        [SerializeField, Min(0)] private int _blizzardPilesPerWave = 3;
+        [SerializeField, Min(0)] private int _blizzardPileSteps = 150;
         [SerializeField, Min(0.01f)] private float _bladeWidth = 1.08f;
         [SerializeField, Min(0.01f)] private float _bladeDepth = 0.5f;
         [SerializeField, Min(0f)] private float _bladeForwardOffset = 0.85f;
@@ -33,6 +35,8 @@ namespace PlowParty.Gameplay.Snow.Config
                 RegrowthChance = _regrowthChance,
                 BlizzardTimes = (float[])_blizzardTimes.Clone(),
                 BlizzardDuration = _blizzardDuration,
+                BlizzardPilesPerWave = _blizzardPilesPerWave,
+                BlizzardPileSteps = _blizzardPileSteps,
                 BladeWidth = _bladeWidth,
                 BladeDepth = _bladeDepth,
                 BladeForwardOffset = _bladeForwardOffset,
