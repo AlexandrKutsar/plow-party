@@ -15,7 +15,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_Perspective_KeepsEveryCornerOnScreen()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.PerspectiveOverview(), WideAspect);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.PerspectiveOverview(), WideAspect);
 
             Assert.That(LargestScreenExtent(pose, SmallArena, WideAspect), Is.LessThanOrEqualTo(1f + Tolerance));
         }
@@ -23,7 +23,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_Perspective_TouchesTheFrustumOnTheLimitingSide()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.PerspectiveOverview(), WideAspect);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.PerspectiveOverview(), WideAspect);
 
             Assert.That(LargestScreenExtent(pose, SmallArena, WideAspect), Is.EqualTo(1f).Within(Tolerance));
         }
@@ -33,8 +33,8 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         {
             var settings = CameraTestSettings.PerspectiveOverview();
 
-            var small = OverviewFraming.Fit(SmallArena, 0f, settings, WideAspect);
-            var large = OverviewFraming.Fit(LargeArena, 0f, settings, WideAspect);
+            var small = OverviewFraming.Fit(Flat(SmallArena), settings, WideAspect);
+            var large = OverviewFraming.Fit(Flat(LargeArena), settings, WideAspect);
 
             Assert.That(large.Position.magnitude, Is.GreaterThan(small.Position.magnitude));
         }
@@ -42,7 +42,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_Perspective_UsesConfiguredPitch()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.PerspectiveOverview(), WideAspect);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.PerspectiveOverview(), WideAspect);
 
             Assert.That(pose.Rotation.eulerAngles.x, Is.EqualTo(60f).Within(Tolerance));
         }
@@ -50,7 +50,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_OrthographicWideScreen_SizeFitsArenaDepth()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.TopDownOrthographicOverview(0f), 2f);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.TopDownOrthographicOverview(0f), 2f);
 
             Assert.That(pose.Lens.OrthographicSize, Is.EqualTo(15f).Within(Tolerance));
         }
@@ -58,7 +58,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_OrthographicTallScreen_SizeFitsArenaWidth()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.TopDownOrthographicOverview(0f), 0.5f);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.TopDownOrthographicOverview(0f), 0.5f);
 
             Assert.That(pose.Lens.OrthographicSize, Is.EqualTo(30f).Within(Tolerance));
         }
@@ -66,7 +66,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         [Test]
         public void Fit_Padding_AddsMarginAroundArena()
         {
-            var pose = OverviewFraming.Fit(SmallArena, 0f, CameraTestSettings.TopDownOrthographicOverview(1f), 2f);
+            var pose = OverviewFraming.Fit(Flat(SmallArena), CameraTestSettings.TopDownOrthographicOverview(1f), 2f);
 
             Assert.That(pose.Lens.OrthographicSize, Is.EqualTo(16f).Within(Tolerance));
         }
@@ -76,18 +76,31 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         {
             var arena = Rect.MinMaxRect(0f, 10f, 30f, 40f);
 
-            var pose = OverviewFraming.Fit(arena, 2f, CameraTestSettings.TopDownOrthographicOverview(0f), 1f);
+            var pose = OverviewFraming.Fit(new ArenaVolume(arena, 2f, 2f), CameraTestSettings.TopDownOrthographicOverview(0f), 1f);
 
             Assert.That(Vector3.Distance(pose.Position, new Vector3(15f, 52f, 25f)), Is.LessThan(Tolerance));
         }
 
-        private static float LargestScreenExtent(CameraPose pose, Rect arena, float aspect)
+        [Test]
+        public void Fit_PerspectiveWithWalls_KeepsWallTopsOnScreen()
         {
-            var tanVertical = Mathf.Tan(pose.Lens.FieldOfView * 0.5f * Mathf.Deg2Rad);
+            var pose = OverviewFraming.Fit(new ArenaVolume(SmallArena, 0f, 2f), CameraTestSettings.PerspectiveOverview(), WideAspect);
+
+            Assert.That(LargestScreenExtent(pose, SmallArena, WideAspect, 2f), Is.EqualTo(1f).Within(Tolerance));
+        }
+
+        private static ArenaVolume Flat(Rect arena)
+        {
+            return new ArenaVolume(arena, 0f, 0f);
+        }
+
+        private static float LargestScreenExtent(CameraPose pose, Rect arena, float aspect, float wallHeight = 0f)
+        {
+            var tanVertical = pose.Lens.TanHalfFieldOfView;
             var tanHorizontal = tanVertical * aspect;
             var inverse = Quaternion.Inverse(pose.Rotation);
             var largest = 0f;
-            foreach (var corner in Corners(arena))
+            foreach (var corner in Corners(arena, wallHeight))
             {
                 var local = inverse * (corner - pose.Position);
                 Assert.That(local.z, Is.GreaterThan(0f));
@@ -98,7 +111,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
             return largest;
         }
 
-        private static Vector3[] Corners(Rect arena)
+        private static Vector3[] Corners(Rect arena, float wallHeight)
         {
             return new[]
             {
@@ -106,6 +119,10 @@ namespace PlowParty.Gameplay.CameraRig.Tests
                 new Vector3(arena.xMax, 0f, arena.yMin),
                 new Vector3(arena.xMin, 0f, arena.yMax),
                 new Vector3(arena.xMax, 0f, arena.yMax),
+                new Vector3(arena.xMin, wallHeight, arena.yMin),
+                new Vector3(arena.xMax, wallHeight, arena.yMin),
+                new Vector3(arena.xMin, wallHeight, arena.yMax),
+                new Vector3(arena.xMax, wallHeight, arena.yMax),
             };
         }
     }

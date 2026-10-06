@@ -86,7 +86,7 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         }
 
         [Test]
-        public void Step_ArenaNarrowerThanView_CentresOnArena()
+        public void Step_ArenaNarrowerThanView_CentresFootprintOnArena()
         {
             var narrow = Rect.MinMaxRect(-3f, -20f, 3f, 20f);
 

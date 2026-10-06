@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace PlowParty.Gameplay.CameraRig.Simulation
 {
     public readonly struct CameraLens
@@ -14,6 +16,8 @@ namespace PlowParty.Gameplay.CameraRig.Simulation
         public float FieldOfView { get; }
 
         public float OrthographicSize { get; }
+
+        public float TanHalfFieldOfView => Mathf.Tan(FieldOfView * 0.5f * Mathf.Deg2Rad);
 
         public CameraLens WithOrthographicSize(float size)
         {

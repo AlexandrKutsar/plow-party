@@ -61,7 +61,7 @@ namespace PlowParty.Gameplay.CameraRig.Simulation
             }
             else
             {
-                var tanVertical = Mathf.Tan(Lens.FieldOfView * 0.5f * Mathf.Deg2Rad);
+                var tanVertical = Lens.TanHalfFieldOfView;
                 origin = eye;
                 direction = (rotation * new Vector3(horizontal * tanVertical * aspect, vertical * tanVertical, 1f)).normalized;
             }

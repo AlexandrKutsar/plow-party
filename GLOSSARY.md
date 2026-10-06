@@ -249,8 +249,8 @@ _Avoid_: Session (that is the Fusion Session), API key
 
 **Camera Preset** (режим камеры):
 One way the local camera frames the Match: Overview (the whole Arena), Follow (the local Vehicle, north up), or Follow Rotating (the local Vehicle, turning with its heading).
-_Avoid_: Camera mode, view (as a type name)
+_Avoid_: Camera mode
 
 **Camera Shake** (тряска камеры):
-A short decaying jolt of the local camera that any feature triggers with a strength, such as a Ram.
+A short decaying jolt of the local camera that any feature triggers with a strength, such as a Ram; the accumulated strength, 0 to 1, is its Trauma.
 _Avoid_: Screen shake, impulse (that is the Vehicle Impulse)

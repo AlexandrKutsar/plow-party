@@ -31,7 +31,8 @@ namespace PlowParty.Bootstrap
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
             builder.Register<CameraShake>(Lifetime.Singleton).AsSelf().As<ICameraShake>();
-            builder.RegisterEntryPoint<CameraRamShake>();            builder.RegisterEntryPoint<MatchSceneQuickStart>();
+            builder.RegisterEntryPoint<CameraRamShake>();
+            builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
     }
 }

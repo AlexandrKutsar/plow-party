@@ -17,8 +17,7 @@ namespace PlowParty.Gameplay.CameraRig.View
         private CameraConfig _config;
         private VehicleRegistry _vehicles;
         private CameraShake _shake;
-        private Rect _arena;
-        private float _groundHeight;
+        private ArenaVolume _arena;
         private bool _hasArena;
 
         public CameraPreset ActivePreset { get; private set; }
@@ -40,9 +39,7 @@ namespace PlowParty.Gameplay.CameraRig.View
 
         private void Start()
         {
-            var bounds = ArenaBoundsReader.Read(_arenaRoot);
-            _arena = Rect.MinMaxRect(bounds.min.x, bounds.min.z, bounds.max.x, bounds.max.z);
-            _groundHeight = bounds.min.y;
+            _arena = ArenaVolume.FromBounds(ArenaBoundsReader.Read(_arenaRoot));
             _hasArena = true;
         }
 
@@ -62,11 +59,11 @@ namespace PlowParty.Gameplay.CameraRig.View
         {
             if (ActivePreset != CameraPreset.Overview && TryFindLocalVehicle(out var vehicle))
             {
-                return _follow.Step(TargetOf(vehicle), _config.ToFollowSettings(ActivePreset), _arena, _camera.aspect, Time.deltaTime);
+                return _follow.Step(TargetOf(vehicle), _config.ToFollowSettings(ActivePreset), _arena.Area, _camera.aspect, Time.deltaTime);
             }
 
             _follow.Release();
-            return OverviewFraming.Fit(_arena, _groundHeight, _config.ToOverviewSettings(), _camera.aspect);
+            return OverviewFraming.Fit(_arena, _config.ToOverviewSettings(), _camera.aspect);
         }
 
         private bool TryFindLocalVehicle(out NetworkVehicle local)
