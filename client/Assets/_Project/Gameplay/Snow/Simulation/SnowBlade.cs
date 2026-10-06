@@ -12,6 +12,12 @@ namespace PlowParty.Gameplay.Snow.Simulation
             Depth = depth;
         }
 
+        public static SnowBlade Ahead(Vector2 position, Vector2 forward, SnowSettings settings)
+        {
+            var facing = forward.normalized;
+            return new SnowBlade(position + facing * settings.BladeForwardOffset, facing, settings.BladeWidth, settings.BladeDepth);
+        }
+
         public Vector2 Centre { get; }
 
         public Vector2 Forward { get; }

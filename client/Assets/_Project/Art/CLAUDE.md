@@ -75,3 +75,4 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 |---|---|---|
 | Palette | `Shared/` | `art/blender/plow_art/palette.py` (texture), `M_Palette.mat` is a normal asset |
 | Vehicle | `Vehicles/Vehicle/` | `art/blender/models/vehicle.py` |
+| SnowSurface | `Environment/Snow/` | none: a Unity quad with `M_SnowSurface` (Simple Lit, base map written at runtime by Snow's View; reason in ADR-0011) |

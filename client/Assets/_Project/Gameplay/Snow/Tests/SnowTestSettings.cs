@@ -19,6 +19,9 @@ namespace PlowParty.Gameplay.Snow.Tests
                 RegrowthChance = 0f,
                 BlizzardTimes = new float[0],
                 BlizzardDuration = 2f,
+                BladeWidth = 1f,
+                BladeDepth = 0.4f,
+                BladeForwardOffset = 0.75f,
             };
         }
     }

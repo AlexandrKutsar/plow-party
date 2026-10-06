@@ -5,10 +5,11 @@ namespace PlowParty.Gameplay.Snow.Simulation
 {
     public sealed class SnowGrid
     {
+        public const int CellsPerWord = 32 / BitsPerCell;
+        public const int MaxDepth = (1 << BitsPerCell) - 1;
+
         private const int BitsPerCell = 4;
-        private const int CellsPerWord = 32 / BitsPerCell;
-        private const int DepthMask = (1 << BitsPerCell) - 1;
-        private const int MaxDepth = DepthMask;
+        private const int DepthMask = MaxDepth;
         private const int BlizzardSalt = -1;
 
         private readonly SnowSettings _settings;

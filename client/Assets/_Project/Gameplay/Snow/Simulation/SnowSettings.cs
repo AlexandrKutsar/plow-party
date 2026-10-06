@@ -19,5 +19,11 @@ namespace PlowParty.Gameplay.Snow.Simulation
         public float[] BlizzardTimes { get; set; }
 
         public float BlizzardDuration { get; set; }
+
+        public float BladeWidth { get; set; }
+
+        public float BladeDepth { get; set; }
+
+        public float BladeForwardOffset { get; set; }
     }
 }

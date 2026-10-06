@@ -5,7 +5,8 @@
         "VContainer",
         "UniTask",
         "PlowParty.Infrastructure",
-        "PlowParty.Gameplay.Vehicle"
+        "PlowParty.Gameplay.Vehicle",
+        "PlowParty.Gameplay.Snow"
     ],
     "autoReferenced": false
 }

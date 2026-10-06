@@ -41,9 +41,9 @@ A Snow feature in Gameplay whose rules live in one pure C# type, `SnowGrid`: a 0
 - **Module:** new feature module `Gameplay/Snow`, asmdef `PlowParty.Gameplay.Snow`, namespace `PlowParty.Gameplay.Snow`, module `CLAUDE.md`; the feature index row moves from `planned` to `active`. Sub-folders `Simulation`, `Network`, `View`, `Config`, `Tests`. References: Vehicle (read-only: `VehicleRegistry`, `NetworkVehicle` state, `VehicleArena`), Infrastructure, Fusion, VContainer. Vehicle never references Snow.
 - **Single test seam — `SnowGrid`:** pure C# in Simulation, constructed from `SnowSettings`, the obstacle set of a `VehicleArena`, and a seed. Public surface:
   - `Scrape(blade, room)` → steps removed: a Blade is an oriented rectangle (centre, forward, width, depth); every unmasked Cell whose centre lies inside it loses Depth until `room` steps are taken. Cells are visited in a fixed order (row-major), so a partial scrape is deterministic.
-  - `Spill(point, steps)` → steps placed: Cells are visited centre-out (by distance to `point`, ties by index); each unmasked Cell is raised to Depth 15; steps that find no Cell within the grid are dropped and the return value says how many landed.
+  - `Spill(point, steps)` → steps placed: the Cell under `point` first, then square rings around it, each ring row by row; each unmasked Cell is raised to Depth 15; steps that find no Cell within the grid are dropped and the return value says how many landed.
   - `Tick(elapsedPlayingTime)`: applies every Regrowth step and Blizzard progress due up to that time; time going backwards is ignored.
-  - `GetDepth(cell)`, `CellOf(point)`, `Width`, `Height` for the View and tests.
+  - `GetDepth(x, y)`, `Width`, `Height` for the View and tests.
   - `WordCount`, `GetWord(i)`, `SetWord(i, value)`: the packed form the network adapter mirrors.
 - **Grid:** Cell size 0.5 m over the config rectangle (default origin (-15, -15), size 30 × 30 m → 60 × 60 Cells, 450 words). Vector2 x = world x, y = world z, as in Vehicle.
 - **Depth:** 4 bits per Cell, 0–15. `FullDepth` = 3; 4–15 is a Snow Pile. Every unmasked Cell starts at `FullDepth`.
