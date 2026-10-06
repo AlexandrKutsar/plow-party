@@ -1,0 +1,25 @@
+using PlowParty.Gameplay.Snow.Simulation;
+using UnityEngine;
+
+namespace PlowParty.Gameplay.Snow.Tests
+{
+    internal static class SnowTestSettings
+    {
+        public const int Seed = 7;
+
+        public static SnowSettings Create()
+        {
+            return new SnowSettings
+            {
+                Origin = Vector2.zero,
+                Size = new Vector2(4f, 2f),
+                CellSize = 0.5f,
+                FullDepth = 3,
+                RegrowthInterval = 1f,
+                RegrowthChance = 0f,
+                BlizzardTimes = new float[0],
+                BlizzardDuration = 2f,
+            };
+        }
+    }
+}
