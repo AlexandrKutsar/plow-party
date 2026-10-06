@@ -50,3 +50,4 @@ MonoBehaviour:
   autoInjectGameObjects: []
   _vehicleConfig: {fileID: 11400000, guid: b66c6501a8451804d98e204e847f04cd, type: 2}
   _snowConfig: {fileID: 11400000, guid: 8a6ea53ac92b81d4dadf959cc92a8032, type: 2}
+  _bucketConfig: {fileID: 11400000, guid: eaf318b29e9a1a04e818c4635baee52a, type: 2}

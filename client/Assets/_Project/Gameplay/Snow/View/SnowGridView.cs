@@ -11,7 +11,6 @@ namespace PlowParty.Gameplay.Snow.View
     public sealed class SnowGridView : MonoBehaviour
     {
         private const float BladeSampleInterval = 1f / 60f;
-        private const int UnlimitedRoom = int.MaxValue;
 
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
@@ -22,6 +21,7 @@ namespace PlowParty.Gameplay.Snow.View
         [SerializeField] private Color32 _pileColor = new Color32(196, 222, 255, 255);
 
         private VehicleRegistry _registry;
+        private IBladeRoom _room;
         private SnowConfig _config;
         private SnowSettings _settings;
         private SnowGrid _shown;
@@ -33,12 +33,14 @@ namespace PlowParty.Gameplay.Snow.View
         private float[] _recentBladeTimes;
         private int _nextRecentBlade;
         private float _lastBladeSampleTime = float.NegativeInfinity;
+        private NetworkVehicle _localVehicle;
 
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config)
+        public void Construct(VehicleRegistry registry, SnowConfig config, IBladeRoom room)
         {
             _registry = registry;
             _config = config;
+            _room = room;
         }
 
         private void LateUpdate()
@@ -113,11 +115,12 @@ namespace PlowParty.Gameplay.Snow.View
             }
 
             var oldest = Time.time - _config.PreClearDuration;
-            for (var i = 0; i < _recentBlades.Length; i++)
+            var room = _localVehicle != null ? _room.RoomFor(_localVehicle) : 0;
+            for (var i = 0; i < _recentBlades.Length && room > 0; i++)
             {
                 if (_recentBladeTimes[i] >= oldest)
                 {
-                    _shown.Scrape(_recentBlades[i], UnlimitedRoom);
+                    room -= _shown.Scrape(_recentBlades[i], room);
                 }
             }
         }
@@ -129,6 +132,7 @@ namespace PlowParty.Gameplay.Snow.View
             {
                 if (vehicles[i].HasInputAuthority)
                 {
+                    _localVehicle = vehicles[i];
                     _recentBlades[_nextRecentBlade] = SnowBlade.Ahead(vehicles[i].Position, vehicles[i].Forward, _settings);
                     _recentBladeTimes[_nextRecentBlade] = Time.time;
                     _nextRecentBlade = (_nextRecentBlade + 1) % _recentBlades.Length;

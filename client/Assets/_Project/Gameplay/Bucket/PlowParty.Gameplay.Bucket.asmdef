@@ -1,0 +1,12 @@
+{
+    "name": "PlowParty.Gameplay.Bucket",
+    "rootNamespace": "PlowParty.Gameplay.Bucket",
+    "references": [
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Vehicle",
+        "PlowParty.Infrastructure",
+        "Fusion.Unity",
+        "VContainer"
+    ],
+    "autoReferenced": false
+}

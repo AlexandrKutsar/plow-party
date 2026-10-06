@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 771025557754960442}
   - component: {fileID: 8438766430303299455}
   - component: {fileID: 1136351021347885171}
+  - component: {fileID: 5989638354460100048}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Untagged
@@ -53,6 +54,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 1136351021347885171}
+  - {fileID: 5989638354460100048}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &1136351021347885171
 MonoBehaviour:
@@ -77,6 +79,18 @@ MonoBehaviour:
   _IsImmobilised:
     RawValue: 0
   _RamStrengthMultiplier: 0
+--- !u!114 &5989638354460100048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5001910690202698230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d2006fff70ef0a48ac0aa1fd6000ff4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4453728392447846648
 PrefabInstance:
   m_ObjectHideFlags: 0
