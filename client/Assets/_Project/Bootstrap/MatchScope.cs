@@ -1,4 +1,6 @@
 using PlowParty.Gameplay.Bucket.Network;
+using PlowParty.Gameplay.CameraRig.Network;
+using PlowParty.Gameplay.CameraRig.Simulation;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Snow.Network;
 using PlowParty.Gameplay.Snow.Simulation;
@@ -28,7 +30,8 @@ namespace PlowParty.Bootstrap
             builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
-            builder.RegisterEntryPoint<MatchSceneQuickStart>();
+            builder.Register<CameraShake>(Lifetime.Singleton).AsSelf().As<ICameraShake>();
+            builder.RegisterEntryPoint<CameraRamShake>();            builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
     }
 }

@@ -244,3 +244,13 @@ _Avoid_: Hardware id, install id
 **Auth Token** (токен):
 The bearer credential issued at login that a client presents to act as its Account.
 _Avoid_: Session (that is the Fusion Session), API key
+
+## Camera
+
+**Camera Preset** (режим камеры):
+One way the local camera frames the Match: Overview (the whole Arena), Follow (the local Vehicle, north up), or Follow Rotating (the local Vehicle, turning with its heading).
+_Avoid_: Camera mode, view (as a type name)
+
+**Camera Shake** (тряска камеры):
+A short decaying jolt of the local camera that any feature triggers with a strength, such as a Ram.
+_Avoid_: Screen shake, impulse (that is the Vehicle Impulse)

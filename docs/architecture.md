@@ -106,3 +106,4 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |
 | Bots | `_Project/Gameplay/Bots/` | planned | Utility-AI bots on the host (GDD 8) |
 | Hud | `_Project/Gameplay/Hud/` | planned | Joysticks, gadget button, portraits, timer, announcements |
+| CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Camera Presets (overview, follow, follow rotating), Camera Shake, dev preset switcher |
