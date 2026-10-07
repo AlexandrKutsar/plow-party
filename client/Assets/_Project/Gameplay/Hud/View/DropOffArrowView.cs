@@ -4,6 +4,7 @@ using PlowParty.Gameplay.Hud.Simulation;
 using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Match.Simulation;
 using PlowParty.Gameplay.Vehicle.Network;
+using PlowParty.Infrastructure.UI;
 using UnityEngine;
 using VContainer;
 

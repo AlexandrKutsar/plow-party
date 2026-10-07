@@ -10,7 +10,7 @@ namespace PlowParty.Gameplay.Participants.Simulation
 
         public static string FallbackNickname(int slot)
         {
-            return $"Player {slot + 1}";
+            return $"Игрок {slot + 1}";
         }
 
         public static string PlayerNickname(string tokenNickname, int slot)

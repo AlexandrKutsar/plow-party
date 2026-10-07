@@ -16,8 +16,8 @@ namespace PlowParty.Gameplay.Participants.Tests
         [Test]
         public void PlayerNickname_NoNickname_FallsBackToSlotNumber()
         {
-            Assert.That(ParticipantProfiles.PlayerNickname(null, 0), Is.EqualTo("Player 1"));
-            Assert.That(ParticipantProfiles.PlayerNickname("   ", 3), Is.EqualTo("Player 4"));
+            Assert.That(ParticipantProfiles.PlayerNickname(null, 0), Is.EqualTo("Игрок 1"));
+            Assert.That(ParticipantProfiles.PlayerNickname("   ", 3), Is.EqualTo("Игрок 4"));
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace PlowParty.Gameplay.Participants.Tests
         [Test]
         public void BotNickname_EmptyPool_FallsBackToSlotNumber()
         {
-            Assert.That(ParticipantProfiles.BotNickname(Array.Empty<string>(), new List<string>(), 4, new Random(1)), Is.EqualTo("Player 5"));
+            Assert.That(ParticipantProfiles.BotNickname(Array.Empty<string>(), new List<string>(), 4, new Random(1)), Is.EqualTo("Игрок 5"));
         }
 
         [Test]

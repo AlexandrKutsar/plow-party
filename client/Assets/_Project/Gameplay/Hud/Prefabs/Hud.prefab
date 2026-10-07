@@ -363,7 +363,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &250589686524014836
 GameObject:
   m_ObjectHideFlags: 0
@@ -442,7 +442,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &372494952733472913
 GameObject:
   m_ObjectHideFlags: 0
@@ -877,7 +877,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &665547474139875151
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,7 +1156,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 961966541199072393}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b367e70d991f5df4388079a991f6fada, type: 3}
+  m_Script: {fileID: 11500000, guid: e726c36ac615cc3418c69fa0062b3824, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &8181111847103808568
@@ -1558,7 +1558,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &1392923523944871081
 GameObject:
   m_ObjectHideFlags: 0
@@ -1733,7 +1733,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Blizzard in 5!
+  m_Text: "\u041C\u0435\u0442\u0435\u043B\u044C \u0447\u0435\u0440\u0435\u0437 5!"
 --- !u!114 &987100585320226805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1978,7 +1978,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &1640300527077173803
 GameObject:
   m_ObjectHideFlags: 0
@@ -2843,7 +2843,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Next match in 10
+  m_Text: "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u043C\u0430\u0442\u0447 \u0447\u0435\u0440\u0435\u0437 10"
 --- !u!1 &2839088855013542519
 GameObject:
   m_ObjectHideFlags: 0
@@ -3474,7 +3474,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &3182009126132706708
 GameObject:
   m_ObjectHideFlags: 0
@@ -3704,7 +3704,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &3550292021865354790
 GameObject:
   m_ObjectHideFlags: 0
@@ -3878,7 +3878,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &3985612300575581786
 GameObject:
   m_ObjectHideFlags: 0
@@ -3958,7 +3958,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Play again
+  m_Text: "\u0418\u0433\u0440\u0430\u0442\u044C \u0441\u043D\u043E\u0432\u0430"
 --- !u!114 &6161001095732838829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4206,7 +4206,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &5301528669125112402
 GameObject:
   m_ObjectHideFlags: 0
@@ -4606,7 +4606,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &5611176589602006005
 GameObject:
   m_ObjectHideFlags: 0
@@ -4874,7 +4874,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: DROP
+  m_Text: "\u0421\u0414\u0410\u0427\u0410"
 --- !u!1 &6056341291757537815
 GameObject:
   m_ObjectHideFlags: 0
@@ -5107,7 +5107,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &6260094864237631355
 GameObject:
   m_ObjectHideFlags: 0
@@ -5407,7 +5407,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &6293184306967712795
 GameObject:
   m_ObjectHideFlags: 0
@@ -5487,7 +5487,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Match starts soon. Waiting for players 1/6
+  m_Text: "\u041C\u0430\u0442\u0447 \u0441\u043A\u043E\u0440\u043E \u043D\u0430\u0447\u043D\u0451\u0442\u0441\u044F. \u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0438\u0433\u0440\u043E\u043A\u043E\u0432 1/6"
 --- !u!114 &6743857480771740865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5904,7 +5904,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &6503154437788344089
 GameObject:
   m_ObjectHideFlags: 0
@@ -6137,7 +6137,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &6665956399446829628
 GameObject:
   m_ObjectHideFlags: 0
@@ -6485,7 +6485,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Results
+  m_Text: "\u0418\u0442\u043E\u0433\u0438"
 --- !u!114 &3686316701453854484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6701,7 +6701,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &7440541278227052224
 GameObject:
   m_ObjectHideFlags: 0
@@ -6875,7 +6875,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"
 --- !u!1 &7484694744608869228
 GameObject:
   m_ObjectHideFlags: 0
@@ -7284,7 +7284,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 1st
+  m_Text: "1-\u0435"
 --- !u!1 &7981926419100266104
 GameObject:
   m_ObjectHideFlags: 0
@@ -8095,4 +8095,4 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player 1
+  m_Text: "\u0418\u0433\u0440\u043E\u043A 1"

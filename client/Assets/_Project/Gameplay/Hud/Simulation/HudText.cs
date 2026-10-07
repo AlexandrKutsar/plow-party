@@ -5,8 +5,8 @@ namespace PlowParty.Gameplay.Hud.Simulation
 {
     public static class HudText
     {
-        public const string Go = "GO!";
-        public const string WaitingForHost = "Waiting for the host";
+        public const string Go = "СТАРТ!";
+        public const string WaitingForHost = "Ожидание хоста";
 
         public static int WholeSecondsLeft(float seconds)
         {
@@ -25,17 +25,17 @@ namespace PlowParty.Gameplay.Hud.Simulation
 
         public static string WaitingForPlayers(int seated, int slots)
         {
-            return $"Match starts soon. Waiting for players {seated}/{slots}";
+            return $"Матч скоро начнётся. Ожидание игроков {seated}/{slots}";
         }
 
         public static string NextMatchIn(int seconds)
         {
-            return $"Next match in {seconds}";
+            return $"Следующий матч через {seconds}";
         }
 
         public static string BlizzardIn(int seconds)
         {
-            return $"Blizzard in {seconds}!";
+            return $"Метель через {seconds}!";
         }
 
         public static string ScoreGain(int gained)
@@ -45,25 +45,7 @@ namespace PlowParty.Gameplay.Hud.Simulation
 
         public static string Place(int place)
         {
-            switch (place % 100)
-            {
-                case 11:
-                case 12:
-                case 13:
-                    return place + "th";
-            }
-
-            switch (place % 10)
-            {
-                case 1:
-                    return place + "st";
-                case 2:
-                    return place + "nd";
-                case 3:
-                    return place + "rd";
-                default:
-                    return place + "th";
-            }
+            return place + "-е";
         }
     }
 }

@@ -8,6 +8,7 @@
         "PlowParty.Gameplay.Bucket",
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Vehicle",
+        "PlowParty.Infrastructure",
         "VContainer",
         "UnityEngine.UI"
     ],
