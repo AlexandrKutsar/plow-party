@@ -22,19 +22,6 @@ namespace PlowParty.Gameplay.Vehicle.Network
             _vehicles.Remove(vehicle);
         }
 
-        public bool IsSlotTaken(int slot)
-        {
-            for (var i = 0; i < _vehicles.Count; i++)
-            {
-                if (_vehicles[i].Slot == slot)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public bool TryGetLocal(out NetworkVehicle local)
         {
             for (var i = 0; i < _vehicles.Count; i++)

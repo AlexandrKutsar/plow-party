@@ -1,0 +1,12 @@
+{
+    "name": "PlowParty.Meta.Account",
+    "rootNamespace": "PlowParty.Meta.Account",
+    "references": [
+        "PlowParty.Shared",
+        "PlowParty.Infrastructure",
+        "UniTask",
+        "VContainer",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": false
+}

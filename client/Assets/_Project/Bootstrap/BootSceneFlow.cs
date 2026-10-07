@@ -1,24 +1,26 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using PlowParty.Infrastructure.Scenes;
+using PlowParty.Meta.Account;
 using VContainer.Unity;
 
 namespace PlowParty.Bootstrap
 {
     public sealed class BootSceneFlow : IAsyncStartable
     {
-        private const string FirstScene = "Match";
-
         private readonly SceneLoader _scenes;
+        private readonly AccountService _account;
 
-        public BootSceneFlow(SceneLoader scenes)
+        public BootSceneFlow(SceneLoader scenes, AccountService account)
         {
             _scenes = scenes;
+            _account = account;
         }
 
-        public UniTask StartAsync(CancellationToken cancellation)
+        public async UniTask StartAsync(CancellationToken cancellation)
         {
-            return _scenes.LoadAsync(FirstScene, cancellation);
+            await _account.EnsureSignedInAsync(cancellation);
+            await _scenes.LoadAsync(SceneNames.Menu, cancellation).SuppressCancellationThrow();
         }
     }
 }

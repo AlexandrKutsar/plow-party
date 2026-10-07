@@ -6,6 +6,8 @@ namespace PlowParty.Infrastructure.Scenes
 {
     public sealed class SceneLoader
     {
+        public string ActiveSceneName => SceneManager.GetActiveScene().name;
+
         public UniTask LoadAsync(string sceneName, CancellationToken cancellationToken)
         {
             return SceneManager.LoadSceneAsync(sceneName).ToUniTask(cancellationToken: cancellationToken);

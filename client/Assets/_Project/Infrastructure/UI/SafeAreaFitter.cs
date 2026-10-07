@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace PlowParty.Gameplay.Hud.View
+namespace PlowParty.Infrastructure.UI
 {
     [RequireComponent(typeof(RectTransform))]
     public sealed class SafeAreaFitter : MonoBehaviour

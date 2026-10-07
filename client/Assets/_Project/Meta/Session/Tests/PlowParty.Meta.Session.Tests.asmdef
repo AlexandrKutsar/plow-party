@@ -1,0 +1,22 @@
+{
+    "name": "PlowParty.Meta.Session.Tests",
+    "rootNamespace": "PlowParty.Meta.Session.Tests",
+    "references": [
+        "PlowParty.Meta.Session",
+        "PlowParty.Shared",
+        "PlowParty.Infrastructure",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}

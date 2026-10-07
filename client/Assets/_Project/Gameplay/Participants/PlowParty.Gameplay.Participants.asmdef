@@ -1,0 +1,10 @@
+{
+    "name": "PlowParty.Gameplay.Participants",
+    "rootNamespace": "PlowParty.Gameplay.Participants",
+    "references": [
+        "PlowParty.Gameplay.Vehicle",
+        "Fusion.Unity",
+        "VContainer"
+    ],
+    "autoReferenced": false
+}

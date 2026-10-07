@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Fusion;
-using PlowParty.Infrastructure.Network;
 using UnityEngine;
 using VContainer;
 
@@ -11,41 +10,51 @@ namespace PlowParty.Gameplay.Vehicle.Network
         [SerializeField] private NetworkObject _vehiclePrefab;
         [SerializeField] private Transform[] _spawnPoints;
 
-        private readonly Dictionary<PlayerRef, NetworkObject> _spawned = new Dictionary<PlayerRef, NetworkObject>();
-        private readonly List<PlayerRef> _respawnOrder = new List<PlayerRef>();
-        private NetworkRunnerEvents _events;
-        private VehicleRegistry _registry;
+        private readonly Dictionary<int, NetworkObject> _spawned = new Dictionary<int, NetworkObject>();
+        private readonly Dictionary<int, PlayerRef> _drivers = new Dictionary<int, PlayerRef>();
+        private readonly List<int> _respawnOrder = new List<int>();
         private VehicleWorldDriver _driver;
 
+        public int SlotCount => Mathf.Min(_spawnPoints.Length, VehicleWorldDriver.MaxVehicles);
+
         [Inject]
-        public void Construct(NetworkRunnerEvents events, VehicleRegistry registry, VehicleWorldDriver driver)
+        public void Construct(VehicleWorldDriver driver)
         {
-            _events = events;
-            _registry = registry;
             _driver = driver;
-            _events.PlayerJoined += OnPlayerJoined;
-            _events.PlayerLeft += OnPlayerLeft;
         }
 
-        private void OnDestroy()
+        public bool IsSlotTaken(int slot)
         {
-            if (_events == null)
+            return _spawned.ContainsKey(slot);
+        }
+
+        public void Spawn(NetworkRunner runner, int slot, PlayerRef driver)
+        {
+            if (!runner.IsServer || slot < 0 || slot >= SlotCount || IsSlotTaken(slot))
             {
                 return;
             }
 
-            _events.PlayerJoined -= OnPlayerJoined;
-            _events.PlayerLeft -= OnPlayerLeft;
+            var spawnPoint = _spawnPoints[slot];
+            _driver.ResetRamCooldowns(slot);
+            _drivers[slot] = driver;
+            _spawned[slot] = runner.Spawn(
+                _vehiclePrefab,
+                spawnPoint.position,
+                spawnPoint.rotation,
+                driver,
+                (_, spawned) => spawned.GetComponent<NetworkVehicle>().Slot = slot);
         }
 
-        private void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
+        public void Despawn(NetworkRunner runner, int slot)
         {
-            if (!runner.IsServer || !TryTakeFreeSlot(out var slot))
+            if (!runner.IsServer || !_spawned.Remove(slot, out var vehicle))
             {
                 return;
             }
 
-            Spawn(runner, player, slot);
+            _drivers.Remove(slot);
+            runner.Despawn(vehicle);
         }
 
         public void RespawnAll(NetworkRunner runner)
@@ -57,49 +66,12 @@ namespace PlowParty.Gameplay.Vehicle.Network
 
             _respawnOrder.Clear();
             _respawnOrder.AddRange(_spawned.Keys);
-            foreach (var player in _respawnOrder)
+            foreach (var slot in _respawnOrder)
             {
-                var vehicle = _spawned[player];
-                var slot = vehicle.GetComponent<NetworkVehicle>().Slot;
-                runner.Despawn(vehicle);
-                Spawn(runner, player, slot);
+                var driver = _drivers[slot];
+                Despawn(runner, slot);
+                Spawn(runner, slot, driver);
             }
-        }
-
-        private void Spawn(NetworkRunner runner, PlayerRef player, int slot)
-        {
-            var spawnPoint = _spawnPoints[slot];
-            _driver.ResetRamCooldowns(slot);
-            _spawned[player] = runner.Spawn(
-                _vehiclePrefab,
-                spawnPoint.position,
-                spawnPoint.rotation,
-                player,
-                (_, spawned) => spawned.GetComponent<NetworkVehicle>().Slot = slot);
-        }
-
-        private void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-        {
-            if (!runner.IsServer || !_spawned.Remove(player, out var vehicle))
-            {
-                return;
-            }
-
-            runner.Despawn(vehicle);
-        }
-
-        private bool TryTakeFreeSlot(out int slot)
-        {
-            var slotCount = Mathf.Min(_spawnPoints.Length, VehicleWorldDriver.MaxVehicles);
-            for (slot = 0; slot < slotCount; slot++)
-            {
-                if (!_registry.IsSlotTaken(slot))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

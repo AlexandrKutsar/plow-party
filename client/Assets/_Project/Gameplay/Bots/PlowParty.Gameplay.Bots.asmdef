@@ -1,0 +1,15 @@
+{
+    "name": "PlowParty.Gameplay.Bots",
+    "rootNamespace": "PlowParty.Gameplay.Bots",
+    "references": [
+        "PlowParty.Gameplay.Participants",
+        "PlowParty.Gameplay.Match",
+        "PlowParty.Gameplay.DropOff",
+        "PlowParty.Gameplay.Bucket",
+        "PlowParty.Gameplay.Snow",
+        "PlowParty.Gameplay.Vehicle",
+        "Fusion.Unity",
+        "VContainer"
+    ],
+    "autoReferenced": false
+}

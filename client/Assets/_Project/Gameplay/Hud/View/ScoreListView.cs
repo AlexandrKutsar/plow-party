@@ -2,6 +2,7 @@ using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.Simulation;
 using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Match.Simulation;
+using PlowParty.Gameplay.Participants.Network;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,15 +18,17 @@ namespace PlowParty.Gameplay.Hud.View
         private VehicleRegistry _vehicles;
         private IScoreReader _scores;
         private IMatchClock _match;
+        private ParticipantRoster _roster;
         private NetworkVehicle[] _order;
         private int[] _orderScores;
 
         [Inject]
-        public void Construct(VehicleRegistry vehicles, IScoreReader scores, IMatchClock match)
+        public void Construct(VehicleRegistry vehicles, IScoreReader scores, IMatchClock match, ParticipantRoster roster)
         {
             _vehicles = vehicles;
             _scores = scores;
             _match = match;
+            _roster = roster;
         }
 
         private void Awake()
@@ -36,7 +39,7 @@ namespace PlowParty.Gameplay.Hud.View
 
         private void LateUpdate()
         {
-            var visible = _match.IsRunning && _match.Phase != MatchPhase.Results;
+            var visible = _match.IsRunning && (_match.Phase == MatchPhase.Countdown || _match.Phase == MatchPhase.Playing);
             _panel.SetActive(visible);
             if (!visible)
             {
@@ -48,7 +51,7 @@ namespace PlowParty.Gameplay.Hud.View
             {
                 if (i < count)
                 {
-                    _rows[i].Show(_order[i].Slot, _order[i].HasInputAuthority, _orderScores[i]);
+                    _rows[i].Show(_roster.NicknameOf(_order[i].Slot), _order[i].HasInputAuthority, _orderScores[i]);
                 }
                 else
                 {

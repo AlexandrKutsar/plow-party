@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61084acf78815734caf2962857170608, type: 3}
+  m_Name: BotConfig
+  m_EditorClassIdentifier: 
+  _strong: {fileID: 11400000, guid: 41c946af1ce94b94ab18a70e82e7e564, type: 2}
+  _medium: {fileID: 11400000, guid: 10b4dcac2ac5fb046a58ac218ebc1f98, type: 2}
+  _weak: {fileID: 11400000, guid: e1881452d907b8a48898e7dc3f8642b2, type: 2}
+  _weakShare: 0.5
+  _navCellSize: 1
+  _navClearance: 0.7
+  _waypointReach: 0.9
+  _replanInterval: 0.5
+  _avoidRadius: 2.5
+  _avoidStrength: 1.5
+  _stuckDistance: 0.5
+  _stuckTime: 1
+  _unstuckDuration: 0.7
+  _cruiseSpeed: 6
+  _stuckReportTime: 3
+  _snowRefreshInterval: 0.25
+  _snowTargetReach: 2
+  _snowFalloff: 8
+  _crowdRadius: 3
+  _crowdPenalty: 0.5
+  _minPileSteps: 20
+  _pileFalloff: 12
+  _ramRange: 10
+  _ramMinVictimLoad: 20
+  _ramFalloff: 6
+  _ramLeadTime: 0.3
+  _threatRange: 6
+  _threatClosingSpeed: 3
+  _threatConeDegrees: 35
+  _evadeDistance: 5
+  _dropOffStandDepth: 1
+  _deliveryMargin: 4
+  _greedReach: 15
+  _collectWeight: 1
+  _deliverWeight: 1
+  _pileWeight: 1.3
+  _ramWeight: 1.2
+  _evadeWeight: 1.2
+  _commitmentBonus: 0.15
+  _fullBucketBonus: 0.3
+  _urgentDeliveryBoost: 2
+  _greedRichnessMinimum: 0.25
+  _greedDiscount: 0.8
+  _nearDropOffBonus: 0.3
+  _nearDropOffTravelTime: 6
+  _collectFloor: 0.3
+  _pileFullShare: 0.9
+  _pileScarcityBase: 0.6
+  _ramLoadOffset: 1.3
+  _evadeBase: 0.4
+  _dropOffZoneMargin: 0.3
+  _arrivalSlowdownDistance: 3
+  _minArrivalThrottle: 0.25
+  _goalMovedDistance: 1.5
+  _unstuckThrottle: 0.8
+  _unstuckSpreadDegrees: 45
+  _openDirectionRadius: 2
+  _detourFactor: 1.3
+  _keptSnowTargetRichness: 0.3
+  _snowTargetPatience: 3

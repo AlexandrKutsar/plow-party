@@ -31,6 +31,18 @@ _Avoid_: Room, lobby (as the network concept)
 **Room Code** (код комнаты):
 A 5-character code a Host shares so friends join the same Session.
 
+**Quick Play** (быстрая игра):
+Joining any open Session of the same Matchmaking Pool, or hosting a new one when none is open; the Match starts when the search timer ends or the Session is full.
+_Avoid_: Random match, auto match
+
+**Lobby** (лобби):
+The Menu panel where Players gathered in a Session wait for the Match: the search timer or Room Code, the number of Players found, and the Host's Start.
+_Avoid_: Room (as a code type), waiting room
+
+**Matchmaking Pool** (пул подбора):
+The set of Sessions that may meet each other: the same build version and dev-session name; Quick Play only joins Sessions of its own pool.
+_Avoid_: Region, queue
+
 **Match Result** (итоговая таблица):
 The final placement and Score of every Participant, submitted to the backend.
 _Avoid_: Scoreboard, leaderboard (that is the Tournament's)
@@ -58,8 +70,32 @@ The factor a Match's Scores are multiplied by for the Tournament: 1 for a full M
 **Credited Score** (зачётные очки):
 A Confirmed Player's Score times the Match Weight, rounded down; what the Tournament ranks.
 
+**WaitingForPlayers** (ожидание игроков):
+The first phase of a Match: the Host seats Players as they connect and adds Bots into the other Slots until every Slot is taken or the wait cap runs out.
+_Avoid_: Lobby (that is the Meta menu), warmup
+
+**Seat Plan** (план мест):
+How many Slots a Match has and how many of them are kept for the Players Meta matched; the rest are filled by Bots.
+_Avoid_: Matchmaking Result (that is Meta's hand-over record), roster (that is the registered Match)
+
+**Matchmaking Result** (итог подбора):
+What Meta's matchmaking hands the Match when the Lobby ends: how many Players it found (the Players the Host waits for) and the Slot count.
+_Avoid_: Lineup, party, roster (that is the registered Match)
+
+**Participant Profile** (профиль участника):
+What every peer knows about the Participant in a Slot: Nickname, Critter Species, and whether it is a Bot; Bots get theirs from a pool.
+_Avoid_: Player info, avatar
+
+**Bot Difficulty** (сложность бота):
+How well a Bot plays: Strong, Medium, or Weak; every Match with Bots has exactly one Strong Bot.
+_Avoid_: Level, skill
+
+**Bot Profile** (профиль бота):
+The tunable numbers behind a Bot Difficulty: reaction delay, decision interval, steering noise, mistake chance, aggression, greed, caution.
+_Avoid_: Personality, preset
+
 **Countdown** (обратный отсчёт):
-The first phase of a Match: 3 seconds with every Vehicle on its Spawn Point and Immobilised.
+The phase after WaitingForPlayers: 3 seconds with every Vehicle on its Spawn Point and Immobilised.
 
 **Playing** (игра):
 The 180-second phase of a Match in which Vehicles move and Score counts; its elapsed time is the clock Regrowth and Blizzards run on.

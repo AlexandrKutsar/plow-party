@@ -1,0 +1,12 @@
+{
+    "name": "PlowParty.Meta.Lobby",
+    "rootNamespace": "PlowParty.Meta.Lobby",
+    "references": [
+        "PlowParty.Meta.Session",
+        "PlowParty.Infrastructure",
+        "UniTask",
+        "VContainer",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": false
+}

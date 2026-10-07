@@ -42,20 +42,35 @@ namespace PlowParty.Gameplay.Hud.Tests
         }
 
         [Test]
-        public void ParticipantName_LocalAndRemote_YouOrSlotNumber()
+        public void WaitingForPlayers_SeatedAndSlots_ShowsTheirCount()
         {
-            Assert.That(HudText.ParticipantName(0, true), Is.EqualTo("You"));
-            Assert.That(HudText.ParticipantName(2, false), Is.EqualTo("Player 3"));
+            Assert.That(HudText.WaitingForPlayers(3, 6), Is.EqualTo("Матч скоро начнётся. Ожидание игроков 3/6"));
         }
 
         [Test]
-        public void Place_Numbers_UseEnglishOrdinals()
+        public void NextMatchIn_Seconds_NamesThem()
         {
-            Assert.That(HudText.Place(1), Is.EqualTo("1st"));
-            Assert.That(HudText.Place(2), Is.EqualTo("2nd"));
-            Assert.That(HudText.Place(3), Is.EqualTo("3rd"));
-            Assert.That(HudText.Place(4), Is.EqualTo("4th"));
-            Assert.That(HudText.Place(11), Is.EqualTo("11th"));
+            Assert.That(HudText.NextMatchIn(7), Is.EqualTo("Следующий матч через 7"));
+        }
+
+        [Test]
+        public void BlizzardIn_Seconds_NamesThem()
+        {
+            Assert.That(HudText.BlizzardIn(3), Is.EqualTo("Метель через 3!"));
+        }
+
+        [Test]
+        public void ScoreGain_Points_HasAPlusSign()
+        {
+            Assert.That(HudText.ScoreGain(12), Is.EqualTo("+12"));
+        }
+
+        [Test]
+        public void Place_Numbers_UseRussianOrdinals()
+        {
+            Assert.That(HudText.Place(1), Is.EqualTo("1-е"));
+            Assert.That(HudText.Place(3), Is.EqualTo("3-е"));
+            Assert.That(HudText.Place(11), Is.EqualTo("11-е"));
         }
     }
 }

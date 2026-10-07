@@ -1,6 +1,7 @@
 using PlowParty.Gameplay.Hud.Simulation;
 using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Match.Simulation;
+using PlowParty.Gameplay.Participants.Network;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,34 +11,39 @@ namespace PlowParty.Gameplay.Hud.View
 {
     public sealed class ResultsView : MonoBehaviour
     {
-        private const string WaitingForHostText = "Waiting for the host";
-
         [SerializeField] private GameObject _panel;
         [SerializeField] private ScoreRowView[] _rows;
         [SerializeField] private Text _nextMatchLabel;
         [SerializeField] private Button _restartButton;
+        [SerializeField] private Button _menuButton;
 
         private IMatchClock _match;
         private IMatchResults _results;
         private VehicleRegistry _vehicles;
+        private ParticipantRoster _roster;
+        private IMatchExit _exit;
         private int _shownSeconds = -1;
 
         [Inject]
-        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles)
+        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit)
         {
             _match = match;
             _results = results;
             _vehicles = vehicles;
+            _roster = roster;
+            _exit = exit;
         }
 
         private void Awake()
         {
             _restartButton.onClick.AddListener(OnRestartClicked);
+            _menuButton.onClick.AddListener(OnMenuClicked);
         }
 
         private void OnDestroy()
         {
             _restartButton.onClick.RemoveListener(OnRestartClicked);
+            _menuButton.onClick.RemoveListener(OnMenuClicked);
         }
 
         private void LateUpdate()
@@ -66,7 +72,7 @@ namespace PlowParty.Gameplay.Hud.View
                 }
 
                 var placement = _results.GetPlacement(i);
-                _rows[i].Show(placement.Slot, placement.Slot == localSlot, placement.Score);
+                _rows[i].Show(_roster.NicknameOf(placement.Slot), placement.Slot == localSlot, placement.Score);
                 _rows[i].ShowPlace(placement.Place);
             }
         }
@@ -79,12 +85,17 @@ namespace PlowParty.Gameplay.Hud.View
             }
 
             _shownSeconds = seconds;
-            _nextMatchLabel.text = seconds > 0 ? $"Next match in {seconds}" : WaitingForHostText;
+            _nextMatchLabel.text = seconds > 0 ? HudText.NextMatchIn(seconds) : HudText.WaitingForHost;
         }
 
         private void OnRestartClicked()
         {
             _results.RequestRestart();
+        }
+
+        private void OnMenuClicked()
+        {
+            _exit.LeaveToMenu();
         }
     }
 }
