@@ -1,4 +1,6 @@
 using PlowParty.Gameplay.Bucket.Network;
+using PlowParty.Gameplay.CameraRig.Network;
+using PlowParty.Gameplay.CameraRig.Simulation;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.View;
 using PlowParty.Gameplay.Match.Network;
@@ -33,6 +35,8 @@ namespace PlowParty.Bootstrap
             builder.RegisterEntryPoint<DropOffHost>();
             builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().AsSelf();
             RegisterHud(builder);
+            builder.Register<CameraShake>(Lifetime.Singleton).AsSelf().As<ICameraShake>();
+            builder.RegisterEntryPoint<CameraRamShake>();
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
         }
 

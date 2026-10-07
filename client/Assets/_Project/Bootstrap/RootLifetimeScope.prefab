@@ -54,3 +54,4 @@ MonoBehaviour:
   _dropOffConfig: {fileID: 11400000, guid: 6c4295b6727445443bf498ba313ad996, type: 2}
   _matchConfig: {fileID: 11400000, guid: 860378335d605f74aa741c92405e2b5b, type: 2}
   _hudConfig: {fileID: 11400000, guid: 756d71cc3176d5741978f36079d45720, type: 2}
+  _cameraConfig: {fileID: 11400000, guid: e4ab29df2aaa7854eacaa6f560178922, type: 2}

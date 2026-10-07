@@ -1,0 +1,11 @@
+{
+    "name": "PlowParty.Gameplay.CameraRig",
+    "rootNamespace": "PlowParty.Gameplay.CameraRig",
+    "references": [
+        "PlowParty.Gameplay.Vehicle",
+        "Fusion.Unity",
+        "VContainer",
+        "Unity.InputSystem"
+    ],
+    "autoReferenced": false
+}

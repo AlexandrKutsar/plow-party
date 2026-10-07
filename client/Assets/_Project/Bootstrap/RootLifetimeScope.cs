@@ -1,4 +1,5 @@
 using PlowParty.Gameplay.Bucket.Config;
+using PlowParty.Gameplay.CameraRig.Config;
 using PlowParty.Gameplay.DropOff.Config;
 using PlowParty.Gameplay.Hud.Config;
 using PlowParty.Gameplay.Match.Config;
@@ -19,6 +20,7 @@ namespace PlowParty.Bootstrap
         [SerializeField] private DropOffConfig _dropOffConfig;
         [SerializeField] private MatchConfig _matchConfig;
         [SerializeField] private HudConfig _hudConfig;
+        [SerializeField] private CameraConfig _cameraConfig;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -28,6 +30,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(_dropOffConfig);
             builder.RegisterInstance(_matchConfig);
             builder.RegisterInstance(_hudConfig);
+            builder.RegisterInstance(_cameraConfig);
             builder.Register<SceneLoader>(Lifetime.Singleton);
         }
     }
