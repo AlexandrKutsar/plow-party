@@ -79,7 +79,7 @@ Players and bots drive a vehicle through the same input-source abstraction; the 
 
 Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...). The config type is code and lives in its feature's `Config/`; the asset instance is data and lives in `_Project/Configs/`, one `<Feature>Config.asset` each, so the whole game is balanced from one folder and balance changes show up as their own diffs. The assets are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
 
-Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` next to its scene, once maps exist.
+Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` (Farm's obstacles: `Levels/Farm/Obstacles/`); its `CLAUDE.md` documents how the Match scene is composed.
 
 ## Feature index
 
@@ -107,3 +107,4 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Bots | `_Project/Gameplay/Bots/` | planned | Utility-AI bots on the host (GDD 8) |
 | Hud | `_Project/Gameplay/Hud/` | active | Virtual stick, timer, Load bar, Score list and popups, Blizzard announcement, Drop-Off arrow, Results; later gadget button and portraits |
 | CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Camera Presets (overview, follow, follow rotating), Camera Shake, dev preset switcher |
+| Levels | `_Project/Levels/<Map>/` | active | Map composition, no code: obstacle prefabs and the scene layout note; `Farm` (40 × 40 m) is the only map, laid out in `Scenes/Match.unity` |
