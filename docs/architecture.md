@@ -96,7 +96,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
-| Match | `_Project/Gameplay/Match/` | planned | Match state machine Countdown → Playing → Results, timer, scoring table (GDD 3.2) |
+| Match | `_Project/Gameplay/Match/` | active | Match state machine Countdown → Playing → Results → next Match, Match clock, input lock, placement table (GDD 3.2) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | active | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
@@ -105,4 +105,4 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Loot | `_Project/Gameplay/Loot/` | planned | Owned loot drops, pickup, expiry (GDD 6) |
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |
 | Bots | `_Project/Gameplay/Bots/` | planned | Utility-AI bots on the host (GDD 8) |
-| Hud | `_Project/Gameplay/Hud/` | planned | Joysticks, gadget button, portraits, timer, announcements |
+| Hud | `_Project/Gameplay/Hud/` | active | Virtual stick, timer, Load bar, Score list and popups, Blizzard announcement, Drop-Off arrow, Results; later gadget button and portraits |

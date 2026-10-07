@@ -58,6 +58,26 @@ The factor a Match's Scores are multiplied by for the Tournament: 1 for a full M
 **Credited Score** (зачётные очки):
 A Confirmed Player's Score times the Match Weight, rounded down; what the Tournament ranks.
 
+**Countdown** (обратный отсчёт):
+The first phase of a Match: 3 seconds with every Vehicle on its Spawn Point and Immobilised.
+
+**Playing** (игра):
+The 180-second phase of a Match in which Vehicles move and Score counts; its elapsed time is the clock Regrowth and Blizzards run on.
+
+**Results** (итоги):
+The last phase of a Match: the Placement table is frozen and shown until the next Match starts in the same Session.
+
+**Match Number** (номер матча):
+How many Matches the current Session has started, counting from 1; a restart after Results starts the next one.
+_Avoid_: Round
+
+**Match Clock** (часы матча):
+The Match's read-only time: its phase, remaining phase time, and elapsed Playing time, the same on every device.
+
+**Placement** (место):
+A Participant's place in the Match Result by Score, ties sharing a place and skipping the next (1, 2, 2, 4).
+_Avoid_: Rank (as a type name), position
+
 ## Snow
 
 **Vehicle** (машина, снегоуборщик):
@@ -180,6 +200,23 @@ A one-tick velocity change applied to a Vehicle, such as a snowball knockback or
 **Speed Factor** (множитель скорости):
 One feature's share of a Vehicle's speed multiplier, keyed by its source (Load, Snow Pile); the multiplier is the product of all factors, so no feature overwrites another.
 _Avoid_: Speed penalty (as a type name), slowdown
+
+**Virtual Stick** (виртуальный стик):
+The on-screen stick in the HUD's lower left that drives the local Vehicle on touch screens.
+_Avoid_: Joystick (as a type name)
+
+**Blizzard Announcement** (анонс метели):
+The HUD banner counting down the last 5 seconds before a Blizzard wave.
+
+**Load Bar** (шкала груза):
+The HUD bar over the local Player's Vehicle showing its Load against capacity.
+_Avoid_: Gauge, fill bar
+
+**Score Popup** (всплывающие очки):
+The floating "+N" the HUD shows over the local Vehicle as its Score rises during a Delivery.
+
+**Drop-Off Arrow** (стрелка к зоне сдачи):
+The HUD arrow pinned to the screen edge, pointing at the Drop-Off Zone while it is off screen.
 
 ## Loot and Gadgets
 

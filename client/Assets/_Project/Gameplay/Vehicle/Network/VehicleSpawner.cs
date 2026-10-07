@@ -12,6 +12,7 @@ namespace PlowParty.Gameplay.Vehicle.Network
         [SerializeField] private Transform[] _spawnPoints;
 
         private readonly Dictionary<PlayerRef, NetworkObject> _spawned = new Dictionary<PlayerRef, NetworkObject>();
+        private readonly List<PlayerRef> _respawnOrder = new List<PlayerRef>();
         private NetworkRunnerEvents _events;
         private VehicleRegistry _registry;
         private VehicleWorldDriver _driver;
@@ -44,6 +45,29 @@ namespace PlowParty.Gameplay.Vehicle.Network
                 return;
             }
 
+            Spawn(runner, player, slot);
+        }
+
+        public void RespawnAll(NetworkRunner runner)
+        {
+            if (!runner.IsServer)
+            {
+                return;
+            }
+
+            _respawnOrder.Clear();
+            _respawnOrder.AddRange(_spawned.Keys);
+            foreach (var player in _respawnOrder)
+            {
+                var vehicle = _spawned[player];
+                var slot = vehicle.GetComponent<NetworkVehicle>().Slot;
+                runner.Despawn(vehicle);
+                Spawn(runner, player, slot);
+            }
+        }
+
+        private void Spawn(NetworkRunner runner, PlayerRef player, int slot)
+        {
             var spawnPoint = _spawnPoints[slot];
             _driver.ResetRamCooldowns(slot);
             _spawned[player] = runner.Spawn(
