@@ -1,3 +1,4 @@
+using PlowParty.Gameplay.CameraRig.Simulation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,10 +50,23 @@ namespace PlowParty.Gameplay.CameraRig.View
             if (preset != _labelPreset)
             {
                 _labelPreset = preset;
-                _label = $"Camera: {_director.ActivePreset} [{_cycleKey}]";
+                _label = $"Камера: {PresetName(_director.ActivePreset)} [{_cycleKey}]";
             }
 
             return _label;
+        }
+
+        private static string PresetName(CameraPreset preset)
+        {
+            switch (preset)
+            {
+                case CameraPreset.Overview:
+                    return "обзор";
+                case CameraPreset.Follow:
+                    return "за машиной";
+                default:
+                    return "с поворотом";
+            }
         }
     }
 }
