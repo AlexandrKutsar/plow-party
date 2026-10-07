@@ -74,7 +74,11 @@ namespace PlowParty.Gameplay.Vehicle.Network
             var rams = _world.Rams;
             for (var i = 0; i < rams.Count; i++)
             {
-                _registry.ReportRam(new VehicleRam(vehicles[rams[i].Rammer], vehicles[rams[i].Victim], rams[i].Strength));
+                var rammer = vehicles[rams[i].Rammer];
+                var victim = vehicles[rams[i].Victim];
+                rammer.CountRamAsRammer();
+                victim.CountRamAsVictim();
+                _registry.ReportRam(new VehicleRam(rammer, victim, rams[i].Strength));
             }
         }
 

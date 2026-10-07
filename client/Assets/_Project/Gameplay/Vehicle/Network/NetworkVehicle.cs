@@ -31,6 +31,10 @@ namespace PlowParty.Gameplay.Vehicle.Network
 
         [Networked] private Vector2 PendingImpulse { get; set; }
 
+        [Networked] public int TimesRammed { get; private set; }
+
+        [Networked] public int RamsDealt { get; private set; }
+
         [Inject]
         public void Construct(VehicleRegistry registry)
         {
@@ -82,6 +86,16 @@ namespace PlowParty.Gameplay.Vehicle.Network
         public void AddImpulse(Vector2 impulse)
         {
             PendingImpulse += impulse;
+        }
+
+        public void CountRamAsRammer()
+        {
+            RamsDealt++;
+        }
+
+        public void CountRamAsVictim()
+        {
+            TimesRammed++;
         }
 
         public VehicleState ReadState()
