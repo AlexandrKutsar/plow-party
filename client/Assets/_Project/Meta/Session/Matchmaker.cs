@@ -20,6 +20,7 @@ namespace PlowParty.Meta.Session
         public const string RoomNotFoundText = "Комната не найдена";
         public const string BadCodeText = "Код — 5 символов";
         public const string SessionLostText = "Связь с хостом потеряна";
+        public const string MatchStartedText = "Матч уже начался";
 
         private const string PoolProperty = "pool";
         private const string CodeProperty = "code";
@@ -28,20 +29,21 @@ namespace PlowParty.Meta.Session
 
         private readonly NetworkSession _session;
         private readonly AccountService _account;
-        private readonly MatchLineupStore _lineups;
+        private readonly MatchmakingResultStore _matchmakingResults;
         private readonly MatchmakingConfig _config;
         private readonly MatchmakingPool _pool;
         private readonly Random _random = new Random();
         private long _deadline;
         private bool _startRequested;
 
-        public Matchmaker(NetworkSession session, AccountService account, MatchLineupStore lineups, MatchmakingConfig config, MatchmakingPool pool)
+        public Matchmaker(NetworkSession session, AccountService account, MatchmakingResultStore matchmakingResults, MatchmakingConfig config, MatchmakingPool pool, SessionExit exit)
         {
             _session = session;
             _account = account;
-            _lineups = lineups;
+            _matchmakingResults = matchmakingResults;
             _config = config;
             _pool = pool;
+            Failure = exit.TakeNotice();
             _session.Ended += OnSessionEnded;
         }
 
@@ -67,7 +69,16 @@ namespace PlowParty.Meta.Session
         {
             Enter(LobbyStage.Connecting);
             var outcome = await StartAsync(GameMode.Client, null, PoolProperties(), cancellationToken);
-            if (outcome == SessionStartOutcome.NotFound && Stage == LobbyStage.Connecting)
+            if (LobbyRules.FoundNothingToJoin(outcome) && Stage == LobbyStage.Connecting)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(HostJitterSeconds()), cancellationToken: cancellationToken);
+                if (Stage == LobbyStage.Connecting)
+                {
+                    outcome = await StartAsync(GameMode.Client, null, PoolProperties(), cancellationToken);
+                }
+            }
+
+            if (LobbyRules.FoundNothingToJoin(outcome) && Stage == LobbyStage.Connecting)
             {
                 var properties = PoolProperties();
                 properties[DeadlineProperty] = SearchDeadline().ToString(CultureInfo.InvariantCulture);
@@ -139,6 +150,9 @@ namespace PlowParty.Meta.Session
                     break;
                 case SessionStartOutcome.NotFound:
                     Fail(RoomNotFoundText);
+                    break;
+                case SessionStartOutcome.Refused:
+                    Fail(MatchStartedText);
                     break;
                 default:
                     Fail(ConnectFailedText);
@@ -214,6 +228,11 @@ namespace PlowParty.Meta.Session
             return new Dictionary<string, SessionProperty> { [PoolProperty] = _pool.Name };
         }
 
+        private float HostJitterSeconds()
+        {
+            return LobbyRules.HostJitterSeconds(_random.NextDouble(), _config.HostJitterMinSeconds, _config.HostJitterMaxSeconds);
+        }
+
         private long SearchDeadline()
         {
             return NowMilliseconds() + (long)(_config.SearchSeconds * MillisecondsPerSecond);
@@ -237,7 +256,7 @@ namespace PlowParty.Meta.Session
         private void StartMatch()
         {
             Enter(LobbyStage.Starting);
-            _lineups.Set(LobbyRules.LineupFor(PlayerCount, MaxSlots));
+            _matchmakingResults.Set(LobbyRules.MatchmakingResultFor(PlayerCount, MaxSlots));
             _session.Close();
             _session.LoadScene(SceneNames.Match);
         }

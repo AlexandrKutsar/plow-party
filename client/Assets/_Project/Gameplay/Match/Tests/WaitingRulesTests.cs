@@ -16,9 +16,9 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
-        public void PlanSeats_WithLineup_ExpectsItsPlayersInItsSlots()
+        public void PlanSeats_WithMatchmakingResult_ExpectsItsPlayersInItsSlots()
         {
-            var plan = _rules.PlanSeats(true, new MatchLineup(3, 5), 1, 6);
+            var plan = _rules.PlanSeats(true, new MatchmakingResult(3, 5), 1, 6);
 
             Assert.That(plan.SlotCount, Is.EqualTo(5));
             Assert.That(plan.ExpectedPlayers, Is.EqualTo(3));
@@ -26,16 +26,16 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
-        public void PlanSeats_LineupBeyondSpawnPoints_IsClampedToSlotLimit()
+        public void PlanSeats_MatchmakingResultBeyondSpawnPoints_IsClampedToSlotLimit()
         {
-            var plan = _rules.PlanSeats(true, new MatchLineup(6, 6), 1, 4);
+            var plan = _rules.PlanSeats(true, new MatchmakingResult(6, 6), 1, 4);
 
             Assert.That(plan.SlotCount, Is.EqualTo(4));
             Assert.That(plan.ExpectedPlayers, Is.EqualTo(4));
         }
 
         [Test]
-        public void PlanSeats_NoLineup_ExpectsPlayersPresentInFallbackSlots()
+        public void PlanSeats_NoMatchmakingResult_ExpectsPlayersPresentInFallbackSlots()
         {
             var plan = _rules.PlanSeats(false, default, 2, 6);
 
@@ -44,7 +44,7 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
-        public void PlanSeats_NoLineupAndNobodyYet_ExpectsTheHost()
+        public void PlanSeats_NoMatchmakingResultAndNobodyYet_ExpectsTheHost()
         {
             Assert.That(_rules.PlanSeats(false, default, 0, 6).ExpectedPlayers, Is.EqualTo(1));
         }

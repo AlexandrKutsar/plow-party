@@ -59,9 +59,9 @@ A Match feature in Gameplay. Its rules live in pure C#: `MatchRules` steps the p
 
 ## Amendments
 
-### WaitingForPlayers (Bots feature, `.scratch/bots/spec.md`, ADR-0016)
+### WaitingForPlayers (Bots feature, `.scratch/bots/spec.md`, ADR-0018)
 
-- `MatchPhase` gains WaitingForPlayers as its first value. The Host plans the seats when `MatchDriver` spawns (`WaitingRules.PlanSeats` from the `MatchLineup` in `MatchLineupStore`, else the Players present in `FallbackSlotCount` 6 Slots) and enters WaitingForPlayers; Match number 1 starts there.
+- `MatchPhase` gains WaitingForPlayers as its first value. The Host plans the seats when `MatchDriver` spawns (`WaitingRules.PlanSeats` from the `MatchmakingResult` in `MatchmakingResultStore`, else the Players present in `FallbackSlotCount` 6 Slots) and enters WaitingForPlayers; Match number 1 starts there.
 - `MatchRules.NextPhase(phase, phaseElapsed, restartRequested, allSlotsFilled)`: WaitingForPlayers → Countdown only when every Slot is taken. At `WaitingDuration` (15 s) `WaitingRules.BotsToSeat` fills every free Slot with a Bot, so the cap still ends the wait. `PhaseRemaining` there is the cap countdown; the input stays locked; `PlayingElapsed` is 0.
 - Bots arrive one by one at times drawn inside `BotArrivalStart`–`BotArrivalEnd` (1–8 s), only into Slots not reserved for expected Players.
 - `MatchSeating` (host-side entry point) seats Players on join with their `ParticipantToken` Nickname into `ParticipantRoster`, seats Bots, refuses connection requests once Countdown started or every Slot is taken, disconnects a join that slips through, and vacates a leaving Player's Slot. `VehicleSpawner` no longer reacts to joins.

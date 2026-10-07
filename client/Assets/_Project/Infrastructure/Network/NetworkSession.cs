@@ -249,6 +249,9 @@ namespace PlowParty.Infrastructure.Network
                     return SessionStartOutcome.NotFound;
                 case ShutdownReason.GameIdAlreadyExists:
                     return SessionStartOutcome.NameTaken;
+                case ShutdownReason.ConnectionRefused:
+                case ShutdownReason.GameClosed:
+                    return SessionStartOutcome.Refused;
                 default:
                     return SessionStartOutcome.Failed;
             }

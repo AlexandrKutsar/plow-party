@@ -55,7 +55,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(_matchmakingConfig);
             builder.RegisterInstance(_tournamentConfig);
             builder.Register<SceneLoader>(Lifetime.Singleton);
-            builder.Register<MatchLineupStore>(Lifetime.Singleton);
+            builder.Register<MatchmakingResultStore>(Lifetime.Singleton);
             builder.Register<NetworkSession>(Lifetime.Singleton);
             RegisterMeta(builder);
             builder.RegisterBuildCallback(_ => Application.targetFrameRate = _targetFrameRate);

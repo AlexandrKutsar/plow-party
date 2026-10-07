@@ -4,10 +4,10 @@ Matchmaking in the Menu: Quick Play, Room Codes, the Lobby's search timer, start
 
 ## Entry points
 
-- `Matchmaker` — MenuScope entry point (`ITickable`). `QuickPlayAsync` random-joins an open Session of this Matchmaking Pool or hosts a new one with a search deadline; `CreateRoomAsync` hosts a Session named after a fresh Room Code (retrying on a name clash); `JoinRoomAsync(code)` joins one; `LeaveAsync`; `RequestStart` (Room Host). Every join presents `AccountService.ToParticipantToken()` as the connection token. `Tick` on the Host starts the Match when `LobbyRules` says so: writes `MatchLineup(players, MaxSlots)` to `MatchLineupStore`, closes and hides the Session, and loads the Match scene through Fusion for every peer. State for the UI: `Stage` (`Idle`, `Connecting`, `Gathering`, `Starting`), `Mode`, `RoomCode`, `PlayerCount`, `SecondsLeft`, `Failure` (Russian text), `Changed`.
-- `SessionExit` — root entry point. `LeaveToMenu()` shuts the Session down and loads the Menu (Hud's "В меню" reaches it through Bootstrap's `MatchExitAdapter`); when a Session is lost while the Match scene is active (the Host left), it loads the Menu too. Clears the `MatchLineupStore`.
+- `Matchmaker` — MenuScope entry point (`ITickable`). `QuickPlayAsync` random-joins an open Session of this Matchmaking Pool or hosts a new one with a search deadline; `CreateRoomAsync` hosts a Session named after a fresh Room Code (retrying on a name clash); `JoinRoomAsync(code)` joins one; `LeaveAsync`; `RequestStart` (Room Host). Every join presents `AccountService.ToParticipantToken()` as the connection token. `Tick` on the Host starts the Match when `LobbyRules` says so: writes `MatchmakingResult(players, MaxSlots)` to `MatchmakingResultStore`, closes and hides the Session, and loads the Match scene through Fusion for every peer. State for the UI: `Stage` (`Idle`, `Connecting`, `Gathering`, `Starting`), `Mode`, `RoomCode`, `PlayerCount`, `SecondsLeft`, `Failure` (Russian text), `Changed`.
+- `SessionExit` — root entry point. `LeaveToMenu()` shuts the Session down and loads the Menu (Hud's "В меню" reaches it through Bootstrap's `MatchExitAdapter`); when a Session is lost while the Match scene is active (the Host left), it loads the Menu too. Clears the `MatchmakingResultStore`.
 - `RoomCode` (`Simulation/`) — 5 symbols from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no I, L, O, 0, 1); `Generate(Random)`, `TryParse` (trims, upper-cases, rejects anything outside the alphabet).
-- `LobbyRules` (`Simulation/`) — `ShouldStart` (Quick Play: timer over or Session full; Room: Host pressed Start), `LineupFor` (clamps to 1..MaxSlots), `SecondsLeft` from a Unix-millisecond deadline.
+- `LobbyRules` (`Simulation/`) — `ShouldStart` (Quick Play: timer over or Session full; Room: Host pressed Start), `MatchmakingResultFor` (clamps to 1..MaxSlots), `SecondsLeft` from a Unix-millisecond deadline.
 - `MatchmakingConfig` — search seconds (10), max Slots (6), Room Code attempts; asset `_Project/Configs/MatchmakingConfig.asset`.
 - `MatchmakingPool` — the pool name every Session carries as its `pool` property: `<DevSessionName>-<Application.version>`, built by `RootLifetimeScope`, so Editors of different worktrees never match each other and builds of different versions never mix.
 
@@ -19,4 +19,4 @@ Matchmaking in the Menu: Quick Play, Room Codes, the Lobby's search timer, start
 
 ## Depends on
 
-Infrastructure (`NetworkSession`, `MatchLineupStore`, `SceneLoader`, `SceneNames`), Account (`AccountService`), Shared (`MatchLineup`), Fusion, UniTask, VContainer.
+Infrastructure (`NetworkSession`, `MatchmakingResultStore`, `SceneLoader`, `SceneNames`), Account (`AccountService`), Shared (`MatchmakingResult`), Fusion, UniTask, VContainer.

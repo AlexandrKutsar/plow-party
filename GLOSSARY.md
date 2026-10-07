@@ -76,7 +76,11 @@ _Avoid_: Lobby (that is the Meta menu), warmup
 
 **Seat Plan** (план мест):
 How many Slots a Match has and how many of them are kept for the Players Meta matched; the rest are filled by Bots.
-_Avoid_: Lineup (that is Meta's hand-over record), roster (that is the registered Match)
+_Avoid_: Matchmaking Result (that is Meta's hand-over record), roster (that is the registered Match)
+
+**Matchmaking Result** (итог подбора):
+What Meta's matchmaking hands the Match when the Lobby ends: how many Players it found (the Players the Host waits for) and the Slot count.
+_Avoid_: Lineup, party, roster (that is the registered Match)
 
 **Participant Profile** (профиль участника):
 What every peer knows about the Participant in a Slot: Nickname, Critter Species, and whether it is a Bot; Bots get theirs from a pool.

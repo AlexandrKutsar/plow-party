@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using PlowParty.Infrastructure.Network;
 using PlowParty.Meta.Account;
+using PlowParty.Meta.Session;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -12,11 +13,13 @@ namespace PlowParty.Bootstrap
     {
         private readonly NetworkSession _session;
         private readonly AccountService _account;
+        private readonly SessionExit _exit;
 
-        public MatchSceneQuickStart(NetworkSession session, AccountService account)
+        public MatchSceneQuickStart(NetworkSession session, AccountService account, SessionExit exit)
         {
             _session = session;
             _account = account;
+            _exit = exit;
         }
 
         public async UniTask StartAsync(CancellationToken cancellation)
@@ -36,10 +39,13 @@ namespace PlowParty.Bootstrap
                 ConnectionToken = _account.ToParticipantToken().ToBytes(),
                 IncludeActiveScene = true,
             }, cancellation);
-            if (outcome != SessionStartOutcome.Started)
+            if (outcome == SessionStartOutcome.Started)
             {
-                throw new InvalidOperationException($"Dev session failed to start: {outcome}");
+                return;
             }
+
+            Debug.LogWarning($"Dev session failed to start: {outcome}; returning to the Menu");
+            _exit.LeaveToMenu(outcome == SessionStartOutcome.Refused ? Matchmaker.MatchStartedText : Matchmaker.ConnectFailedText);
         }
     }
 }

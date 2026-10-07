@@ -52,7 +52,7 @@ namespace PlowParty.Bootstrap
         private static void RegisterMatchReport(IContainerBuilder builder)
         {
             builder.Register<MatchProgressAdapter>(Lifetime.Singleton).As<IMatchProgress>();
-            builder.Register<ConnectionTokenRoster>(Lifetime.Singleton).As<IMatchRoster>();
+            builder.Register<ParticipantRosterAdapter>(Lifetime.Singleton).As<IMatchRoster>();
             builder.Register<MatchReportLinks>(Lifetime.Singleton);
             builder.RegisterEntryPoint<MatchReporter>();
         }

@@ -12,15 +12,16 @@ namespace PlowParty.Meta.Session
     {
         private readonly NetworkSession _session;
         private readonly SceneLoader _scenes;
-        private readonly MatchLineupStore _lineups;
+        private readonly MatchmakingResultStore _matchmakingResults;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private bool _leaving;
+        private string _notice;
 
-        public SessionExit(NetworkSession session, SceneLoader scenes, MatchLineupStore lineups)
+        public SessionExit(NetworkSession session, SceneLoader scenes, MatchmakingResultStore matchmakingResults)
         {
             _session = session;
             _scenes = scenes;
-            _lineups = lineups;
+            _matchmakingResults = matchmakingResults;
         }
 
         public void Start()
@@ -31,6 +32,19 @@ namespace PlowParty.Meta.Session
         public void LeaveToMenu()
         {
             LeaveToMenuAsync().Forget();
+        }
+
+        public void LeaveToMenu(string notice)
+        {
+            _notice = notice;
+            LeaveToMenuAsync().Forget();
+        }
+
+        public string TakeNotice()
+        {
+            var notice = _notice;
+            _notice = null;
+            return notice;
         }
 
         public void Dispose()
@@ -57,13 +71,14 @@ namespace PlowParty.Meta.Session
         {
             if (end == SessionEnd.Lost && _scenes.ActiveSceneName == SceneNames.Match)
             {
+                _notice = Matchmaker.SessionLostText;
                 ReturnToMenuAsync().Forget();
             }
         }
 
         private UniTask ReturnToMenuAsync()
         {
-            _lineups.Clear();
+            _matchmakingResults.Clear();
             return _scenes.LoadAsync(SceneNames.Menu, _lifetime.Token);
         }
     }

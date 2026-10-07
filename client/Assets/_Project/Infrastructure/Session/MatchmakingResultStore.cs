@@ -2,24 +2,24 @@ using PlowParty.Shared;
 
 namespace PlowParty.Infrastructure.Session
 {
-    public sealed class MatchLineupStore
+    public sealed class MatchmakingResultStore
     {
-        private MatchLineup? _lineup;
+        private MatchmakingResult? _matchmakingResult;
 
-        public void Set(MatchLineup lineup)
+        public void Set(MatchmakingResult matchmakingResult)
         {
-            _lineup = lineup;
+            _matchmakingResult = matchmakingResult;
         }
 
-        public bool TryGet(out MatchLineup lineup)
+        public bool TryGet(out MatchmakingResult matchmakingResult)
         {
-            lineup = _lineup.GetValueOrDefault();
-            return _lineup.HasValue;
+            matchmakingResult = _matchmakingResult.GetValueOrDefault();
+            return _matchmakingResult.HasValue;
         }
 
         public void Clear()
         {
-            _lineup = null;
+            _matchmakingResult = null;
         }
     }
 }

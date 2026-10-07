@@ -15,3 +15,5 @@ MonoBehaviour:
   _searchSeconds: 10
   _maxSlots: 6
   _roomCodeAttempts: 3
+  _hostJitterMinSeconds: 0.3
+  _hostJitterMaxSeconds: 1.5

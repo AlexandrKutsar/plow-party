@@ -5,6 +5,7 @@ namespace PlowParty.Infrastructure.Network
         Started,
         NotFound,
         NameTaken,
+        Refused,
         Failed,
     }
 }

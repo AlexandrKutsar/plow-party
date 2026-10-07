@@ -18,7 +18,7 @@ The daily Tournament screen and the client side of Match reporting: register the
 
 - A Match is reported only when the Host is online and the Roster has 4–6 Slots; offline Players are seated as Bots; nothing is retried or queued.
 - The backend refuses a Vote earlier than registration + Countdown + played seconds (5 s tolerance), so Matches shortened in `MatchConfig` for testing are rejected as "too early".
-- Until Match owns the Participant profile, the Roster comes from `ConnectionTokenRoster`: each Vehicle's input authority's connection token, and Bots for the free Slots up to the lineup's `MaxSlots`.
+- Until Match owns the Participant profile, the Roster comes from `ConnectionTokenRoster`: each Vehicle's input authority's connection token, and Bots for the free Slots up to the Matchmaking Result's `MaxSlots`.
 
 ## Depends on
 

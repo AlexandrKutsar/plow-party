@@ -4,6 +4,7 @@
     "references": [
         "PlowParty.Meta.Session",
         "PlowParty.Shared",
+        "PlowParty.Infrastructure",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

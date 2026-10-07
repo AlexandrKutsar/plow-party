@@ -2,9 +2,9 @@ using System;
 
 namespace PlowParty.Shared
 {
-    public readonly struct MatchLineup
+    public readonly struct MatchmakingResult
     {
-        public MatchLineup(int expectedHumans, int maxSlots)
+        public MatchmakingResult(int expectedHumans, int maxSlots)
         {
             if (maxSlots < 1)
             {

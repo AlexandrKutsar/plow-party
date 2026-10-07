@@ -23,10 +23,10 @@ namespace PlowParty.Gameplay.Match.Simulation
             return !AllSlotsFilled(plan, players, bots);
         }
 
-        public SeatPlan PlanSeats(bool hasLineup, MatchLineup lineup, int playersPresent, int slotLimit)
+        public SeatPlan PlanSeats(bool hasMatchmakingResult, MatchmakingResult matchmakingResult, int playersPresent, int slotLimit)
         {
-            var slotCount = Math.Min(hasLineup ? lineup.MaxSlots : _settings.FallbackSlotCount, slotLimit);
-            var expectedPlayers = hasLineup ? lineup.ExpectedHumans : Math.Max(1, playersPresent);
+            var slotCount = Math.Min(hasMatchmakingResult ? matchmakingResult.MaxSlots : _settings.FallbackSlotCount, slotLimit);
+            var expectedPlayers = hasMatchmakingResult ? matchmakingResult.ExpectedHumans : Math.Max(1, playersPresent);
             return new SeatPlan(slotCount, Math.Min(expectedPlayers, slotCount));
         }
 

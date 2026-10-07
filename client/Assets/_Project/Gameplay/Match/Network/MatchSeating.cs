@@ -21,7 +21,7 @@ namespace PlowParty.Gameplay.Match.Network
         private readonly NetworkRunnerEvents _events;
         private readonly VehicleSpawner _spawner;
         private readonly ParticipantRoster _roster;
-        private readonly MatchLineupStore _lineups;
+        private readonly MatchmakingResultStore _matchmakingResults;
         private readonly ParticipantsConfig _participants;
         private readonly WaitingRules _rules;
         private readonly Dictionary<PlayerRef, int> _playerSlots = new Dictionary<PlayerRef, int>();
@@ -37,14 +37,14 @@ namespace PlowParty.Gameplay.Match.Network
             NetworkRunnerEvents events,
             VehicleSpawner spawner,
             ParticipantRoster roster,
-            MatchLineupStore lineups,
+            MatchmakingResultStore matchmakingResults,
             MatchConfig config,
             ParticipantsConfig participants)
         {
             _events = events;
             _spawner = spawner;
             _roster = roster;
-            _lineups = lineups;
+            _matchmakingResults = matchmakingResults;
             _participants = participants;
             _rules = new WaitingRules(config.ToSettings());
         }
@@ -83,11 +83,11 @@ namespace PlowParty.Gameplay.Match.Network
 
         public void Begin()
         {
-            var hasLineup = _lineups.TryGet(out var lineup);
-            _plan = _rules.PlanSeats(hasLineup, lineup, _arrivals.Count + PlayerCount, _spawner.SlotCount);
+            var hasMatchmakingResult = _matchmakingResults.TryGet(out var matchmakingResult);
+            _plan = _rules.PlanSeats(hasMatchmakingResult, matchmakingResult, _arrivals.Count + PlayerCount, _spawner.SlotCount);
             _botArrivals = _rules.ScheduleBotArrivals(_plan.PlannedBots, _random);
             _isPlanned = true;
-            Debug.Log($"[Match] Waiting for {_plan.ExpectedPlayers} Player(s) in {_plan.SlotCount} Slots ({(hasLineup ? "lineup" : "fallback")}); {_plan.PlannedBots} Bot(s) planned");
+            Debug.Log($"[Match] Waiting for {_plan.ExpectedPlayers} Player(s) in {_plan.SlotCount} Slots ({(hasMatchmakingResult ? "matchmaking result" : "fallback")}); {_plan.PlannedBots} Bot(s) planned");
         }
 
         public void Tick(NetworkRunner runner, MatchPhase phase, float phaseElapsed)
