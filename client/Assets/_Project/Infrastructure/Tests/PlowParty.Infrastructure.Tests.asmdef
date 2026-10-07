@@ -1,0 +1,20 @@
+{
+    "name": "PlowParty.Infrastructure.Tests",
+    "rootNamespace": "PlowParty.Infrastructure.Tests",
+    "references": [
+        "PlowParty.Infrastructure",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}
