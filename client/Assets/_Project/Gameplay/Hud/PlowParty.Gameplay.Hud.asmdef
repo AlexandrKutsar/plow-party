@@ -3,6 +3,7 @@
     "rootNamespace": "PlowParty.Gameplay.Hud",
     "references": [
         "PlowParty.Gameplay.Match",
+        "PlowParty.Gameplay.Participants",
         "PlowParty.Gameplay.DropOff",
         "PlowParty.Gameplay.Bucket",
         "PlowParty.Gameplay.Snow",

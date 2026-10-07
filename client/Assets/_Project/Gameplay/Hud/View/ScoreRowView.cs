@@ -12,18 +12,18 @@ namespace PlowParty.Gameplay.Hud.View
         [SerializeField] private Graphic _highlight;
 
         private int _shownPlace = -1;
-        private int _shownSlot = -1;
+        private string _shownNickname;
         private bool _shownLocal;
         private int _shownScore = -1;
 
-        public void Show(int slot, bool isLocal, int score)
+        public void Show(string nickname, bool isLocal, int score)
         {
             gameObject.SetActive(true);
-            if (slot != _shownSlot || isLocal != _shownLocal)
+            if (!ReferenceEquals(nickname, _shownNickname) || isLocal != _shownLocal)
             {
-                _shownSlot = slot;
+                _shownNickname = nickname;
                 _shownLocal = isLocal;
-                _nameLabel.text = HudText.ParticipantName(slot, isLocal);
+                _nameLabel.text = nickname;
                 _highlight.enabled = isLocal;
             }
 

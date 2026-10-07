@@ -3,6 +3,7 @@
     "rootNamespace": "PlowParty.Gameplay.Match.Tests",
     "references": [
         "PlowParty.Gameplay.Match",
+        "PlowParty.Shared",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

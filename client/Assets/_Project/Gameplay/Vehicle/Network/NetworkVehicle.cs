@@ -103,6 +103,19 @@ namespace PlowParty.Gameplay.Vehicle.Network
             return new VehicleState(Position, Velocity, Forward);
         }
 
+        public bool IsDrivenByHost => Object.InputAuthority == PlayerRef.None;
+
+        public void SetHostInput(VehicleInput input)
+        {
+            if (!HasStateAuthority || !IsDrivenByHost)
+            {
+                return;
+            }
+
+            LastMove = input.Move;
+            GadgetPressed = input.GadgetPressed;
+        }
+
         public VehicleInput ReadInput()
         {
             if (Runner.TryGetInputForPlayer<VehicleNetworkInput>(Object.InputAuthority, out var input))

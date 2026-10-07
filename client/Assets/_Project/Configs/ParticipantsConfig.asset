@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33f69dbbd89686848a61fa59e9a935b1, type: 3}
+  m_Name: ParticipantsConfig
+  m_EditorClassIdentifier: 
+  _botNicknames:
+  - Snowdrop
+  - Mittens
+  - Blizzy
+  - Frostbite
+  - Pinecone
+  - Sleet
+  - Icicle
+  - Flurry
+  - Tundra
+  - Avalanche
+  - Biscuit
+  - Maple
+  - Juniper
+  - Pebble
+  - Toboggan
+  - Cocoa
+  - Waffles
+  - Nugget
+  - Sprout
+  - Clover
+  - Hazel
+  - Pippin
+  - Muffin
+  - Noodle
+  _critterModels:
+  - {fileID: 6432433356152475444, guid: f8f077337620d994ba997ad508279774, type: 3}
+  - {fileID: 719656246384603477, guid: 77918206195728244973af1a523de6b4, type: 3}
+  - {fileID: 2421740920150682635, guid: 784b3efac45ae48478e5ef26a0f31bef, type: 3}
+  - {fileID: 6602807003712895842, guid: 3d876a61a9fbf974e9456ff23d171ba0, type: 3}
+  - {fileID: 5586044429581328643, guid: aba31bbacee873441a08054982e9c40b, type: 3}
+  - {fileID: 6960096897276272757, guid: 5d69ad37923e2434bb55b74d42a3dd32, type: 3}

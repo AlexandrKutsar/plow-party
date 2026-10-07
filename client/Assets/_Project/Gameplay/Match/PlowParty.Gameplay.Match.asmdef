@@ -2,6 +2,9 @@
     "name": "PlowParty.Gameplay.Match",
     "rootNamespace": "PlowParty.Gameplay.Match",
     "references": [
+        "PlowParty.Shared",
+        "PlowParty.Infrastructure",
+        "PlowParty.Gameplay.Participants",
         "PlowParty.Gameplay.DropOff",
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Vehicle",

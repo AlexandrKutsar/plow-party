@@ -9,4 +9,7 @@ Plain data types that cross the Gameplay/Meta boundary, such as `MatchResult` an
 
 The asmdef sets `overrideReferences` with no precompiled DLLs, so Fusion types cannot leak in.
 
-Empty until the first cross-boundary type exists.
+## Types
+
+- `MatchLineup` — what Meta's matchmaking found before the Match scene loads: `ExpectedHumans` (Players the Host waits for) and `MaxSlots`. Meta writes it into Infrastructure's `MatchLineupStore`; Match reads it on the Host during WaitingForPlayers.
+- `ParticipantToken` — a Player's Account Id and Nickname, carried as the Fusion connection token (at most `MaxBytes`). Meta encodes it when joining; Gameplay decodes it on the Host to name the Participant and to build the backend Roster.

@@ -11,6 +11,8 @@ The first and only map: a snowed-in farmyard, 40 × 40 m, with the Drop-Off Zone
 | `SnowGrid` | Snow Grid driver and surface; `SnowConfig` covers origin (−20, −20), size (40, 40). | Snow |
 | `VehicleSpawner` | Six Spawn Points on a 13 m circle, every 60° from north, each facing the centre. | Vehicle |
 | `VehicleWorld`, `MatchDriver`, `MatchScope` | Network drivers and the scene scope. | Vehicle, Match, Bootstrap |
+| `ParticipantRoster` | Networked Participant profiles per Slot. | Participants, Match, Hud, Bots |
+| `BotDriver` | Host-side Bot AI; `_arenaRoot` = `Arena` (its nav grid). | Bots |
 | `CameraRig` | The only camera; `_arenaRoot` = `Arena`. | CameraRig, Hud (scene `Camera`) |
 | `Hud` | `Hud.prefab` with its EventSystem. | Hud |
 

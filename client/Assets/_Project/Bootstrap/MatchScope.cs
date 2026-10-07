@@ -1,3 +1,4 @@
+using PlowParty.Gameplay.Bots.Network;
 using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.CameraRig.Network;
 using PlowParty.Gameplay.CameraRig.Simulation;
@@ -5,6 +6,7 @@ using PlowParty.Gameplay.CameraRig.View;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.View;
 using PlowParty.Gameplay.Match.Network;
+using PlowParty.Gameplay.Participants.Network;
 using PlowParty.Gameplay.Snow.Network;
 using PlowParty.Gameplay.Snow.Simulation;
 using PlowParty.Gameplay.Snow.View;
@@ -35,6 +37,9 @@ namespace PlowParty.Bootstrap
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
             builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().As<ISnowClock>().AsSelf();
+            builder.RegisterComponentInHierarchy<ParticipantRoster>();
+            builder.RegisterEntryPoint<MatchSeating>().AsSelf();
+            builder.RegisterComponentInHierarchy<BotDriver>();
             RegisterHud(builder);
             RegisterCamera(builder);
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
@@ -59,6 +64,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<DropOffArrowView>();
             builder.RegisterComponentInHierarchy<ResultsView>();
             builder.RegisterComponentInHierarchy<VirtualStickView>();
+            builder.RegisterComponentInHierarchy<WaitingForPlayersView>();
         }
     }
 }

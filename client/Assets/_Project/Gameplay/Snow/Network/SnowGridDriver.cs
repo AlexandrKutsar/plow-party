@@ -34,6 +34,10 @@ namespace PlowParty.Gameplay.Snow.Network
 
         public bool IsReady => _grid != null;
 
+        public int Width => _grid.Width;
+
+        public int Height => _grid.Height;
+
         [Inject]
         public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit, ISnowFreeArea snowFree, ISnowClock clock)
         {
@@ -70,6 +74,11 @@ namespace PlowParty.Gameplay.Snow.Network
         public bool IsPlowingPile(NetworkVehicle vehicle)
         {
             return IsReady && HasSlot(vehicle) && PlowingPileBySlot[vehicle.Slot];
+        }
+
+        public int GetHostDepth(int x, int y)
+        {
+            return _grid.GetDepth(x, y);
         }
 
         public void Spill(Vector2 point, int steps)

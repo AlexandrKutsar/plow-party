@@ -32,7 +32,7 @@ Asmdef naming: `PlowParty.<Area>` or `PlowParty.<Area>.<Feature>`; namespaces ma
 
 Gameplay knows nothing about menus, accounts, or the backend. The two sides meet at exactly two points:
 
-1. **Into a match** — `Meta/Session` starts a Fusion `NetworkRunner` session (quick play or room code, waits for players, fills with bots) and loads the Match scene; `MatchScope` takes over from Countdown.
+1. **Into a match** — `Meta/Session` matchmakes (quick play or room code), stores the `MatchLineup` (expected Players, Slot count) in Infrastructure's `MatchLineupStore`, starts the Fusion `NetworkRunner` session with each Player's `ParticipantToken` as connection token, and loads the Match scene; `MatchScope` takes over from WaitingForPlayers, where the Host seats the arriving Players and fills the remaining Slots with Bots (ADR-0016).
 2. **Out of a match** — `Gameplay/Match` publishes a `MatchResult` (in Shared); Meta submits it to the backend and returns to the menu.
 
 ## Lifetime scopes (VContainer)
@@ -96,7 +96,8 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
-| Match | `_Project/Gameplay/Match/` | active | Match state machine Countdown → Playing → Results → next Match, Match clock, input lock, placement table (GDD 3.2) |
+| Match | `_Project/Gameplay/Match/` | active | Match state machine WaitingForPlayers → Countdown → Playing → Results → next Match, seating Players and Bots into Slots, Match clock, input lock, placement table (GDD 3.2–3.3) |
+| Participants | `_Project/Gameplay/Participants/` | active | Networked Participant profile per Slot (Nickname, Critter Species, Bot or Player), Critter on the Vehicle seat (GDD 3.1, 8) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | active | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
@@ -104,7 +105,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Drifts | `_Project/Gameplay/Drifts/` | planned | Breakable drifts and respawn (GDD 6) |
 | Loot | `_Project/Gameplay/Loot/` | planned | Owned loot drops, pickup, expiry (GDD 6) |
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |
-| Bots | `_Project/Gameplay/Bots/` | planned | Utility-AI bots on the host (GDD 8) |
+| Bots | `_Project/Gameplay/Bots/` | active | Utility-AI Bots on the Host: nav grid and A*, collect/deliver/Pile/Ram/evade scoring, difficulty profiles (GDD 8) |
 | Hud | `_Project/Gameplay/Hud/` | active | Virtual stick, timer, Load bar, Score list and popups, Blizzard announcement, Drop-Off arrow, Results; later gadget button and portraits |
 | CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Camera Presets (overview, follow, follow rotating), Camera Shake, dev preset switcher |
 | Levels | `_Project/Levels/<Map>/` | active | Map composition, no code: obstacle prefabs and the scene layout note; `Farm` (40 × 40 m) is the only map, laid out in `Scenes/Match.unity` |

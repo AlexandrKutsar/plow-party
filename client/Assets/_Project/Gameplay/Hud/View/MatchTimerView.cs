@@ -10,8 +10,6 @@ namespace PlowParty.Gameplay.Hud.View
 {
     public sealed class MatchTimerView : MonoBehaviour
     {
-        private const string GoText = "GO!";
-
         [SerializeField] private GameObject _clockPanel;
         [SerializeField] private Text _clockLabel;
         [SerializeField] private Text _countdownLabel;
@@ -31,7 +29,7 @@ namespace PlowParty.Gameplay.Hud.View
         private void Update()
         {
             var phase = _match.IsRunning ? _match.Phase : MatchPhase.Results;
-            var showsClock = phase != MatchPhase.Results;
+            var showsClock = phase == MatchPhase.Countdown || phase == MatchPhase.Playing;
             _clockPanel.SetActive(showsClock);
             if (showsClock)
             {
@@ -61,7 +59,7 @@ namespace PlowParty.Gameplay.Hud.View
             }
 
             _shownCountdown = value;
-            _countdownLabel.text = value == 0 ? GoText : value.ToString();
+            _countdownLabel.text = value == 0 ? HudText.Go : value.ToString();
         }
 
         private int CountdownValue(MatchPhase phase)

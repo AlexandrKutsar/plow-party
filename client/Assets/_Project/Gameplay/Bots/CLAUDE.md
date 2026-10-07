@@ -1,0 +1,30 @@
+# Bots
+
+Host-side utility AI that drives the Vehicles of Bot Participants through the same control surface as Players: it writes a `VehicleInput` into `NetworkVehicle.SetHostInput`, which becomes the Vehicle's `LastMove` (GDD 8). The rest of the game cannot tell a Bot from a Player. Spec: `.scratch/bots/spec.md`.
+
+## Entry points
+
+- `BotBrain` — one per Bot Slot, the behavioural test seam. `Step(world, slot, time)` returns that tick's `VehicleInput`; `Reset(time)` at the start of every Playing phase. Holds the chosen `BotAction`, the goal, the path, the pending (not yet reacted to) action, steering noise, and a `BotStuckWatch`. Exposes `Action`, `StuckEvents`, `StillFor(time)`, `SwitchesTo(action)` for logs.
+- `BotUtility` — scores the five `BotAction`s (Collect, Deliver, ChasePile, Ram, Evade) from a `BotSituation` and a `BotProfile`; `Choose(situation, profile, current, mistakeRoll)` adds the commitment bonus to the current action and takes the second best when the roll is under the profile's mistake chance.
+- `NavGrid` — the Arena as a coarse walkable grid (`NavCellSize` 1 m over the Snow Grid rectangle), a cell blocked when its centre lies within `NavClearance` of an Obstacle box or circle. `CellOf`, `CentreOf`, `NearestWalkable`, `HasLineOfSight` (samples every quarter cell), `OpenDirection` (away from nearby blocked cells, for unsticking).
+- `NavPathfinder` — A* on the `NavGrid`, 8-connected without corner cutting, octile heuristic, stamped arrays and an array heap so a search allocates nothing; the cell path is string-pulled into a few line-of-sight waypoints. A goal in direct sight skips the search.
+- `BotSnowMap` — the Snow Grid summed per nav cell (plain Snow and Snow Pile steps) and a 3 × 3 richness sum; `TryFindSnow` (richest reachable patch, discounted by distance, favouring cells ahead, penalising cells near rivals, jittered by the profile's mistake chance), `TryFindPile`. Reads Snow through `ISnowDepths` (`SnowDepthsReader` adapts `SnowGridDriver` on the Host).
+- `BotSteering` — stick toward an aim point plus repulsion from Vehicles ahead within `AvoidRadius` (not the Ram target), rotated by the profile's noise; throttle drops on sharp turns, capped by the profile.
+- `BotStuckWatch` — no `StuckDistance` of progress in `StuckTime` while trying to move means stuck; `StillFor` keeps counting across unstuck attempts for the 3 s stuck report.
+- `BotDifficultyRules.Choose(strongSeated, roll, weakShare)` — the first Bot of a Session is Strong, every later one Weak or Medium by `WeakShare`.
+- `BotDriver` — scene `NetworkObject` (`Prefabs/BotDriver.prefab`, `_arenaRoot` = `Arena`), `[DefaultExecutionOrder(-50)]` so it runs after `MatchDriver` and before `VehicleWorldDriver`. Host only. Gives every Vehicle that is driven by the Host and seated as a Bot in `ParticipantRoster` a brain, builds one `BotWorld` snapshot per tick (positions, velocities, Loads, Playing time left), refreshes the snow map every `SnowRefreshInterval`, steps each brain, logs a Bot still for `StuckReportTime`, and logs every Participant's place, Score, action switches, Rams dealt and stuck counts when Results starts.
+- `BotConfig` (shared tunables and utility weights) referencing three `BotProfileConfig` assets (Strong, Medium, Weak: reaction delay, decision interval, steering noise, mistake chance, aggression, greed, caution, throttle cap); assets in `_Project/Configs/`, `BotConfig` registered in `RootLifetimeScope`.
+
+## Rules worth knowing
+
+- Bots think at decision intervals (0.2–0.5 s by profile, GDD 8), not every tick; between decisions only steering and path following run. A changed action takes effect after the profile's reaction delay; the same action refreshes its target at once. The Collect target is kept until reached or until its patch is mostly scraped, so a bot drives long lines instead of hopping between cells.
+- Omniscient but human-like: a bot reads the whole Snow Grid, every Load and the clock, and is held back by reaction delay, decision interval, steering noise, jittered targets and occasional second-best choices.
+- Deliver drives to a stand point inside the Drop-Off Zone on the bot's side, slows on arrival, and holds still until the Bucket is empty; nothing is decided while unloading. Greedy bots skip delivering when a Multiplier tier (51, 100) is within `GreedReach` Load and Snow is near; anyone delivers when the Match ends sooner than the trip plus `DeliveryMargin`.
+- Ram aims at the target's position led by `RamLeadTime`, ignores it in avoidance, and only targets a loaded rival in sight and outside the Drop-Off Zone. Evade sidesteps perpendicular to a rival closing fast inside its cone.
+- Unstuck: on a stuck verdict the bot drives `UnstuckDuration` toward open space (away from nearby blocked cells, ±45°) and replans. The hay-bale ring around the cauldron is walled off in the grid except its four lanes, so paths into the zone go through a lane.
+- Path replans are throttled to `ReplanInterval` and happen only when the goal moved more than 1.5 m or the path is gone; the shared pathfinder runs on one thread on the Host.
+- Difficulty: exactly one Strong Bot per Session as long as there is a Bot; Bots and their difficulty persist across "Play again", so every Match keeps one.
+
+## Depends on
+
+Participants (`ParticipantRoster`), Match (`IMatchClock`, `IMatchResults`), DropOff (`DropOffZone`, `DropOffConfig`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowGridDriver`, `SnowConfig`), Vehicle (`NetworkVehicle`, `VehicleRegistry`, `VehicleArenaReader`, `VehicleInput`), Fusion, VContainer. Nothing depends on Bots but Bootstrap. The assembly is in Fusion's `AssembliesToWeave`.
