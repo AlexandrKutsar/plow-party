@@ -6,7 +6,7 @@ The Match lifecycle inside a Session: Countdown → Playing → Results → next
 
 - `MatchRules` — phase machine and clock, built from `MatchSettings`: `NextPhase(phase, phaseElapsed, restartRequested)`, `PhaseRemaining`, `PlayingElapsed`, `PlayingRemaining`, static `IsInputLocked(phase)`, `StartsNextMatch(from, to)`, and `PhaseElapsed(tick, phaseStartTick, deltaTime)`; `WaitsForRestartRequest` when Results has no time limit. Holds no state.
 - `MatchPlacementRules.Rank(slots, scores, count, output)` — fills `MatchPlacement`s (Slot, Score, Place) ordered by Score descending, ties by Slot; tied Scores share a place and skip the next (1, 2, 2, 4), like the backend. Allocation-free; returns the rows written.
-- `IMatchClock` — read-only clock on every peer: `IsRunning`, `Phase`, `MatchNumber`, `PhaseRemaining`, `PlayingElapsed`, `PlayingRemaining`. Snow's Regrowth and Blizzards should run on `PlayingElapsed`.
+- `IMatchClock` — read-only clock on every peer: `IsRunning`, `Phase`, `MatchNumber`, `PhaseRemaining`, `PlayingElapsed`, `PlayingRemaining`.
 - `IMatchResults` — the recorded placement table (`PlacementCount`, `GetPlacement(index)`), `WaitsForHost` (Results has no time limit), and the Host's `RequestRestart` (`CanRequestRestart` is true only on the Host during Results).
 - `MatchSettings` — durations, filled from `MatchConfig`.
 
@@ -20,10 +20,10 @@ The Match lifecycle inside a Session: Countdown → Playing → Results → next
 
 ## Network
 
-- `MatchDriver` — scene `NetworkObject` (`Prefabs/MatchDriver.prefab`), implements both interfaces; registered in `MatchScope` with `RegisterComponentInHierarchy` as `IMatchClock`, `IMatchResults`, and itself. The Host enters Countdown on spawn (Match number 1). `MatchRestarted` is a host-side C# event raised after the respawn of a new Match; it is the seam for resetting state that outlives Vehicles (the Snow Grid).
+- `MatchDriver` — scene `NetworkObject` (`Prefabs/MatchDriver.prefab`), implements both interfaces and Snow's `ISnowClock` (`IsPlaying`, `PlayingElapsed`, `MatchRestarted`); registered in `MatchScope` with `RegisterComponentInHierarchy` as `IMatchClock`, `IMatchResults`, `ISnowClock`, and itself. The Host enters Countdown on spawn (Match number 1). `MatchRestarted` is a host-side C# event raised after the respawn of a new Match; Snow resets its grid on it, since the Snow Grid outlives Vehicles.
 - Players who join mid-Match spawn in the current phase and are locked or free like everyone else.
 - `MatchConfig` — the ScriptableObject behind `MatchSettings`; asset `_Project/Configs/MatchConfig.asset`, registered in `RootLifetimeScope`.
 
 ## Depends on
 
-DropOff (`IScoreReader`), Vehicle (`VehicleRegistry`, `VehicleSpawner`, `NetworkVehicle`), Fusion, VContainer. Hud depends on Match. Snow cannot reference Match (Match → DropOff → Snow), so wiring the Snow clock and a Snow reset needs a seam declared by Snow and implemented here or in Bootstrap. The assembly is in Fusion's `AssembliesToWeave`. Submitting the Match Result and WaitingForPlayers belong to Meta.
+DropOff (`IScoreReader`), Snow (`ISnowClock`, implemented here), Vehicle (`VehicleRegistry`, `VehicleSpawner`, `NetworkVehicle`), Fusion, VContainer. Hud depends on Match. Snow cannot reference Match (Match → DropOff → Snow), which is why the clock seam is Snow's interface. The assembly is in Fusion's `AssembliesToWeave`. Submitting the Match Result and WaitingForPlayers belong to Meta.

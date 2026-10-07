@@ -22,4 +22,4 @@ The in-Match screen layer: virtual stick, Countdown and Match timer, Load bar an
 
 ## Depends on
 
-Match (`IMatchClock`, `IMatchResults`), DropOff (`IScoreReader`, `DropOffZone`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowConfig`), Vehicle (`VehicleRegistry`, `NetworkVehicle`, `PlaneProjection`), VContainer, uGUI, and the scene `Camera` registered in `MatchScope`. Nothing references Hud except Bootstrap. No `NetworkBehaviour`, so the assembly is not woven.
+Match (`IMatchClock`, `IMatchResults`), DropOff (`IScoreReader`, `DropOffZone`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowConfig`), Vehicle (`VehicleRegistry`, `NetworkVehicle`, `PlaneProjection`), VContainer, uGUI, and the scene `Camera` registered in `MatchScope` (the `CameraRig` prefab's camera, the only one in `Match.unity`). Nothing references Hud except Bootstrap. No `NetworkBehaviour`, so the assembly is not woven.
