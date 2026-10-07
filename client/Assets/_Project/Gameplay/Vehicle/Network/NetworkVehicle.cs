@@ -21,7 +21,9 @@ namespace PlowParty.Gameplay.Vehicle.Network
 
         [Networked] public NetworkBool GadgetPressed { get; private set; }
 
-        [Networked] public float SpeedMultiplier { get; set; }
+        public const int SpeedSourceCount = (int)VehicleSpeedSource.SnowPile + 1;
+
+        [Networked, Capacity(SpeedSourceCount)] private NetworkArray<float> SpeedFactors { get; }
 
         [Networked] public NetworkBool IsImmobilised { get; set; }
 
@@ -41,7 +43,11 @@ namespace PlowParty.Gameplay.Vehicle.Network
             {
                 Position = PlaneProjection.ToPlane(transform.position);
                 Forward = PlaneProjection.ToPlane(transform.forward).normalized;
-                SpeedMultiplier = VehicleModifiers.None.SpeedMultiplier;
+                for (var source = 0; source < SpeedSourceCount; source++)
+                {
+                    SpeedFactors.Set(source, VehicleModifiers.None.SpeedMultiplier);
+                }
+
                 RamStrengthMultiplier = VehicleModifiers.None.RamStrengthMultiplier;
             }
 
@@ -52,6 +58,25 @@ namespace PlowParty.Gameplay.Vehicle.Network
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
             _registry.Remove(this);
+        }
+
+        public float SpeedMultiplier
+        {
+            get
+            {
+                var product = 1f;
+                for (var source = 0; source < SpeedSourceCount; source++)
+                {
+                    product *= SpeedFactors[source];
+                }
+
+                return product;
+            }
+        }
+
+        public void SetSpeedFactor(VehicleSpeedSource source, float factor)
+        {
+            SpeedFactors.Set((int)source, factor);
         }
 
         public void AddImpulse(Vector2 impulse)

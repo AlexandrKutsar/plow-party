@@ -16,7 +16,7 @@ The Vehicle's snow container: Load filled by the Blade, capped at capacity, slow
 
 ## Network
 
-- `NetworkBucket` — on `Vehicle.prefab` beside `NetworkVehicle`. `[Networked] LoadSteps` is the only state; `Load`, `IsFull`, `FreeSteps` read it on every peer. `Collect`, `Unload` (DropOff's Delivery), and `TakeSpill` change it only with state authority (the Host) and write the Vehicle's `SpeedMultiplier`; Bucket is that Modifier's only owner.
+- `NetworkBucket` — on `Vehicle.prefab` beside `NetworkVehicle`. `[Networked] LoadSteps` is the only state; `Load`, `IsFull`, `FreeSteps` read it on every peer. `Collect`, `Unload` (DropOff's Delivery), and `TakeSpill` change it only with state authority (the Host) and write the Vehicle's `Load` speed factor (`SetSpeedFactor(VehicleSpeedSource.Load, …)`); Bucket is that factor's only owner, and Vehicle multiplies it with the others (Snow's `SnowPile`).
 - `BucketRegistry` — maps each `NetworkVehicle` to its `NetworkBucket`; implements Snow's `IScrapeLimit` with the Bucket's free steps, so the Host's scrape and the local View's pre-clear both stop when the Bucket is full. A Vehicle without a Bucket collects nothing.
 - `BucketHost` — VContainer entry point in `MatchScope`. Subscribes to `SnowGridDriver.Scraped` (fills the Bucket) and `VehicleRegistry.Rammed` (Spills the Victim's Bucket at the midpoint of Rammer and Victim, in front of the Rammer's nose); both events fire only on the Host. `Spill(vehicle, point)` is the host-side call Gadgets (Snowball) use. `Spilled` (the Vehicle) fires after every non-empty Spill; DropOff interrupts a Delivery on it.
 - `BucketConfig` — the ScriptableObject behind `BucketSettings`; asset `_Project/Configs/BucketConfig.asset`, registered in `RootLifetimeScope`.

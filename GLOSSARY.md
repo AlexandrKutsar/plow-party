@@ -109,6 +109,10 @@ Losing a share of Load when rammed or hit, which leaves a Snow Pile.
 Extra Snow lying on the ground above full cover, left by a Spill or a Blizzard, that any Participant can collect; holds no Loot and has no owner.
 _Avoid_: Heap (that is the Trap Pile), Drift (that holds Loot)
 
+**Plowing a Pile** (пробивание кучки):
+A tick in which a Vehicle's Blade takes Snow from a Snow Pile; capped per tick and slowing the Vehicle, so a Pile feels heavy.
+_Avoid_: Digging, mining
+
 **Cell** (клетка):
 One square of the Snow Grid; its Depth is the unit of Snow tracking.
 
@@ -121,7 +125,7 @@ The strip in front of a Vehicle that scrapes Cells clear and feeds their Snow in
 _Avoid_: Footprint, collector
 
 **Regrowth** (восстановление):
-The slow continuous return of Snow onto cleared cells.
+The slow return of Snow onto a lowered Cell: after a delay it gains one Depth step at a fixed pace up to full, so the oldest part of a track refills first.
 
 **Blizzard** (метель):
 A scheduled wave that rapidly re-covers the whole map with Snow and leaves a few Snow Piles in its wake.
@@ -172,6 +176,10 @@ _Avoid_: Stunned, frozen (Freeze is the Gadget)
 
 **Impulse** (импульс):
 A one-tick velocity change applied to a Vehicle, such as a snowball knockback or a Turbo Rocket dash.
+
+**Speed Factor** (множитель скорости):
+One feature's share of a Vehicle's speed multiplier, keyed by its source (Load, Snow Pile); the multiplier is the product of all factors, so no feature overwrites another.
+_Avoid_: Speed penalty (as a type name), slowdown
 
 ## Loot and Gadgets
 

@@ -10,8 +10,10 @@ namespace PlowParty.Gameplay.Snow.Config
         [SerializeField] private Vector2 _size = new Vector2(30f, 30f);
         [SerializeField, Min(0.01f)] private float _cellSize = 0.5f;
         [SerializeField, Range(1, SnowGrid.MaxDepth - 1)] private int _fullDepth = 3;
-        [SerializeField, Min(0f)] private float _regrowthInterval = 0.5f;
-        [SerializeField, Range(0f, 1f)] private float _regrowthChance = 0.05f;
+        [SerializeField, Min(0f)] private float _regrowthDelay = 6f;
+        [SerializeField, Min(0f)] private float _regrowthStepInterval = 3f;
+        [SerializeField, Min(1)] private int _pileStepsPerScrape = 1;
+        [SerializeField, Range(0f, 1f)] private float _pileSpeedPenalty = 0.4f;
         [SerializeField] private float[] _blizzardTimes = { 45f, 90f, 135f };
         [SerializeField, Min(0f)] private float _blizzardDuration = 2.5f;
         [SerializeField, Min(0)] private int _blizzardPilesPerWave = 3;
@@ -20,8 +22,23 @@ namespace PlowParty.Gameplay.Snow.Config
         [SerializeField, Min(0.01f)] private float _bladeDepth = 0.5f;
         [SerializeField, Min(0f)] private float _bladeForwardOffset = 0.85f;
         [SerializeField, Min(0f)] private float _preClearDuration = 0.4f;
+        [SerializeField, Range(1, 4)] private int _verticesPerCell = 2;
+        [SerializeField, Min(0f)] private float _snowHeight = 0.2f;
+        [SerializeField, Min(0f)] private float _pileHeight = 1f;
+        [SerializeField, Min(0f)] private float _surfaceLowerTime = 0.05f;
+        [SerializeField, Min(0f)] private float _surfaceRaiseTime = 0.35f;
 
         public float PreClearDuration => _preClearDuration;
+
+        public int VerticesPerCell => _verticesPerCell;
+
+        public float SnowHeight => _snowHeight;
+
+        public float PileHeight => _pileHeight;
+
+        public float SurfaceLowerTime => _surfaceLowerTime;
+
+        public float SurfaceRaiseTime => _surfaceRaiseTime;
 
         public SnowSettings ToSettings()
         {
@@ -31,8 +48,10 @@ namespace PlowParty.Gameplay.Snow.Config
                 Size = _size,
                 CellSize = _cellSize,
                 FullDepth = _fullDepth,
-                RegrowthInterval = _regrowthInterval,
-                RegrowthChance = _regrowthChance,
+                RegrowthDelay = _regrowthDelay,
+                RegrowthStepInterval = _regrowthStepInterval,
+                PileStepsPerScrape = _pileStepsPerScrape,
+                PileSpeedPenalty = _pileSpeedPenalty,
                 BlizzardTimes = (float[])_blizzardTimes.Clone(),
                 BlizzardDuration = _blizzardDuration,
                 BlizzardPilesPerWave = _blizzardPilesPerWave,

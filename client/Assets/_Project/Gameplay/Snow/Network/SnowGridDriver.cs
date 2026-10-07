@@ -10,11 +10,12 @@ namespace PlowParty.Gameplay.Snow.Network
 {
     public sealed class SnowGridDriver : NetworkBehaviour
     {
-        public const int MaxWords = 512;
+        public const int MaxWords = 1024;
 
         [SerializeField] private Transform _arenaRoot;
 
         private readonly VehicleScrape[] _scrapes = new VehicleScrape[VehicleWorldDriver.MaxVehicles];
+        private readonly bool[] _plowingSlots = new bool[VehicleWorldDriver.MaxVehicles];
 
         private VehicleRegistry _registry;
         private IScrapeLimit _limit;
@@ -25,6 +26,8 @@ namespace PlowParty.Gameplay.Snow.Network
         private int _scrapeCount;
 
         [Networked, Capacity(MaxWords)] private NetworkArray<int> Words { get; }
+
+        [Networked, Capacity(VehicleWorldDriver.MaxVehicles)] private NetworkArray<NetworkBool> PlowingPileBySlot { get; }
 
         [Networked] private int StartTick { get; set; }
 
@@ -48,7 +51,8 @@ namespace PlowParty.Gameplay.Snow.Network
             _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), _snowFree, seed);
             if (_grid.WordCount > MaxWords)
             {
-                throw new InvalidOperationException($"Snow Grid needs {_grid.WordCount} words, {nameof(MaxWords)} is {MaxWords}");
+                throw new InvalidOperationException(
+                    $"Snow Grid of {_grid.Width} x {_grid.Height} Cells needs {_grid.WordCount} words, but {nameof(SnowGridDriver)} holds at most {MaxWords}; shrink {nameof(SnowConfig)} size or grow its cell size");
             }
 
             if (HasStateAuthority)
@@ -61,6 +65,11 @@ namespace PlowParty.Gameplay.Snow.Network
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
             _grid = null;
+        }
+
+        public bool IsPlowingPile(NetworkVehicle vehicle)
+        {
+            return IsReady && HasSlot(vehicle) && PlowingPileBySlot[vehicle.Slot];
         }
 
         public void Spill(Vector2 point, int steps)
@@ -89,6 +98,7 @@ namespace PlowParty.Gameplay.Snow.Network
             ScrapeUnderBlades();
             _grid.Tick((Runner.Tick - StartTick) * Runner.DeltaTime);
             CopyGridToWords();
+            CopyPlowingSlots();
             ReportScrapes();
         }
 
@@ -96,15 +106,30 @@ namespace PlowParty.Gameplay.Snow.Network
         {
             var vehicles = _registry.Vehicles;
             _scrapeCount = 0;
+            Array.Clear(_plowingSlots, 0, _plowingSlots.Length);
             for (var i = 0; i < vehicles.Count; i++)
             {
                 var vehicle = vehicles[i];
-                var steps = _grid.Scrape(SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings), _limit.LimitFor(vehicle));
-                if (steps > 0)
+                var blade = SnowBlade.Ahead(vehicle.Position, vehicle.Forward, _settings);
+                var overPile = _grid.IsOverPile(blade);
+                vehicle.SetSpeedFactor(VehicleSpeedSource.SnowPile, _grid.SpeedMultiplierUnder(blade));
+                var steps = _grid.Scrape(blade, _limit.LimitFor(vehicle));
+                if (steps <= 0)
                 {
-                    _scrapes[_scrapeCount++] = new VehicleScrape(vehicle, steps);
+                    continue;
+                }
+
+                _scrapes[_scrapeCount++] = new VehicleScrape(vehicle, steps);
+                if (overPile && HasSlot(vehicle))
+                {
+                    _plowingSlots[vehicle.Slot] = true;
                 }
             }
+        }
+
+        private static bool HasSlot(NetworkVehicle vehicle)
+        {
+            return vehicle.Slot >= 0 && vehicle.Slot < VehicleWorldDriver.MaxVehicles;
         }
 
         private void ReportScrapes()
@@ -120,6 +145,14 @@ namespace PlowParty.Gameplay.Snow.Network
             for (var i = 0; i < _grid.WordCount; i++)
             {
                 Words.Set(i, _grid.GetWord(i));
+            }
+        }
+
+        private void CopyPlowingSlots()
+        {
+            for (var slot = 0; slot < _plowingSlots.Length; slot++)
+            {
+                PlowingPileBySlot.Set(slot, _plowingSlots[slot]);
             }
         }
     }

@@ -79,7 +79,7 @@ namespace PlowParty.Gameplay.Bucket.Network
         private void SetLoad(int loadSteps)
         {
             LoadSteps = loadSteps;
-            _vehicle.SpeedMultiplier = _rules.SpeedMultiplier(loadSteps);
+            _vehicle.SetSpeedFactor(VehicleSpeedSource.Load, _rules.SpeedMultiplier(loadSteps));
         }
     }
 }
