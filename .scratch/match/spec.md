@@ -52,7 +52,7 @@ A Match feature in Gameplay. Its rules live in pure C#: `MatchRules` steps the p
 ## Further Notes
 
 - Out-of-module edits: `Vehicle/Network/VehicleSpawner.cs` (`RespawnAll`), Vehicle `CLAUDE.md` (Immobilised owner); `MatchScope`, `RootLifetimeScope` (+ prefab field), Bootstrap asmdef and `CLAUDE.md`; `NetworkProjectConfig.fusion`; `GLOSSARY.md` (Countdown, Playing, Results, Match Number, Placement).
-- Snow cannot reference Match (Match → DropOff → Snow would cycle). The Snow clock and Snow reset therefore need a seam Snow declares (for example an elapsed-Playing-time provider and a reset call), implemented by Match or wired in Bootstrap from `IMatchClock.PlayingElapsed` and `MatchDriver.MatchRestarted`.
+- Snow cannot reference Match (Match → DropOff → Snow would cycle). Resolved in the level integration: Snow declares `ISnowClock` and `MatchDriver` implements it.
 - `MatchScope` registers `MatchDriver` and the Hud views from the scene; the scene must contain the prefabs or the scope fails to build.
-- `IMatchClock` and `IMatchResults` have one implementation each. `docs/architecture.md` asks features to depend on another feature's interface (DropOff's `IScoreReader` set the precedent); `docs/coding-standards.md` allows an interface only with two implementations or a test double. The two rules conflict; this change follows the architecture rule and flags the conflict.
+- `IMatchClock` and `IMatchResults` have one implementation each; `docs/coding-standards.md` allows that for cross-module seams.
 - Review follow-ups applied: the next-Match transition test lives in `MatchRules.StartsNextMatch`; `MatchDriver` runs before `VehicleWorldDriver` (`[DefaultExecutionOrder(-100)]`), so the lock lands on the tick Playing ends; `IMatchResults.WaitsForHost` distinguishes an untimed Results from a timed one at 0.

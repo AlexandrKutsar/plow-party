@@ -19,6 +19,7 @@ Zero comments: no `//`, `/* */`, `///` XML-doc, `#region`, commented-out code, o
 - One public type per file, file named after the type.
 - Fields `private` or `private readonly`. Inspector fields are `[SerializeField] private`.
 - Prefer composition and small interfaces; an interface exists when there are two implementations or a test double needs it.
+- Exception: a cross-module seam, the interface through which another feature module reads or drives this one (`IScoreReader`, `IMatchClock`, `IScrapeLimit`, `ICameraShake`), may have a single implementation; it keeps asmdef references acyclic and pointed at a contract (`docs/architecture.md`).
 
 ## Dependencies
 
