@@ -32,16 +32,16 @@ Asmdef naming: `PlowParty.<Area>` or `PlowParty.<Area>.<Feature>`; namespaces ma
 
 Gameplay knows nothing about menus, accounts, or the backend. The two sides meet at exactly two points:
 
-1. **Into a match** — `Meta/Session` starts a Fusion `NetworkRunner` session (quick play or room code, waits for players, fills with bots) and loads the Match scene; `MatchScope` takes over from Countdown.
-2. **Out of a match** — `Gameplay/Match` publishes a `MatchResult` (in Shared); Meta submits it to the backend and returns to the menu.
+1. **Into a match** — `Meta/Session` gathers Players in a Fusion Session while in the Menu (Quick Play or Room Code), writes the `MatchLineup` (Shared) into Infrastructure's `MatchLineupStore`, and loads the Match scene for every peer through Fusion; `MatchScope` binds to the running Session and takes over (ADR-0016).
+2. **Out of a match** — `Meta/Tournament`'s reporter reads the Match through ports Bootstrap adapts from Gameplay's read seams (`IMatchClock`, `IMatchResults`, `IScoreReader`) and votes the Match Result to the backend; Hud's "В меню" raises Hud's `IMatchExit`, which Bootstrap routes to `Meta/Session` (ADR-0017).
 
 ## Lifetime scopes (VContainer)
 
 | Scope | Lives in | Lifetime | Registers |
 |---|---|---|---|
-| `RootLifetimeScope` | prefab referenced by `VContainerSettings` | whole app | configs (ScriptableObjects), Infrastructure services, account |
-| `MenuScope` | Menu scene | menu visit | lobby, session, tournament screens |
-| `MatchScope` | Match scene | one Fusion session | Gameplay systems, `INetworkObjectProvider`, HUD |
+| `RootLifetimeScope` | prefab referenced by `VContainerSettings` | whole app | configs (ScriptableObjects), Infrastructure services (including the Fusion `NetworkSession`), account, session exit, match report API |
+| `MenuScope` | Menu scene | menu visit | nickname panel, matchmaker, lobby and tournament screens |
+| `MatchScope` | Match scene | one visit of the Match scene | Gameplay systems, HUD, match reporter and its Bootstrap adapters |
 
 Scene flow: `Boot` → `Menu` ↔ `Match`. Scene scopes are children of the root. Plain C# classes run through VContainer entry points (`IStartable`, `ITickable`, `IAsyncStartable`, `IDisposable`); `MonoBehaviour`s are views only.
 
@@ -69,7 +69,7 @@ Folders appear only when they have content.
 
 ## Fusion and DI
 
-Fusion, not VContainer, instantiates networked prefabs. The session adds a `ResolverNetworkObjectProvider` that instantiates through `MatchScope`'s `IObjectResolver`, so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike; scene `NetworkObject`s are injected through `RegisterComponentInHierarchy`. See ADR-0004.
+Fusion, not VContainer, instantiates networked prefabs. The session adds a `ResolverNetworkObjectProvider` that instantiates through the `IObjectResolver` of the scene scope currently bound to the Session (`NetworkScopeBinding`; `MatchScope` during a Match), so every spawned `NetworkObject` (vehicles, loot, snowballs) gets `[Inject]` dependencies on host and clients alike; scene `NetworkObject`s are injected through `RegisterComponentInHierarchy`. The runner itself lives in the root scope because one Session spans the Menu and the Match. See ADR-0004 and ADR-0016.
 
 Every assembly that declares a `NetworkBehaviour` or `INetworkInput` must be listed in `AssembliesToWeave` in `NetworkProjectConfig.fusion`.
 
@@ -88,14 +88,14 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Module | Path | Status | Purpose |
 |---|---|---|---|
 | Bootstrap | `_Project/Bootstrap/` | active | Lifetime scopes, app start |
-| Infrastructure | `_Project/Infrastructure/` | active | Scene loading, Fusion session, DI-aware network object provider; later backend client, persistence |
+| Infrastructure | `_Project/Infrastructure/` | active | Scene loading, root-lifetime Fusion Session with per-scope binding, DI-aware network object provider, backend HTTP client, local file storage, safe-area fitter |
 | Shared | `_Project/Shared/` | active | Cross-boundary types |
 | Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
 | Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules, Android Player settings and development APK build |
-| Account | `_Project/Meta/Account/` | planned | Guest login by device id, nickname (GDD 9.1) |
-| Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
-| Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
-| Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
+| Account | `_Project/Meta/Account/` | active | Guest login by Device Id, Auth Token and 401 re-login, Nickname and its rename panel (GDD 9.1) |
+| Lobby | `_Project/Meta/Lobby/` | active | Menu scene's play and Lobby panels: Quick Play, Room Code entry, search timer, Players found, Start/Leave |
+| Session | `_Project/Meta/Session/` | active | Matchmaking in the Menu (Quick Play, Room Codes), MatchLineup, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016) |
+| Tournament | `_Project/Meta/Tournament/` | active | "Турнир дня" panel (top, around me, Medal) and Match reporting: register, confirm, Vote (GDD 9.2–9.3, ADR-0017) |
 | Match | `_Project/Gameplay/Match/` | active | Match state machine Countdown → Playing → Results → next Match, Match clock, input lock, placement table (GDD 3.2) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |

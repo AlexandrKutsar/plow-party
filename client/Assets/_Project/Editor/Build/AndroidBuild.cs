@@ -31,6 +31,7 @@ namespace PlowParty.Editor.Build
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.allowedAutorotateToLandscapeLeft = true;
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.insecureHttpOption = InsecureHttpOption.DevelopmentOnly;
             AssetDatabase.SaveAssets();
         }
 

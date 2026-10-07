@@ -4,6 +4,8 @@
     "references": [
         "VContainer",
         "UniTask",
+        "Fusion.Unity",
+        "PlowParty.Shared",
         "PlowParty.Infrastructure",
         "PlowParty.Gameplay.Vehicle",
         "PlowParty.Gameplay.Snow",
@@ -11,7 +13,11 @@
         "PlowParty.Gameplay.DropOff",
         "PlowParty.Gameplay.Match",
         "PlowParty.Gameplay.Hud",
-        "PlowParty.Gameplay.CameraRig"
+        "PlowParty.Gameplay.CameraRig",
+        "PlowParty.Meta.Account",
+        "PlowParty.Meta.Session",
+        "PlowParty.Meta.Lobby",
+        "PlowParty.Meta.Tournament"
     ],
     "autoReferenced": false
 }
