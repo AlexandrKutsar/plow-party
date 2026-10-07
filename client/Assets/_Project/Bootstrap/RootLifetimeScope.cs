@@ -6,6 +6,7 @@ using PlowParty.Gameplay.Match.Config;
 using PlowParty.Gameplay.Snow.Config;
 using PlowParty.Gameplay.Vehicle.Config;
 using PlowParty.Infrastructure.Scenes;
+using PlowParty.Infrastructure.Session;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -33,6 +34,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(_hudConfig);
             builder.RegisterInstance(_cameraConfig);
             builder.Register<SceneLoader>(Lifetime.Singleton);
+            builder.Register<MatchLineupStore>(Lifetime.Singleton);
             builder.RegisterBuildCallback(_ => Application.targetFrameRate = _targetFrameRate);
         }
     }

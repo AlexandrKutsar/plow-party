@@ -9,10 +9,12 @@ Engine, platform, and network plumbing used by both Gameplay and Meta: things th
 - `Network/ResolverNetworkObjectProvider` — Fusion's default provider with `InstantiatePrefab` routed through the scope's `IObjectResolver`, so every spawned `NetworkObject` receives `[Inject]` on Host and clients (ADR-0004). Scene `NetworkObject`s are not instantiated by Fusion; register them with `RegisterComponentInHierarchy` instead.
 - `Network/NetworkRunnerEvents` — the single `INetworkRunnerCallbacks` for the runner, re-exposed as C# events (`PlayerJoined`, `PlayerLeft`, `InputRequested`). Add an event here when a feature needs another callback.
 
+- `Session/MatchLineupStore` — app-lifetime holder of the `MatchLineup` that Meta sets before loading the Match scene and Match reads; registered in `RootLifetimeScope`. Empty when the Match scene is started directly in the Editor.
+
 ## Planned
 
 - Backend HTTP client (tournament API), persistence (account, settings).
 
 ## Depends on
 
-UniTask, VContainer, `Fusion.Unity`.
+Shared, UniTask, VContainer, `Fusion.Unity`.
