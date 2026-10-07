@@ -21,6 +21,7 @@ namespace PlowParty.Bootstrap
         [SerializeField] private MatchConfig _matchConfig;
         [SerializeField] private HudConfig _hudConfig;
         [SerializeField] private CameraConfig _cameraConfig;
+        [SerializeField, Min(30)] private int _targetFrameRate = 60;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -32,6 +33,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(_hudConfig);
             builder.RegisterInstance(_cameraConfig);
             builder.Register<SceneLoader>(Lifetime.Singleton);
+            builder.RegisterBuildCallback(_ => Application.targetFrameRate = _targetFrameRate);
         }
     }
 }

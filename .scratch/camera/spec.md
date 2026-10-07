@@ -52,7 +52,7 @@ A CameraRig feature in Gameplay. Pure C# in `Simulation/` computes a `CameraPose
 
 - Placing the rig in `Match.unity` and removing the old camera (integration, done after parallel work lands).
 - Shake calls from Snow Pile plowing and Gadgets (their modules call `ICameraShake`).
-- Client-side Ram shake: needs a networked Ram signal (e.g. a Ram counter on `NetworkVehicle`); follow-up after integration.
+- Client-side Ram shake: needs a networked Ram signal (e.g. a Ram counter on `NetworkVehicle`); follow-up after integration. Done in `fix/slice-polish`: `NetworkVehicle.TimesRammed` / `RamsDealt`, read through Vehicle's `RamWatch`.
 - Camera collision with tall props, zoom by speed, split screen.
 
 ## Further Notes

@@ -27,6 +27,16 @@ If the Editor is closed, `unity status` shows nothing connected: open it with `u
 
 `unity command` arguments are flags: `unity command --project-path client eval_file --file <path>`. Package changes in `manifest.json` reach an unfocused Editor only after `unity command --project-path client package_resolve`. The `unity-cli` skill covers the remaining commands (scenes, prefabs, play mode, console logs).
 
+## Android build
+
+Requires the Unity 6000.0.80f1 Android Build Support module (with Android SDK & NDK Tools and OpenJDK). The Editor on the project must be closed for a batch build:
+
+```
+unity run <absolute path to client> --log-file <log path> -- -buildTarget Android -executeMethod PlowParty.Editor.Build.AndroidBuild.BuildDevelopmentApkFromCommandLine
+```
+
+Or menu **Plow Party → Build → Android Development APK** in an open Editor. Output: `client/Builds/Android/PlowParty.apk` (gitignored), a development build that starts in Boot and loads Match. Install with `adb install -r client/Builds/Android/PlowParty.apk`. Player settings and their rationale: `Assets/_Project/Editor/CLAUDE.md`.
+
 ## Multiplayer check
 
 Multiplayer Play Mode (`com.unity.multiplayer.playmode`) runs extra virtual players beside the main Editor; Fusion supports it. Window → Multiplayer → Multiplayer Play Mode, tick Player 2 (up to Player 4), open `Assets/_Project/Scenes/Match.unity`, press Play in the main Editor. `MatchSceneQuickStart` joins every instance to the same `AutoHostOrClient` session: the first becomes Host, the rest Clients. The session name is derived from the project folder (virtual players share it), so Editors of different worktrees never join each other; set `PLOW_PARTY_DEV_SESSION` to the same value in two Editors to join them on purpose. Keyboard input goes only to the focused Game view. `PhotonAppSettings` pins `FixedRegion` to `eu`: without a fixed region every instance picks its own best region and they never meet, and region pinging from Russia can time out (`PhotonCloudTimeout`). Virtual players are a user-side check: the CLI drives only the main Editor.

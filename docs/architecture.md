@@ -91,7 +91,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Infrastructure | `_Project/Infrastructure/` | active | Scene loading, Fusion session, DI-aware network object provider; later backend client, persistence |
 | Shared | `_Project/Shared/` | active | Cross-boundary types |
 | Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
-| Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules |
+| Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules, Android Player settings and development APK build |
 | Account | `_Project/Meta/Account/` | planned | Guest login by device id, nickname (GDD 9.1) |
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |

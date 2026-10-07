@@ -10,7 +10,7 @@ The local camera of a Match: three switchable Camera Presets (Overview, Follow, 
 - `ICameraShake` — the API other modules call (an interface so Gadgets depend on CameraRig's contract, not the rig). `Add(strength)` is a one-off kick: trauma 0–1, summed and clamped to 1 (0.25 light bump, 0.5 Ram victim, 1 maximum). `Sustain(strength)` holds trauma at least at that level while it is called every frame (a continuous rumble). `CameraShake` implements it and is a `MatchScope` singleton (as itself and as `ICameraShake`).
 - `CameraDirector` — MonoBehaviour on `Prefabs/CameraRig.prefab`; injected with `CameraConfig`, `VehicleRegistry`, `CameraShake`. Each `LateUpdate` it picks the local Vehicle (`VehicleRegistry.TryGetLocal`), steps the active preset, adds the shake sample, and writes position, rotation, and lens to its `Camera`. `ActivePreset` / `CyclePreset()`.
 - `CameraPresetSwitcher` — development tool on the same prefab: an IMGUI button (top right) and a key (`C`) that call `CyclePreset()`. Destroys itself in `Awake` unless `Debug.isDebugBuild`, so release builds never show it.
-- `CameraRamShake` — entry point in `MatchScope`; shakes when the local Vehicle is the Victim (`RamVictimShake`) or Rammer (`RamRammerShake`) of a `VehicleRegistry.Rammed`.
+- `CameraRamShake` — `ITickable` entry point in `MatchScope`; each frame feeds the local Vehicle's networked Ram counts (`TimesRammed`, `RamsDealt`) to Vehicle's `RamWatch` and shakes once per new Ram: `RamVictimShake` (0.5) as Victim, `RamRammerShake` (0.25) as Rammer. Runs the same on Host and clients.
 - `CameraPileShake` — `ITickable` entry point in `MatchScope`; while Snow's `SnowGridDriver.IsPlowingPile(local Vehicle)` is true it calls `Sustain(PilePlowShake)` (0.4: trauma² 0.16, a light rumble). Local Vehicle only, so every peer shakes for its own plowing.
 - `CameraConfig` — asset `_Project/Configs/CameraConfig.asset`, registered in `RootLifetimeScope`: default preset, one block per preset, shake, Ram strengths, pile-plowing shake.
 
@@ -28,7 +28,7 @@ The local camera of a Match: three switchable Camera Presets (Overview, Follow, 
 
 - No Cinemachine: not installed; three presets and a shake fit in a few small, unit-tested types tuned from one config asset.
 - Defaults are tuned for landscape (two-stick layout); a preset switch snaps instantly.
-- `Rammed` is raised on the Host only, so today only the Host's Player feels Ram shake. Clients need a networked Ram signal (e.g. a counter on `NetworkVehicle`) before they shake too.
+- Ram shake reads the networked Ram counts, not `VehicleRegistry.Rammed`: that event is raised on the Host only, so clients would never shake, and listening to both would shake the Host twice. A client shakes when the Host's state arrives (about one round trip after the hit), never on a mispredicted Ram.
 - `CameraRig.prefab` is placed in `Match.unity` with `_arenaRoot` = `Arena`; `CameraDirector` is registered with `RegisterComponentInHierarchy`. Its `Camera` is the only one in the scene, so Hud's `RegisterComponentInHierarchy<Camera>` resolves it.
 - Pile shake lives here, not in Snow or Bootstrap: CameraRig → Snow keeps references acyclic (Snow never needs the camera), and Bootstrap holds no logic. The cost is that Snow can never call `ICameraShake`; Snow exposes state (`IsPlowingPile`) and the camera reacts.
 
