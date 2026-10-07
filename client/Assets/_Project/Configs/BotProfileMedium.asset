@@ -16,9 +16,10 @@ MonoBehaviour:
   _reactionDelay: 0.35
   _decisionIntervalMin: 0.3
   _decisionIntervalMax: 0.4
-  _steeringNoiseDegrees: 12
+  _steeringNoiseDegrees: 16
   _mistakeChance: 0.12
   _aggression: 0.6
   _greed: 0.5
   _caution: 0.6
-  _throttleCap: 0.93
+  _throttleCap: 0.88
+  _deliverEagerness: 0.25

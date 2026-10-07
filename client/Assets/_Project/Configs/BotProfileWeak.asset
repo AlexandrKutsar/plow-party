@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: BotProfileWeak
   m_EditorClassIdentifier: 
   _difficulty: 0
-  _reactionDelay: 0.6
-  _decisionIntervalMin: 0.4
-  _decisionIntervalMax: 0.5
-  _steeringNoiseDegrees: 18
-  _mistakeChance: 0.25
+  _reactionDelay: 0.8
+  _decisionIntervalMin: 0.5
+  _decisionIntervalMax: 0.7
+  _steeringNoiseDegrees: 28
+  _mistakeChance: 0.35
   _aggression: 0.3
-  _greed: 0.2
+  _greed: 0
   _caution: 0.25
-  _throttleCap: 0.85
+  _throttleCap: 0.72
+  _deliverEagerness: 0.45

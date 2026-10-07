@@ -19,6 +19,7 @@ MonoBehaviour:
   _steeringNoiseDegrees: 4
   _mistakeChance: 0.03
   _aggression: 1
-  _greed: 0.9
+  _greed: 1
   _caution: 1
   _throttleCap: 1
+  _deliverEagerness: 0.05

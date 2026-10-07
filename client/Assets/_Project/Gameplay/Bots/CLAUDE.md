@@ -13,7 +13,7 @@ Host-side utility AI that drives the Vehicles of Bot Participants through the sa
 - `BotStuckWatch` — no `StuckDistance` of progress in `StuckTime` while trying to move means stuck; `StillFor` keeps counting across unstuck attempts for the 3 s stuck report.
 - `BotDifficultyRules.Choose(strongSeated, roll, weakShare)` — the first Bot of a Session is Strong, every later one Weak or Medium by `WeakShare`.
 - `BotDriver` — scene `NetworkObject` (`Prefabs/BotDriver.prefab`, `_arenaRoot` = `Arena`), `[DefaultExecutionOrder(-50)]` so it runs after `MatchDriver` and before `VehicleWorldDriver`. Host only. Gives every Vehicle that is driven by the Host and seated as a Bot in `ParticipantRoster` a brain, builds one `BotWorld` snapshot per tick (positions, velocities, Loads, Playing time left), refreshes the snow map every `SnowRefreshInterval`, steps each brain, logs a Bot still for `StuckReportTime`, and logs every Participant's place, Score, action switches, Rams dealt and stuck counts when Results starts.
-- `BotConfig` (shared tunables and utility weights) referencing three `BotProfileConfig` assets (Strong, Medium, Weak: reaction delay, decision interval, steering noise, mistake chance, aggression, greed, caution, throttle cap); assets in `_Project/Configs/`, `BotConfig` registered in `RootLifetimeScope`.
+- `BotConfig` (shared tunables, utility weights, the utility curve shapes under "Utility curves" and the brain's distances, throttles and patience under "Brain"; `BotUtility` and `BotBrain` hold no tuning literals) referencing three `BotProfileConfig` assets (Strong, Medium, Weak: reaction delay, decision interval, steering noise, mistake chance, aggression, greed, caution, throttle cap, delivery eagerness — the Deliver score floor, high for Weak so it delivers small Loads at a low Multiplier); assets in `_Project/Configs/`, `BotConfig` registered in `RootLifetimeScope`.
 
 ## Rules worth knowing
 
@@ -24,6 +24,7 @@ Host-side utility AI that drives the Vehicles of Bot Participants through the sa
 - Unstuck: on a stuck verdict the bot drives `UnstuckDuration` toward open space (away from nearby blocked cells, ±45°) and replans. The hay-bale ring around the cauldron is walled off in the grid except its four lanes, so paths into the zone go through a lane.
 - Path replans are throttled to `ReplanInterval` and happen only when the goal moved more than 1.5 m or the path is gone; the shared pathfinder runs on one thread on the Host.
 - Difficulty: exactly one Strong Bot per Session as long as there is a Bot; Bots and their difficulty persist across "Play again", so every Match keeps one.
+- Tuning (lobby-bots integration, Host idle, 180 s Matches): Strong 2022 vs Weak average 1745 (+16 %) before; after the profile changes Strong 2408 vs 1248 (+93 %) and 2339 vs 1390 (+68 %), Medium in between. Two Matches only; balance stays a playtest follow-up.
 
 ## Depends on
 
