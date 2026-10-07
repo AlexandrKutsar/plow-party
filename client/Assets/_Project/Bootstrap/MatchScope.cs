@@ -58,6 +58,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<BlizzardAnnouncementView>();
             builder.RegisterComponentInHierarchy<DropOffArrowView>();
             builder.RegisterComponentInHierarchy<ResultsView>();
+            builder.RegisterComponentInHierarchy<VirtualStickView>();
         }
     }
 }

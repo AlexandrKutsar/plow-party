@@ -1020,6 +1020,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6477646292884196761}
   - component: {fileID: 8853707196721965839}
+  - component: {fileID: 8181111847103808568}
   m_Layer: 5
   m_Name: SafeArea
   m_TagString: Untagged
@@ -1062,6 +1063,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b367e70d991f5df4388079a991f6fada, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8181111847103808568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 961966541199072393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 933b5e73b90905b4ba637e82e1a971fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stick: {fileID: 6339625227368927299}
 --- !u!1 &1009250191907061434
 GameObject:
   m_ObjectHideFlags: 0
