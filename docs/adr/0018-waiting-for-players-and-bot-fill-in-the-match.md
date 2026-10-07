@@ -13,4 +13,4 @@ Who sits in a Slot is its own networked record, `ParticipantRoster` (Nickname, C
 
 ## Consequences
 
-Match now depends on Infrastructure (`MatchmakingResultStore`, runner events), Shared and Participants; `VehicleSpawner` became a plain spawn-by-Slot service and lost its join handling. A late Player is refused at the connection request, so a client's session start fails; until Meta routes that back to the Menu it is only logged. The Match scene started on its own (no Matchmaking Result) expects only the Players already connected and fills six Slots, which keeps the Editor quick start playable with Bots.
+Match now depends on Infrastructure (`MatchmakingResultStore`, runner events), Shared and Participants; `VehicleSpawner` became a plain spawn-by-Slot service and lost its join handling. A late Player is refused at the connection request, so a client's session start fails with `SessionStartOutcome.Refused` and Meta brings that Player to the Menu with "Матч уже начался". The Match scene started on its own (no Matchmaking Result) expects only the Players already connected and fills six Slots, which keeps the Editor quick start playable with Bots.

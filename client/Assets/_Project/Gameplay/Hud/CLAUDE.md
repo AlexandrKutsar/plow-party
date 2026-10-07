@@ -25,4 +25,4 @@ The in-Match screen layer: the WaitingForPlayers banner, virtual stick, Countdow
 
 ## Depends on
 
-Match (`IMatchClock`, `IMatchResults`), Participants (`ParticipantRoster`), DropOff (`IScoreReader`, `DropOffZone`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowConfig`), Vehicle (`VehicleRegistry`, `NetworkVehicle`, `PlaneProjection`), VContainer, uGUI, and the scene `Camera` registered in `MatchScope` (the `CameraRig` prefab's camera, the only one in `Match.unity`). Nothing references Hud except Bootstrap. No `NetworkBehaviour`, so the assembly is not woven.
+Match (`IMatchClock`, `IMatchResults`), Participants (`ParticipantRoster`), DropOff (`IScoreReader`, `DropOffZone`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowConfig`), Vehicle (`VehicleRegistry`, `NetworkVehicle`, `PlaneProjection`), Infrastructure (`UI/SafeAreaFitter`), VContainer, uGUI, and the scene `Camera` registered in `MatchScope` (the `CameraRig` prefab's camera, the only one in `Match.unity`). Nothing references Hud except Bootstrap. No `NetworkBehaviour`, so the assembly is not woven.

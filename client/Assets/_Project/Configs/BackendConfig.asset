@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BackendConfig
   m_EditorClassIdentifier: 
   _editorBaseUrl: http://localhost:8000
-  _deviceBaseUrl: http://192.168.1.2:8000
+  _deviceBaseUrl: http://192.168.0.158:8000
   _timeoutSeconds: 4
