@@ -79,7 +79,7 @@ Players and bots drive a vehicle through the same input-source abstraction; the 
 
 Tunable numbers live in ScriptableObject configs, one per concern (`MatchConfig`, `BucketConfig`, `GadgetConfig`, `BotConfig`, ...). The config type is code and lives in its feature's `Config/`; the asset instance is data and lives in `_Project/Configs/`, one `<Feature>Config.asset` each, so the whole game is balanced from one folder and balance changes show up as their own diffs. The assets are registered in `RootLifetimeScope` with `RegisterInstance` and injected like any dependency. Simulation code receives the config values, never looks them up.
 
-Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` next to its scene, once maps exist.
+Prefabs follow the same split by role: a gameplay prefab (scripts, networking) lives in its feature's `Prefabs/`; its look is a script-free visual prefab in `Art/`. A prefab assembled from several features (a piece of a map) belongs to the map, under `_Project/Levels/<Map>/` (Farm's obstacles: `Levels/Farm/Obstacles/`); its `CLAUDE.md` documents how the Match scene is composed.
 
 ## Feature index
 
@@ -96,13 +96,15 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Lobby | `_Project/Meta/Lobby/` | planned | Main menu: quick play, room code entry |
 | Session | `_Project/Meta/Session/` | planned | Fusion session start, matchmaking, room codes, bot fill after timeout (GDD 3.3) |
 | Tournament | `_Project/Meta/Tournament/` | planned | Daily tournament leaderboard, result submission (GDD 9.2–9.3) |
-| Match | `_Project/Gameplay/Match/` | planned | Match state machine Countdown → Playing → Results, timer, scoring table (GDD 3.2) |
+| Match | `_Project/Gameplay/Match/` | active | Match state machine Countdown → Playing → Results → next Match, Match clock, input lock, placement table (GDD 3.2) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
-| Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles (GDD 4.1, 4.3, 4.4) |
+| Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |
 | Bucket | `_Project/Gameplay/Bucket/` | active | Load, capacity, speed penalty, spill on hit (GDD 4.1, 4.3) |
 | DropOff | `_Project/Gameplay/DropOff/` | active | Drop-Off Zone, Delivery, Multipliers, per-Vehicle Score, Snow-Free Area (GDD 4.2) |
 | Drifts | `_Project/Gameplay/Drifts/` | planned | Breakable drifts and respawn (GDD 6) |
 | Loot | `_Project/Gameplay/Loot/` | planned | Owned loot drops, pickup, expiry (GDD 6) |
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |
 | Bots | `_Project/Gameplay/Bots/` | planned | Utility-AI bots on the host (GDD 8) |
-| Hud | `_Project/Gameplay/Hud/` | planned | Joysticks, gadget button, portraits, timer, announcements |
+| Hud | `_Project/Gameplay/Hud/` | active | Virtual stick, timer, Load bar, Score list and popups, Blizzard announcement, Drop-Off arrow, Results; later gadget button and portraits |
+| CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Camera Presets (overview, follow, follow rotating), Camera Shake, dev preset switcher |
+| Levels | `_Project/Levels/<Map>/` | active | Map composition, no code: obstacle prefabs and the scene layout note; `Farm` (40 × 40 m) is the only map, laid out in `Scenes/Match.unity` |

@@ -58,6 +58,26 @@ The factor a Match's Scores are multiplied by for the Tournament: 1 for a full M
 **Credited Score** (зачётные очки):
 A Confirmed Player's Score times the Match Weight, rounded down; what the Tournament ranks.
 
+**Countdown** (обратный отсчёт):
+The first phase of a Match: 3 seconds with every Vehicle on its Spawn Point and Immobilised.
+
+**Playing** (игра):
+The 180-second phase of a Match in which Vehicles move and Score counts; its elapsed time is the clock Regrowth and Blizzards run on.
+
+**Results** (итоги):
+The last phase of a Match: the Placement table is frozen and shown until the next Match starts in the same Session.
+
+**Match Number** (номер матча):
+How many Matches the current Session has started, counting from 1; a restart after Results starts the next one.
+_Avoid_: Round
+
+**Match Clock** (часы матча):
+The Match's read-only time: its phase, remaining phase time, and elapsed Playing time, the same on every device.
+
+**Placement** (место):
+A Participant's place in the Match Result by Score, ties sharing a place and skipping the next (1, 2, 2, 4).
+_Avoid_: Rank (as a type name), position
+
 ## Snow
 
 **Vehicle** (машина, снегоуборщик):
@@ -109,6 +129,10 @@ Losing a share of Load when rammed or hit, which leaves a Snow Pile.
 Extra Snow lying on the ground above full cover, left by a Spill or a Blizzard, that any Participant can collect; holds no Loot and has no owner.
 _Avoid_: Heap (that is the Trap Pile), Drift (that holds Loot)
 
+**Plowing a Pile** (пробивание кучки):
+A tick in which a Vehicle's Blade takes Snow from a Snow Pile; capped per tick and slowing the Vehicle, so a Pile feels heavy.
+_Avoid_: Digging, mining
+
 **Cell** (клетка):
 One square of the Snow Grid; its Depth is the unit of Snow tracking.
 
@@ -121,7 +145,7 @@ The strip in front of a Vehicle that scrapes Cells clear and feeds their Snow in
 _Avoid_: Footprint, collector
 
 **Regrowth** (восстановление):
-The slow continuous return of Snow onto cleared cells.
+The slow return of Snow onto a lowered Cell: after a delay it gains one Depth step at a fixed pace up to full, so the oldest part of a track refills first.
 
 **Blizzard** (метель):
 A scheduled wave that rapidly re-covers the whole map with Snow and leaves a few Snow Piles in its wake.
@@ -172,6 +196,27 @@ _Avoid_: Stunned, frozen (Freeze is the Gadget)
 
 **Impulse** (импульс):
 A one-tick velocity change applied to a Vehicle, such as a snowball knockback or a Turbo Rocket dash.
+
+**Speed Factor** (множитель скорости):
+One feature's share of a Vehicle's speed multiplier, keyed by its source (Load, Snow Pile); the multiplier is the product of all factors, so no feature overwrites another.
+_Avoid_: Speed penalty (as a type name), slowdown
+
+**Virtual Stick** (виртуальный стик):
+The on-screen stick in the HUD's lower left that drives the local Vehicle on touch screens.
+_Avoid_: Joystick (as a type name)
+
+**Blizzard Announcement** (анонс метели):
+The HUD banner counting down the last 5 seconds before a Blizzard wave.
+
+**Load Bar** (шкала груза):
+The HUD bar over the local Player's Vehicle showing its Load against capacity.
+_Avoid_: Gauge, fill bar
+
+**Score Popup** (всплывающие очки):
+The floating "+N" the HUD shows over the local Vehicle as its Score rises during a Delivery.
+
+**Drop-Off Arrow** (стрелка к зоне сдачи):
+The HUD arrow pinned to the screen edge, pointing at the Drop-Off Zone while it is off screen.
 
 ## Loot and Gadgets
 
@@ -244,3 +289,13 @@ _Avoid_: Hardware id, install id
 **Auth Token** (токен):
 The bearer credential issued at login that a client presents to act as its Account.
 _Avoid_: Session (that is the Fusion Session), API key
+
+## Camera
+
+**Camera Preset** (режим камеры):
+One way the local camera frames the Match: Overview (the whole Arena), Follow (the local Vehicle, north up), or Follow Rotating (the local Vehicle, turning with its heading).
+_Avoid_: Camera mode
+
+**Camera Shake** (тряска камеры):
+A short decaying jolt of the local camera that any feature triggers with a strength, such as a Ram; the accumulated strength, 0 to 1, is its Trauma.
+_Avoid_: Screen shake, impulse (that is the Vehicle Impulse)

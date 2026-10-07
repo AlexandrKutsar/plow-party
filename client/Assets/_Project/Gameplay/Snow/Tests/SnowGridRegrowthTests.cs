@@ -7,98 +7,185 @@ namespace PlowParty.Gameplay.Snow.Tests
 {
     public sealed class SnowGridRegrowthTests
     {
+        private const float Delay = 2f;
+        private const float Step = 1f;
+
         private static readonly SnowBlade WholeGrid = new SnowBlade(new Vector2(2f, 1f), Vector2.up, 4.1f, 2.1f);
+        private static readonly SnowBlade FirstColumn = new SnowBlade(new Vector2(0.25f, 1f), Vector2.up, 0.2f, 2.1f);
+        private static readonly SnowBlade LastColumn = new SnowBlade(new Vector2(3.75f, 1f), Vector2.up, 0.2f, 2.1f);
 
         [Test]
-        public void Tick_BeforeFirstInterval_LeavesClearedCells()
+        public void Tick_BeforeDelayEnds_LeavesClearedCells()
         {
-            var grid = CreateCleared(1f, SnowTestSettings.Seed);
+            var grid = CreateCleared();
 
-            grid.Tick(0.99f);
+            grid.Tick(Delay - 0.01f);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
         }
 
         [Test]
-        public void Tick_CertainChance_RaisesClearedCellOneStepPerInterval()
+        public void Tick_AfterDelay_RaisesClearedCellOneStepPerRegrowthStep()
         {
-            var grid = CreateCleared(1f, SnowTestSettings.Seed);
+            var grid = CreateCleared();
 
-            grid.Tick(1f);
+            grid.Tick(Delay);
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(1));
 
-            grid.Tick(2f);
+            grid.Tick(Delay + Step);
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
+
+            grid.Tick(Delay + Step * 1.5f);
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
         }
 
         [Test]
-        public void Tick_CertainChanceForLong_StopsAtFullDepth()
+        public void Tick_LongAfterDelay_StopsAtFullDepth()
         {
-            var grid = CreateCleared(1f, SnowTestSettings.Seed);
+            var grid = CreateCleared();
 
-            grid.Tick(10f);
+            grid.Tick(100f);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(3));
         }
 
         [Test]
-        public void Tick_CertainChance_NeverTouchesSnowPile()
+        public void Tick_PartlyScrapedCell_RegrowsFromItsDepth()
         {
-            var grid = CreateCleared(1f, SnowTestSettings.Seed);
+            var grid = Create(RegrowingSettings());
+            grid.Scrape(FirstColumn, 1);
+
+            grid.Tick(Delay);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Tick_UntouchedFullCell_StaysFull()
+        {
+            var grid = Create(RegrowingSettings());
+
+            grid.Tick(100f);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Tick_CellsClearedEarlier_RefillFirst()
+        {
+            var grid = Create(RegrowingSettings());
+            grid.Scrape(FirstColumn, int.MaxValue);
+            grid.Tick(1f);
+            grid.Scrape(LastColumn, int.MaxValue);
+
+            grid.Tick(Delay + Step);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
+            Assert.That(grid.GetDepth(7, 0), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Tick_CellScrapedAgainWhileRegrowing_RestartsDelay()
+        {
+            var grid = CreateCleared();
+            grid.Tick(Delay + Step);
+            grid.Scrape(WholeGrid, int.MaxValue);
+
+            grid.Tick(Delay + Step + Delay - 0.01f);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Tick_BladeOverEmptyCellAgain_KeepsOriginalDelay()
+        {
+            var grid = CreateCleared();
+            grid.Tick(Delay - 0.5f);
+            grid.Scrape(WholeGrid, int.MaxValue);
+
+            grid.Tick(Delay);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Tick_BladeWithNoRoomOverRegrowingCell_KeepsSchedule()
+        {
+            var grid = CreateCleared();
+            grid.Tick(Delay);
+            grid.Scrape(WholeGrid, 0);
+
+            grid.Tick(Delay + Step);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Tick_LongAfterScrape_NeverTouchesSnowPile()
+        {
+            var grid = CreateCleared();
             grid.Spill(new Vector2(0.25f, 0.25f), 10);
 
-            grid.Tick(5f);
+            grid.Tick(100f);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(10));
         }
 
         [Test]
-        public void Tick_CertainChance_NeverFillsObstacleCells()
+        public void Tick_PileScrapedBelowFull_RegrowsAfterDelay()
         {
-            var settings = SnowTestSettings.Create();
-            settings.RegrowthChance = 1f;
-            var grid = new SnowGrid(settings, VehicleArena.Create().AddBox(new Vector2(0.25f, 0.25f), new Vector2(0.1f, 0.1f)), SnowTestSettings.Seed);
-
+            var grid = Create(RegrowingSettings());
+            grid.Spill(new Vector2(0.25f, 0.25f), 4);
             grid.Tick(5f);
+            grid.Scrape(new SnowBlade(new Vector2(0.25f, 0.25f), Vector2.up, 0.2f, 0.2f), int.MaxValue);
 
-            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
+            grid.Tick(5f + Delay);
+
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(1));
         }
 
         [Test]
-        public void Tick_ZeroInterval_DisablesRegrowth()
+        public void Tick_LongAfterScrape_NeverFillsObstacleCells()
         {
-            var settings = SnowTestSettings.Create();
-            settings.RegrowthChance = 1f;
-            settings.RegrowthInterval = 0f;
-            var grid = new SnowGrid(settings, VehicleArena.Create(), SnowTestSettings.Seed);
+            var arena = VehicleArena.Create().AddBox(new Vector2(0.25f, 0.25f), new Vector2(0.1f, 0.1f));
+            var grid = new SnowGrid(RegrowingSettings(), arena, SnowTestSettings.Seed);
             grid.Scrape(WholeGrid, int.MaxValue);
 
-            grid.Tick(10f);
+            grid.Tick(100f);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
         }
 
         [Test]
-        public void Tick_HalfChance_RegrowsSomeCellsButNotAll()
+        public void Tick_ZeroRegrowthStep_DisablesRegrowth()
         {
-            var grid = CreateCleared(0.5f, SnowTestSettings.Seed);
+            var settings = RegrowingSettings();
+            settings.RegrowthStepInterval = 0f;
+            var grid = Create(settings);
+            grid.Scrape(WholeGrid, int.MaxValue);
 
-            grid.Tick(1f);
+            grid.Tick(100f);
 
-            var regrown = CountAtDepth(grid, 1);
-            Assert.That(regrown, Is.GreaterThan(4));
-            Assert.That(regrown, Is.LessThan(28));
-            Assert.That(CountAtDepth(grid, 0), Is.EqualTo(32 - regrown));
+            Assert.That(grid.GetDepth(0, 0), Is.EqualTo(0));
         }
 
         [Test]
         public void Tick_SameTimeReachedInSmallSteps_GivesSameGridAsOneStep()
         {
-            var oneStep = CreateCleared(0.5f, SnowTestSettings.Seed);
-            var smallSteps = CreateCleared(0.5f, SnowTestSettings.Seed);
+            var oneStep = Create(RegrowingSettings());
+            var smallSteps = Create(RegrowingSettings());
+            oneStep.Scrape(FirstColumn, int.MaxValue);
+            smallSteps.Scrape(FirstColumn, int.MaxValue);
+            oneStep.Tick(0.7f);
+            for (var tick = 1; tick <= 7; tick++)
+            {
+                smallSteps.Tick(tick * 0.1f);
+            }
 
-            oneStep.Tick(5f);
-            for (var tick = 1; tick <= 50; tick++)
+            oneStep.Scrape(LastColumn, int.MaxValue);
+            smallSteps.Scrape(LastColumn, int.MaxValue);
+            oneStep.Tick(4.3f);
+            for (var tick = 8; tick <= 43; tick++)
             {
                 smallSteps.Tick(tick * 0.1f);
             }
@@ -109,57 +196,33 @@ namespace PlowParty.Gameplay.Snow.Tests
         [Test]
         public void Tick_TimeGoingBackwards_AppliesNothingTwice()
         {
-            var grid = CreateCleared(1f, SnowTestSettings.Seed);
-            grid.Tick(2f);
+            var grid = CreateCleared();
+            grid.Tick(Delay + Step);
 
             grid.Tick(1f);
-            grid.Tick(2f);
+            grid.Tick(Delay + Step);
 
             Assert.That(grid.GetDepth(0, 0), Is.EqualTo(2));
         }
 
-        [Test]
-        public void Tick_DifferentSeeds_RegrowDifferentCells()
+        private static SnowGrid Create(SnowSettings settings)
         {
-            var first = CreateCleared(0.5f, 1);
-            var second = CreateCleared(0.5f, 2);
-
-            first.Tick(1f);
-            second.Tick(1f);
-
-            var differing = 0;
-            for (var y = 0; y < first.Height; y++)
-            {
-                for (var x = 0; x < first.Width; x++)
-                {
-                    differing += first.GetDepth(x, y) != second.GetDepth(x, y) ? 1 : 0;
-                }
-            }
-
-            Assert.That(differing, Is.GreaterThan(0));
+            return new SnowGrid(settings, VehicleArena.Create(), SnowTestSettings.Seed);
         }
 
-        private static SnowGrid CreateCleared(float chance, int seed)
+        private static SnowSettings RegrowingSettings()
         {
             var settings = SnowTestSettings.Create();
-            settings.RegrowthChance = chance;
-            var grid = new SnowGrid(settings, VehicleArena.Create(), seed);
-            grid.Scrape(WholeGrid, int.MaxValue);
-            return grid;
+            settings.RegrowthDelay = Delay;
+            settings.RegrowthStepInterval = Step;
+            return settings;
         }
 
-        private static int CountAtDepth(SnowGrid grid, int depth)
+        private static SnowGrid CreateCleared()
         {
-            var count = 0;
-            for (var y = 0; y < grid.Height; y++)
-            {
-                for (var x = 0; x < grid.Width; x++)
-                {
-                    count += grid.GetDepth(x, y) == depth ? 1 : 0;
-                }
-            }
-
-            return count;
+            var grid = Create(RegrowingSettings());
+            grid.Scrape(WholeGrid, int.MaxValue);
+            return grid;
         }
 
         private static void AssertSameDepths(SnowGrid expected, SnowGrid actual)

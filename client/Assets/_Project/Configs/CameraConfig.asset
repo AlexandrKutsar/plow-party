@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99186068be992bb4994a5ae3fba856a9, type: 3}
+  m_Name: CameraConfig
+  m_EditorClassIdentifier: 
+  _defaultPreset: 1
+  _overview:
+    _pitch: 60
+    _yaw: 0
+    _orthographic: 0
+    _fieldOfView: 40
+    _padding: 1
+    _orthographicDistance: 60
+  _follow:
+    _pitch: 55
+    _yaw: 0
+    _rotateWithVehicle: 0
+    _distance: 14
+    _orthographic: 0
+    _fieldOfView: 40
+    _orthographicSize: 7
+    _followSmoothTime: 0.25
+    _yawSmoothTime: 0.5
+    _lookAheadTime: 0.4
+    _maxLookAhead: 3
+    _edgeOverscan: 2
+    _snapDistance: 3
+  _followRotating:
+    _pitch: 55
+    _yaw: 0
+    _rotateWithVehicle: 1
+    _distance: 14
+    _orthographic: 0
+    _fieldOfView: 40
+    _orthographicSize: 7
+    _followSmoothTime: 0.25
+    _yawSmoothTime: 0.5
+    _lookAheadTime: 0.4
+    _maxLookAhead: 3
+    _edgeOverscan: 2
+    _snapDistance: 3
+  _shakeMaxOffset: 0.35
+  _shakeMaxRoll: 2
+  _shakeFrequency: 18
+  _shakeDecayPerSecond: 1.5
+  _ramVictimShake: 0.5
+  _ramRammerShake: 0.25
+  _pilePlowShake: 0.4

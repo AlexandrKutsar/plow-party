@@ -8,7 +8,10 @@
         "PlowParty.Gameplay.Vehicle",
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Bucket",
-        "PlowParty.Gameplay.DropOff"
+        "PlowParty.Gameplay.DropOff",
+        "PlowParty.Gameplay.Match",
+        "PlowParty.Gameplay.Hud",
+        "PlowParty.Gameplay.CameraRig"
     ],
     "autoReferenced": false
 }

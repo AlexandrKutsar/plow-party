@@ -2,13 +2,6 @@ namespace PlowParty.Gameplay.Snow.Simulation
 {
     internal static class SnowHash
     {
-        private const float UnitScale = 1f / (1 << 24);
-
-        public static float Chance(int seed, int first, int second)
-        {
-            return (Mix(seed, first, second) >> 8) * UnitScale;
-        }
-
         public static uint Mix(int seed, int first, int second)
         {
             var hash = unchecked((uint)seed * 0x9E3779B1u);

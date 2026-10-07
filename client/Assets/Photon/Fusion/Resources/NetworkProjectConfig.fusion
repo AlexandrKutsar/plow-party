@@ -100,7 +100,8 @@
         "PlowParty.Gameplay.Vehicle",
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Bucket",
-        "PlowParty.Gameplay.DropOff"
+        "PlowParty.Gameplay.DropOff",
+        "PlowParty.Gameplay.Match"
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,
