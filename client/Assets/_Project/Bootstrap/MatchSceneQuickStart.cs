@@ -16,13 +16,20 @@ namespace PlowParty.Bootstrap
             _session = session;
         }
 
-        public UniTask StartAsync(CancellationToken cancellation)
+        public async UniTask StartAsync(CancellationToken cancellation)
         {
             var sessionName = DevSessionName.For(
                 Application.dataPath,
                 Application.isEditor,
                 Environment.GetEnvironmentVariable(DevSessionName.OverrideVariable));
-            return _session.StartHostOrClientAsync(sessionName, cancellation);
+            try
+            {
+                await _session.StartHostOrClientAsync(sessionName, cancellation);
+            }
+            catch (InvalidOperationException exception)
+            {
+                Debug.LogWarning($"Could not join the Match: {exception.Message}. The Match may have started already; Meta will route back to the Menu.");
+            }
         }
     }
 }

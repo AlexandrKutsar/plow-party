@@ -84,7 +84,7 @@ namespace PlowParty.Gameplay.Hud.View
             var popup = _popups[_next];
             _origins[_next] = origin;
             _ages[_next] = 0f;
-            popup.text = "+" + gained;
+            popup.text = HudText.ScoreGain(gained);
             popup.gameObject.SetActive(true);
             _next = (_next + 1) % _popups.Length;
         }

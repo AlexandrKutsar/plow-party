@@ -101,7 +101,9 @@
         "PlowParty.Gameplay.Snow",
         "PlowParty.Gameplay.Bucket",
         "PlowParty.Gameplay.DropOff",
-        "PlowParty.Gameplay.Match"
+        "PlowParty.Gameplay.Match",
+        "PlowParty.Gameplay.Participants",
+        "PlowParty.Gameplay.Bots"
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,

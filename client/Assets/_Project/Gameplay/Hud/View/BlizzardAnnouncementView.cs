@@ -43,7 +43,7 @@ namespace PlowParty.Gameplay.Hud.View
             if (seconds != _shownSeconds)
             {
                 _shownSeconds = seconds;
-                _label.text = $"Blizzard in {seconds}!";
+                _label.text = HudText.BlizzardIn(seconds);
             }
         }
     }

@@ -28,10 +28,12 @@ namespace PlowParty.Gameplay.Match.Simulation
             return Mathf.Max(0, tick - phaseStartTick) * deltaTime;
         }
 
-        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool restartRequested)
+        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool restartRequested, bool allSlotsFilled)
         {
             switch (phase)
             {
+                case MatchPhase.WaitingForPlayers:
+                    return allSlotsFilled ? MatchPhase.Countdown : phase;
                 case MatchPhase.Countdown:
                     return phaseElapsed >= _settings.CountdownDuration ? MatchPhase.Playing : phase;
                 case MatchPhase.Playing:
@@ -50,6 +52,7 @@ namespace PlowParty.Gameplay.Match.Simulation
         {
             switch (phase)
             {
+                case MatchPhase.WaitingForPlayers:
                 case MatchPhase.Countdown:
                     return 0f;
                 case MatchPhase.Playing:
@@ -68,6 +71,8 @@ namespace PlowParty.Gameplay.Match.Simulation
         {
             switch (phase)
             {
+                case MatchPhase.WaitingForPlayers:
+                    return _settings.WaitingDuration;
                 case MatchPhase.Countdown:
                     return _settings.CountdownDuration;
                 case MatchPhase.Playing:

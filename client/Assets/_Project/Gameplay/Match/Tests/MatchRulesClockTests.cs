@@ -28,6 +28,19 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
+        public void PhaseRemaining_WhileWaiting_CountsDownTheWaitingCap()
+        {
+            Assert.That(_rules.PhaseRemaining(MatchPhase.WaitingForPlayers, 4f), Is.EqualTo(11f));
+        }
+
+        [Test]
+        public void PlayingElapsed_WhileWaiting_IsZeroAndAllPlayingRemains()
+        {
+            Assert.That(_rules.PlayingElapsed(MatchPhase.WaitingForPlayers, 9f), Is.EqualTo(0f));
+            Assert.That(_rules.PlayingRemaining(MatchPhase.WaitingForPlayers, 9f), Is.EqualTo(180f));
+        }
+
+        [Test]
         public void PlayingElapsed_DuringCountdown_IsZero()
         {
             Assert.That(_rules.PlayingElapsed(MatchPhase.Countdown, 2f), Is.EqualTo(0f));

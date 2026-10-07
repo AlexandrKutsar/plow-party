@@ -22,6 +22,7 @@ namespace PlowParty.Gameplay.Match.Network
         private MatchConfig _config;
         private VehicleRegistry _vehicles;
         private VehicleSpawner _spawner;
+        private MatchSeating _seating;
         private IScoreReader _scoreReader;
         private MatchRules _rules;
 
@@ -60,11 +61,12 @@ namespace PlowParty.Gameplay.Match.Network
         private float PhaseElapsed => MatchRules.PhaseElapsed(Runner.Tick, PhaseStartTick, Runner.DeltaTime);
 
         [Inject]
-        public void Construct(MatchConfig config, VehicleRegistry vehicles, VehicleSpawner spawner, IScoreReader scores)
+        public void Construct(MatchConfig config, VehicleRegistry vehicles, VehicleSpawner spawner, MatchSeating seating, IScoreReader scores)
         {
             _config = config;
             _vehicles = vehicles;
             _spawner = spawner;
+            _seating = seating;
             _scoreReader = scores;
         }
 
@@ -74,7 +76,8 @@ namespace PlowParty.Gameplay.Match.Network
             if (HasStateAuthority)
             {
                 MatchNumber = 1;
-                Enter(MatchPhase.Countdown);
+                _seating.Begin();
+                Enter(MatchPhase.WaitingForPlayers);
             }
         }
 
@@ -103,7 +106,8 @@ namespace PlowParty.Gameplay.Match.Network
                 return;
             }
 
-            var next = _rules.NextPhase(Phase, PhaseElapsed, RestartRequested);
+            _seating.Tick(Runner, Phase, PhaseElapsed);
+            var next = _rules.NextPhase(Phase, PhaseElapsed, RestartRequested, _seating.AllSlotsFilled);
             if (next != Phase)
             {
                 Enter(next);
@@ -122,6 +126,10 @@ namespace PlowParty.Gameplay.Match.Network
             {
                 StartNextMatch();
             }
+            else if (Phase == MatchPhase.WaitingForPlayers && phase == MatchPhase.Countdown)
+            {
+                _seating.Close();
+            }
 
             Phase = phase;
             PhaseStartTick = Runner.Tick;
@@ -133,6 +141,7 @@ namespace PlowParty.Gameplay.Match.Network
             RestartRequested = false;
             PlacementCount = 0;
             _spawner.RespawnAll(Runner);
+            _seating.FillFreeSlots(Runner);
             MatchRestarted?.Invoke();
         }
 

@@ -27,7 +27,7 @@ A Match feature in Gameplay. Its rules live in pure C#: `MatchRules` steps the p
 ## Implementation Decisions
 
 - **Module:** `Gameplay/Match`, asmdef `PlowParty.Gameplay.Match`, references DropOff, Vehicle, Fusion, VContainer. Folders `Simulation`, `Network`, `Config`, `Prefabs`, `Tests`. Added to `AssembliesToWeave`. Feature index row `planned` → `active`.
-- **Phases:** `MatchPhase` Countdown, Playing, Results; no WaitingForPlayers (Meta/Session owns it). The first Match starts with Countdown when the driver spawns on the Host.
+- **Phases:** `MatchPhase` Countdown, Playing, Results; no WaitingForPlayers (Meta/Session owns it). The first Match starts with Countdown when the driver spawns on the Host. Superseded by the Bots feature: WaitingForPlayers is now the first phase and lives in Match (see Amendments).
 - **Clock from ticks:** the networked state is the phase and the tick it started; phase elapsed = (tick − start tick) × tick delta. Clients compute the same numbers from their own tick, so the clock needs no per-tick writes.
 - **Transitions (`MatchRules.NextPhase`):** Countdown → Playing at `CountdownDuration`; Playing → Results at `PlayingDuration`; Results → Countdown at `ResultsDuration` or at once when the Host requested a restart. `ResultsDuration` 0 waits for the Host. A restart request outside Results is ignored.
 - **Numbers (MatchConfig):** Countdown 3 s, Playing 180 s, Results 10 s.
@@ -45,7 +45,7 @@ A Match feature in Gameplay. Its rules live in pure C#: `MatchRules` steps the p
 
 ## Out of Scope
 
-- WaitingForPlayers, bots fill, SubmitToApi, `MatchResult` in Shared, return to menu (Meta).
+- WaitingForPlayers, bots fill, SubmitToApi, `MatchResult` in Shared, return to menu (Meta). WaitingForPlayers and the Bot fill have since moved into Match (see Amendments).
 - Snow reset and the Snow clock wiring (integration; Snow cannot reference Match, see Further Notes).
 - Interrupted Match on Host leave.
 
@@ -56,3 +56,15 @@ A Match feature in Gameplay. Its rules live in pure C#: `MatchRules` steps the p
 - `MatchScope` registers `MatchDriver` and the Hud views from the scene; the scene must contain the prefabs or the scope fails to build.
 - `IMatchClock` and `IMatchResults` have one implementation each; `docs/coding-standards.md` allows that for cross-module seams.
 - Review follow-ups applied: the next-Match transition test lives in `MatchRules.StartsNextMatch`; `MatchDriver` runs before `VehicleWorldDriver` (`[DefaultExecutionOrder(-100)]`), so the lock lands on the tick Playing ends; `IMatchResults.WaitsForHost` distinguishes an untimed Results from a timed one at 0.
+
+## Amendments
+
+### WaitingForPlayers (Bots feature, `.scratch/bots/spec.md`, ADR-0016)
+
+- `MatchPhase` gains WaitingForPlayers as its first value. The Host plans the seats when `MatchDriver` spawns (`WaitingRules.PlanSeats` from the `MatchLineup` in `MatchLineupStore`, else the Players present in `FallbackSlotCount` 6 Slots) and enters WaitingForPlayers; Match number 1 starts there.
+- `MatchRules.NextPhase(phase, phaseElapsed, restartRequested, allSlotsFilled)`: WaitingForPlayers → Countdown only when every Slot is taken. At `WaitingDuration` (15 s) `WaitingRules.BotsToSeat` fills every free Slot with a Bot, so the cap still ends the wait. `PhaseRemaining` there is the cap countdown; the input stays locked; `PlayingElapsed` is 0.
+- Bots arrive one by one at times drawn inside `BotArrivalStart`–`BotArrivalEnd` (1–8 s), only into Slots not reserved for expected Players.
+- `MatchSeating` (host-side entry point) seats Players on join with their `ParticipantToken` Nickname into `ParticipantRoster`, seats Bots, refuses connection requests once Countdown started or every Slot is taken, disconnects a join that slips through, and vacates a leaving Player's Slot. `VehicleSpawner` no longer reacts to joins.
+- Restart: after `RespawnAll`, every Slot a Player left gets a Bot, so the next Match starts full; there is no second wait.
+- Story 8 ("a Player who joins mid-Match drives in the current phase") is withdrawn: the Slots are fixed from Countdown on (the Roster, ADR-0013), so a late Player is turned away.
+- Tests: `WaitingRulesTests`; `MatchRulesPhaseTests` and `MatchRulesClockTests` cover WaitingForPlayers.
