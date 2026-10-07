@@ -1,0 +1,14 @@
+{
+    "name": "PlowParty.Meta.Tournament",
+    "rootNamespace": "PlowParty.Meta.Tournament",
+    "references": [
+        "PlowParty.Shared",
+        "PlowParty.Infrastructure",
+        "PlowParty.Meta.Account",
+        "Fusion.Unity",
+        "UniTask",
+        "VContainer",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": false
+}

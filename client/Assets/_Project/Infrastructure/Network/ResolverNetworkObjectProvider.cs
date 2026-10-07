@@ -8,15 +8,14 @@ namespace PlowParty.Infrastructure.Network
     {
         private IObjectResolver _resolver;
 
-        [Inject]
-        public void Construct(IObjectResolver resolver)
+        public void Use(IObjectResolver resolver)
         {
             _resolver = resolver;
         }
 
         protected override NetworkObject InstantiatePrefab(NetworkRunner runner, NetworkObject prefab)
         {
-            return _resolver.Instantiate(prefab);
+            return _resolver != null ? _resolver.Instantiate(prefab) : base.InstantiatePrefab(runner, prefab);
         }
     }
 }

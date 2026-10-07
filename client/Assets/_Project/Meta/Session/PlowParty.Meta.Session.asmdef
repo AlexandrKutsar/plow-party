@@ -1,0 +1,13 @@
+{
+    "name": "PlowParty.Meta.Session",
+    "rootNamespace": "PlowParty.Meta.Session",
+    "references": [
+        "PlowParty.Shared",
+        "PlowParty.Infrastructure",
+        "PlowParty.Meta.Account",
+        "Fusion.Unity",
+        "UniTask",
+        "VContainer"
+    ],
+    "autoReferenced": false
+}

@@ -1,3 +1,4 @@
+using PlowParty.Bootstrap.Adapters;
 using PlowParty.Gameplay.Bots.Network;
 using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.CameraRig.Network;
@@ -12,6 +13,7 @@ using PlowParty.Gameplay.Snow.Simulation;
 using PlowParty.Gameplay.Snow.View;
 using PlowParty.Gameplay.Vehicle.Network;
 using PlowParty.Infrastructure.Network;
+using PlowParty.Meta.Tournament.Network;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -23,7 +25,8 @@ namespace PlowParty.Bootstrap
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<NetworkRunnerEvents>(Lifetime.Singleton);
-            builder.Register<NetworkSession>(Lifetime.Singleton);
+            builder.Register<NetworkScopeBinding>(Lifetime.Singleton);
+            builder.RegisterBuildCallback(resolver => resolver.Resolve<NetworkScopeBinding>().Bind());
             builder.Register<VehicleRegistry>(Lifetime.Singleton);
             builder.RegisterEntryPoint<VehicleInputPoller>();
             builder.RegisterComponentInHierarchy<VehicleSpawner>();
@@ -42,7 +45,16 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<BotDriver>();
             RegisterHud(builder);
             RegisterCamera(builder);
+            RegisterMatchReport(builder);
             builder.RegisterEntryPoint<MatchSceneQuickStart>();
+        }
+
+        private static void RegisterMatchReport(IContainerBuilder builder)
+        {
+            builder.Register<MatchProgressAdapter>(Lifetime.Singleton).As<IMatchProgress>();
+            builder.Register<ConnectionTokenRoster>(Lifetime.Singleton).As<IMatchRoster>();
+            builder.Register<MatchReportLinks>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<MatchReporter>();
         }
 
         private static void RegisterCamera(IContainerBuilder builder)
@@ -65,6 +77,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<ResultsView>();
             builder.RegisterComponentInHierarchy<VirtualStickView>();
             builder.RegisterComponentInHierarchy<WaitingForPlayersView>();
+            builder.Register<MatchExitAdapter>(Lifetime.Singleton).As<IMatchExit>();
         }
     }
 }

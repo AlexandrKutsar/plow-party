@@ -15,6 +15,10 @@ namespace PlowParty.Infrastructure.Network
 
         public event Action<NetworkRunner, NetworkRunnerCallbackArgs.ConnectRequest> ConnectRequested;
 
+        public event Action<NetworkRunner> SceneLoadDone;
+
+        public event Action<NetworkRunner, ShutdownReason> ShutDown;
+
         void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
             PlayerJoined?.Invoke(runner, player);
@@ -44,6 +48,7 @@ namespace PlowParty.Infrastructure.Network
 
         void INetworkRunnerCallbacks.OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
+            ShutDown?.Invoke(runner, shutdownReason);
         }
 
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
@@ -89,6 +94,7 @@ namespace PlowParty.Infrastructure.Network
 
         void INetworkRunnerCallbacks.OnSceneLoadDone(NetworkRunner runner)
         {
+            SceneLoadDone?.Invoke(runner);
         }
 
         void INetworkRunnerCallbacks.OnSceneLoadStart(NetworkRunner runner)

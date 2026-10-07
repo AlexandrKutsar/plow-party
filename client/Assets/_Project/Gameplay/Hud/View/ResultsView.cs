@@ -15,30 +15,35 @@ namespace PlowParty.Gameplay.Hud.View
         [SerializeField] private ScoreRowView[] _rows;
         [SerializeField] private Text _nextMatchLabel;
         [SerializeField] private Button _restartButton;
+        [SerializeField] private Button _menuButton;
 
         private IMatchClock _match;
         private IMatchResults _results;
         private VehicleRegistry _vehicles;
         private ParticipantRoster _roster;
+        private IMatchExit _exit;
         private int _shownSeconds = -1;
 
         [Inject]
-        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster)
+        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit)
         {
             _match = match;
             _results = results;
             _vehicles = vehicles;
             _roster = roster;
+            _exit = exit;
         }
 
         private void Awake()
         {
             _restartButton.onClick.AddListener(OnRestartClicked);
+            _menuButton.onClick.AddListener(OnMenuClicked);
         }
 
         private void OnDestroy()
         {
             _restartButton.onClick.RemoveListener(OnRestartClicked);
+            _menuButton.onClick.RemoveListener(OnMenuClicked);
         }
 
         private void LateUpdate()
@@ -86,6 +91,11 @@ namespace PlowParty.Gameplay.Hud.View
         private void OnRestartClicked()
         {
             _results.RequestRestart();
+        }
+
+        private void OnMenuClicked()
+        {
+            _exit.LeaveToMenu();
         }
     }
 }

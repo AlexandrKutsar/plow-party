@@ -31,6 +31,18 @@ _Avoid_: Room, lobby (as the network concept)
 **Room Code** (код комнаты):
 A 5-character code a Host shares so friends join the same Session.
 
+**Quick Play** (быстрая игра):
+Joining any open Session of the same Matchmaking Pool, or hosting a new one when none is open; the Match starts when the search timer ends or the Session is full.
+_Avoid_: Random match, auto match
+
+**Lobby** (лобби):
+The Menu panel where Players gathered in a Session wait for the Match: the search timer or Room Code, the number of Players found, and the Host's Start.
+_Avoid_: Room (as a code type), waiting room
+
+**Matchmaking Pool** (пул подбора):
+The set of Sessions that may meet each other: the same build version and dev-session name; Quick Play only joins Sessions of its own pool.
+_Avoid_: Region, queue
+
 **Match Result** (итоговая таблица):
 The final placement and Score of every Participant, submitted to the backend.
 _Avoid_: Scoreboard, leaderboard (that is the Tournament's)

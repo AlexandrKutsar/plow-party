@@ -57,4 +57,7 @@ MonoBehaviour:
   _cameraConfig: {fileID: 11400000, guid: e4ab29df2aaa7854eacaa6f560178922, type: 2}
   _participantsConfig: {fileID: 11400000, guid: 4a53ef488a786ab43b64003a9461dacb, type: 2}
   _botConfig: {fileID: 11400000, guid: d637cd88866e10b43a1cc31a73602737, type: 2}
+  _backendConfig: {fileID: 11400000, guid: 8a4e6f602266c824eaafde099ad296f7, type: 2}
+  _matchmakingConfig: {fileID: 11400000, guid: 0fbd680db68a53d4e88a179b88bb9417, type: 2}
+  _tournamentConfig: {fileID: 11400000, guid: 74827b67746bd82418af5936b8e641aa, type: 2}
   _targetFrameRate: 60
