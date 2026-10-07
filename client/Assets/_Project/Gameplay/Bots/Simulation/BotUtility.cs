@@ -5,18 +5,6 @@ namespace PlowParty.Gameplay.Bots.Simulation
     public sealed class BotUtility
     {
         private const int ActionCount = (int)BotAction.Evade + 1;
-        private const float DeliverFloor = 0.15f;
-        private const float FullBucketBonus = 0.3f;
-        private const float UrgentDelivery = 2f;
-        private const float GreedRichnessMinimum = 0.25f;
-        private const float GreedDiscount = 0.8f;
-        private const float NearDropOffBonus = 0.3f;
-        private const float NearDropOffTravelTime = 6f;
-        private const float CollectFloor = 0.3f;
-        private const float PileFullShare = 0.9f;
-        private const float PileBase = 0.6f;
-        private const float RamLoadOffset = 1.3f;
-        private const float EvadeBase = 0.4f;
 
         private readonly BotSettings _settings;
 
@@ -80,7 +68,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
         private float CollectScore(BotSituation situation)
         {
             var free = 1f - situation.LoadShare;
-            return free <= 0f ? 0f : _settings.CollectWeight * free * (CollectFloor + (1f - CollectFloor) * situation.SnowRichness);
+            return free <= 0f ? 0f : _settings.CollectWeight * free * (_settings.CollectFloor + (1f - _settings.CollectFloor) * situation.SnowRichness);
         }
 
         private float DeliverScore(BotSituation situation, BotProfile profile)
@@ -92,40 +80,40 @@ namespace PlowParty.Gameplay.Bots.Simulation
 
             if (situation.PlayingRemaining <= situation.DropOffTravelTime + _settings.DeliveryMargin)
             {
-                return _settings.DeliverWeight * UrgentDelivery;
+                return _settings.DeliverWeight * _settings.UrgentDeliveryBoost;
             }
 
             var share = situation.LoadShare;
-            var score = DeliverFloor + share * Mathf.Sqrt(share);
+            var score = profile.DeliverEagerness + share * Mathf.Sqrt(share);
             if (situation.Load >= situation.Capacity)
             {
-                score += FullBucketBonus;
+                score += _settings.FullBucketBonus;
             }
 
             if (IsWorthToppingUp(situation))
             {
-                score *= 1f - GreedDiscount * profile.Greed;
+                score *= 1f - _settings.GreedDiscount * profile.Greed;
             }
 
-            var nearness = 1f - Mathf.Clamp01(situation.DropOffTravelTime / NearDropOffTravelTime);
-            return _settings.DeliverWeight * score * (1f + NearDropOffBonus * nearness);
+            var nearness = 1f - Mathf.Clamp01(situation.DropOffTravelTime / _settings.NearDropOffTravelTime);
+            return _settings.DeliverWeight * score * (1f + _settings.NearDropOffBonus * nearness);
         }
 
         private bool IsWorthToppingUp(BotSituation situation)
         {
             var missing = situation.NextTierLoad - situation.Load;
-            return missing > 0 && missing <= _settings.GreedReach && situation.SnowRichness > GreedRichnessMinimum;
+            return missing > 0 && missing <= _settings.GreedReach && situation.SnowRichness > _settings.GreedRichnessMinimum;
         }
 
         private float PileScore(BotSituation situation)
         {
             var share = situation.LoadShare;
-            if (!situation.HasPile || share >= PileFullShare)
+            if (!situation.HasPile || share >= _settings.PileFullShare)
             {
                 return 0f;
             }
 
-            var scarcity = PileBase + (1f - PileBase) * (1f - situation.SnowRichness);
+            var scarcity = _settings.PileScarcityBase + (1f - _settings.PileScarcityBase) * (1f - situation.SnowRichness);
             return _settings.PileWeight * (1f - share) * scarcity / (1f + situation.PileDistance / _settings.PileFalloff);
         }
 
@@ -137,7 +125,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
             }
 
             var prize = (float)situation.RamTargetLoad / situation.Capacity;
-            return _settings.RamWeight * profile.Aggression * prize * (RamLoadOffset - situation.LoadShare)
+            return _settings.RamWeight * profile.Aggression * prize * (_settings.RamLoadOffset - situation.LoadShare)
                 / (1f + situation.RamTargetDistance / _settings.RamFalloff);
         }
 
@@ -148,7 +136,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
                 return 0f;
             }
 
-            return _settings.EvadeWeight * profile.Caution * situation.ThreatLevel * (EvadeBase + situation.LoadShare);
+            return _settings.EvadeWeight * profile.Caution * situation.ThreatLevel * (_settings.EvadeBase + situation.LoadShare);
         }
     }
 }

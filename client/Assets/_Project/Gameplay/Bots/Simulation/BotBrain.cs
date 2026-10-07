@@ -8,16 +8,6 @@ namespace PlowParty.Gameplay.Bots.Simulation
     public sealed class BotBrain
     {
         private const int NoSlot = -1;
-        private const float ZoneMargin = 0.3f;
-        private const float ArrivalSlowdownDistance = 3f;
-        private const float MinArrivalThrottle = 0.25f;
-        private const float GoalMovedDistance = 1.5f;
-        private const float UnstuckThrottle = 0.8f;
-        private const float UnstuckSpreadDegrees = 45f;
-        private const int OpenDirectionRadius = 2;
-        private const float DetourFactor = 1.3f;
-        private const float KeptSnowTargetRichness = 0.3f;
-        private const float SnowTargetPatience = 3f;
 
         private readonly BotSettings _settings;
         private readonly BotUtility _utility;
@@ -115,7 +105,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
 
             if (time < _unstuckUntil)
             {
-                return VehicleInput.Stick(_unstuckDirection * UnstuckThrottle);
+                return VehicleInput.Stick(_unstuckDirection * _settings.UnstuckThrottle);
             }
 
             return VehicleInput.Stick(Drive(world, self, time));
@@ -128,9 +118,9 @@ namespace PlowParty.Gameplay.Bots.Simulation
             var ignored = Action == BotAction.Ram ? _targetSlot : NoSlot;
             var stick = BotSteering.Steer(self, aim, world.Vehicles, world.VehicleCount, ignored, _settings, _noiseDegrees, Profile.ThrottleCap);
             var remaining = Vector2.Distance(self.Position, goal);
-            if (Action == BotAction.Deliver && remaining < ArrivalSlowdownDistance)
+            if (Action == BotAction.Deliver && remaining < _settings.ArrivalSlowdownDistance)
             {
-                stick *= Mathf.Max(MinArrivalThrottle, remaining / ArrivalSlowdownDistance);
+                stick *= Mathf.Max(_settings.MinArrivalThrottle, remaining / _settings.ArrivalSlowdownDistance);
             }
 
             if (!_isGoalReached && HasArrived(remaining))
@@ -174,9 +164,9 @@ namespace PlowParty.Gameplay.Bots.Simulation
             return false;
         }
 
-        private static bool IsInZone(BotWorld world, Vector2 position)
+        private bool IsInZone(BotWorld world, Vector2 position)
         {
-            var reach = world.DropOffRadius - ZoneMargin;
+            var reach = world.DropOffRadius - _settings.DropOffZoneMargin;
             return (position - world.DropOffCentre).sqrMagnitude <= reach * reach;
         }
 
@@ -243,8 +233,8 @@ namespace PlowParty.Gameplay.Bots.Simulation
         private bool IsSnowTargetWorthKeeping(BotWorld world, float time)
         {
             return !_isGoalReached
-                && time - _goalSetTime < SnowTargetPatience
-                && world.Snow.RichnessShare(world.Grid.CellOf(_goal)) >= KeptSnowTargetRichness;
+                && time - _goalSetTime < _settings.SnowTargetPatience
+                && world.Snow.RichnessShare(world.Grid.CellOf(_goal)) >= _settings.KeptSnowTargetRichness;
         }
 
         private Vector2 CurrentGoal(BotWorld world)
@@ -275,7 +265,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
                 return goal;
             }
 
-            var goalMoved = (goal - _pathGoal).sqrMagnitude > GoalMovedDistance * GoalMovedDistance;
+            var goalMoved = (goal - _pathGoal).sqrMagnitude > _settings.GoalMovedDistance * _settings.GoalMovedDistance;
             if ((_path.Count == 0 || goalMoved) && time - _lastPlanTime >= _settings.ReplanInterval)
             {
                 _lastPlanTime = time;
@@ -305,9 +295,9 @@ namespace PlowParty.Gameplay.Bots.Simulation
         private void BeginUnstuck(BotWorld world, BotVehicle self, float time)
         {
             StuckEvents++;
-            var open = world.Grid.OpenDirection(self.Position, OpenDirectionRadius);
+            var open = world.Grid.OpenDirection(self.Position, _settings.OpenDirectionRadius);
             var direction = open.sqrMagnitude > 0f ? open : -self.Forward;
-            var spread = ((float)_random.NextDouble() * 2f - 1f) * UnstuckSpreadDegrees * Mathf.Deg2Rad;
+            var spread = ((float)_random.NextDouble() * 2f - 1f) * _settings.UnstuckSpreadDegrees * Mathf.Deg2Rad;
             _unstuckDirection = new Vector2(
                 direction.x * Mathf.Cos(spread) - direction.y * Mathf.Sin(spread),
                 direction.x * Mathf.Sin(spread) + direction.y * Mathf.Cos(spread));
@@ -352,7 +342,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
                 Capacity = world.Capacity,
                 NextTierLoad = world.NextTierLoad(self.Load),
                 SnowRichness = richness,
-                DropOffTravelTime = Vector2.Distance(self.Position, StandPoint(world, self.Position)) * DetourFactor / _settings.CruiseSpeed,
+                DropOffTravelTime = Vector2.Distance(self.Position, StandPoint(world, self.Position)) * _settings.DetourFactor / _settings.CruiseSpeed,
                 PlayingRemaining = world.PlayingRemaining,
                 HasPile = hasPile,
                 PileDistance = Vector2.Distance(self.Position, pile),

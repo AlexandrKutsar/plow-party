@@ -69,5 +69,47 @@ namespace PlowParty.Gameplay.Bots.Simulation
         public float CommitmentBonus { get; set; }
 
         public float WeakShare { get; set; }
+
+        public float FullBucketBonus { get; set; }
+
+        public float UrgentDeliveryBoost { get; set; }
+
+        public float GreedRichnessMinimum { get; set; }
+
+        public float GreedDiscount { get; set; }
+
+        public float NearDropOffBonus { get; set; }
+
+        public float NearDropOffTravelTime { get; set; }
+
+        public float CollectFloor { get; set; }
+
+        public float PileFullShare { get; set; }
+
+        public float PileScarcityBase { get; set; }
+
+        public float RamLoadOffset { get; set; }
+
+        public float EvadeBase { get; set; }
+
+        public float DropOffZoneMargin { get; set; }
+
+        public float ArrivalSlowdownDistance { get; set; }
+
+        public float MinArrivalThrottle { get; set; }
+
+        public float GoalMovedDistance { get; set; }
+
+        public float UnstuckThrottle { get; set; }
+
+        public float UnstuckSpreadDegrees { get; set; }
+
+        public int OpenDirectionRadius { get; set; }
+
+        public float DetourFactor { get; set; }
+
+        public float KeptSnowTargetRichness { get; set; }
+
+        public float SnowTargetPatience { get; set; }
     }
 }

@@ -16,6 +16,7 @@ namespace PlowParty.Gameplay.Bots.Config
         [SerializeField, Range(0f, 1f)] private float _greed = 0.5f;
         [SerializeField, Range(0f, 2f)] private float _caution = 0.5f;
         [SerializeField, Range(0.1f, 1f)] private float _throttleCap = 0.92f;
+        [SerializeField, Range(0f, 1f)] private float _deliverEagerness = 0.15f;
 
         public BotDifficulty Difficulty => _difficulty;
 
@@ -33,6 +34,7 @@ namespace PlowParty.Gameplay.Bots.Config
                 Greed = _greed,
                 Caution = _caution,
                 ThrottleCap = _throttleCap,
+                DeliverEagerness = _deliverEagerness,
             };
         }
     }

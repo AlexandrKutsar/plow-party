@@ -21,5 +21,7 @@ namespace PlowParty.Gameplay.Bots.Simulation
         public float Caution { get; set; }
 
         public float ThrottleCap { get; set; }
+
+        public float DeliverEagerness { get; set; }
     }
 }

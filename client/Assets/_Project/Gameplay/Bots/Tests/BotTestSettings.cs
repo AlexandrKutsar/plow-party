@@ -47,6 +47,27 @@ namespace PlowParty.Gameplay.Bots.Tests
                 EvadeWeight = 1.2f,
                 CommitmentBonus = 0.15f,
                 WeakShare = 0.5f,
+                FullBucketBonus = 0.3f,
+                UrgentDeliveryBoost = 2f,
+                GreedRichnessMinimum = 0.25f,
+                GreedDiscount = 0.8f,
+                NearDropOffBonus = 0.3f,
+                NearDropOffTravelTime = 6f,
+                CollectFloor = 0.3f,
+                PileFullShare = 0.9f,
+                PileScarcityBase = 0.6f,
+                RamLoadOffset = 1.3f,
+                EvadeBase = 0.4f,
+                DropOffZoneMargin = 0.3f,
+                ArrivalSlowdownDistance = 3f,
+                MinArrivalThrottle = 0.25f,
+                GoalMovedDistance = 1.5f,
+                UnstuckThrottle = 0.8f,
+                UnstuckSpreadDegrees = 45f,
+                OpenDirectionRadius = 2,
+                DetourFactor = 1.3f,
+                KeptSnowTargetRichness = 0.3f,
+                SnowTargetPatience = 3f,
             };
         }
 
@@ -64,6 +85,7 @@ namespace PlowParty.Gameplay.Bots.Tests
                 Greed = 1f,
                 Caution = 1f,
                 ThrottleCap = 1f,
+                DeliverEagerness = 0.15f,
             };
         }
 

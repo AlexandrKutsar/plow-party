@@ -53,6 +53,31 @@ namespace PlowParty.Gameplay.Bots.Config
         [SerializeField, Min(0f)] private float _evadeWeight = 1.2f;
         [SerializeField, Min(0f)] private float _commitmentBonus = 0.15f;
 
+        [Header("Utility curves")]
+        [SerializeField, Min(0f)] private float _fullBucketBonus = 0.3f;
+        [SerializeField, Min(0f)] private float _urgentDeliveryBoost = 2f;
+        [SerializeField, Range(0f, 1f)] private float _greedRichnessMinimum = 0.25f;
+        [SerializeField, Range(0f, 1f)] private float _greedDiscount = 0.8f;
+        [SerializeField, Min(0f)] private float _nearDropOffBonus = 0.3f;
+        [SerializeField, Min(0.1f)] private float _nearDropOffTravelTime = 6f;
+        [SerializeField, Range(0f, 1f)] private float _collectFloor = 0.3f;
+        [SerializeField, Range(0f, 1f)] private float _pileFullShare = 0.9f;
+        [SerializeField, Range(0f, 1f)] private float _pileScarcityBase = 0.6f;
+        [SerializeField, Min(0f)] private float _ramLoadOffset = 1.3f;
+        [SerializeField, Min(0f)] private float _evadeBase = 0.4f;
+
+        [Header("Brain")]
+        [SerializeField, Min(0f)] private float _dropOffZoneMargin = 0.3f;
+        [SerializeField, Min(0.1f)] private float _arrivalSlowdownDistance = 3f;
+        [SerializeField, Range(0f, 1f)] private float _minArrivalThrottle = 0.25f;
+        [SerializeField, Min(0f)] private float _goalMovedDistance = 1.5f;
+        [SerializeField, Range(0.1f, 1f)] private float _unstuckThrottle = 0.8f;
+        [SerializeField, Range(0f, 180f)] private float _unstuckSpreadDegrees = 45f;
+        [SerializeField, Min(1)] private int _openDirectionRadius = 2;
+        [SerializeField, Min(1f)] private float _detourFactor = 1.3f;
+        [SerializeField, Range(0f, 1f)] private float _keptSnowTargetRichness = 0.3f;
+        [SerializeField, Min(0f)] private float _snowTargetPatience = 3f;
+
         public float SnowRefreshInterval => _snowRefreshInterval;
 
         public float StuckReportTime => _stuckReportTime;
@@ -108,6 +133,27 @@ namespace PlowParty.Gameplay.Bots.Config
                 EvadeWeight = _evadeWeight,
                 CommitmentBonus = _commitmentBonus,
                 WeakShare = _weakShare,
+                FullBucketBonus = _fullBucketBonus,
+                UrgentDeliveryBoost = _urgentDeliveryBoost,
+                GreedRichnessMinimum = _greedRichnessMinimum,
+                GreedDiscount = _greedDiscount,
+                NearDropOffBonus = _nearDropOffBonus,
+                NearDropOffTravelTime = _nearDropOffTravelTime,
+                CollectFloor = _collectFloor,
+                PileFullShare = _pileFullShare,
+                PileScarcityBase = _pileScarcityBase,
+                RamLoadOffset = _ramLoadOffset,
+                EvadeBase = _evadeBase,
+                DropOffZoneMargin = _dropOffZoneMargin,
+                ArrivalSlowdownDistance = _arrivalSlowdownDistance,
+                MinArrivalThrottle = _minArrivalThrottle,
+                GoalMovedDistance = _goalMovedDistance,
+                UnstuckThrottle = _unstuckThrottle,
+                UnstuckSpreadDegrees = _unstuckSpreadDegrees,
+                OpenDirectionRadius = _openDirectionRadius,
+                DetourFactor = _detourFactor,
+                KeptSnowTargetRichness = _keptSnowTargetRichness,
+                SnowTargetPatience = _snowTargetPatience,
             };
         }
     }
