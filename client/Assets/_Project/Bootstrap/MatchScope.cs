@@ -1,6 +1,7 @@
 using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.CameraRig.Network;
 using PlowParty.Gameplay.CameraRig.Simulation;
+using PlowParty.Gameplay.CameraRig.View;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Hud.View;
 using PlowParty.Gameplay.Match.Network;
@@ -33,11 +34,18 @@ namespace PlowParty.Bootstrap
             builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
-            builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().AsSelf();
+            builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().As<ISnowClock>().AsSelf();
             RegisterHud(builder);
+            RegisterCamera(builder);
+            builder.RegisterEntryPoint<MatchSceneQuickStart>();
+        }
+
+        private static void RegisterCamera(IContainerBuilder builder)
+        {
             builder.Register<CameraShake>(Lifetime.Singleton).AsSelf().As<ICameraShake>();
             builder.RegisterEntryPoint<CameraRamShake>();
-            builder.RegisterEntryPoint<MatchSceneQuickStart>();
+            builder.RegisterEntryPoint<CameraPileShake>();
+            builder.RegisterComponentInHierarchy<CameraDirector>();
         }
 
         private static void RegisterHud(IContainerBuilder builder)

@@ -1,3 +1,4 @@
+using System;
 using PlowParty.Gameplay.Vehicle.Simulation;
 using UnityEngine;
 
@@ -18,9 +19,9 @@ namespace PlowParty.Gameplay.Snow.Simulation
         private readonly int[] _words;
         private readonly bool[] _masked;
         private readonly bool[] _snowFree;
-        private readonly int _seed;
         private readonly float[] _blizzardProgress;
         private readonly float[] _nextRegrowthTime;
+        private int _seed;
         private float _now;
 
         public SnowGrid(SnowSettings settings, VehicleArena arena, int seed)
@@ -31,7 +32,6 @@ namespace PlowParty.Gameplay.Snow.Simulation
         public SnowGrid(SnowSettings settings, VehicleArena arena, ISnowFreeArea snowFree, int seed)
         {
             _settings = settings;
-            _seed = seed;
             _blizzardProgress = new float[settings.BlizzardTimes.Length];
             Width = Mathf.RoundToInt(settings.Size.x / settings.CellSize);
             Height = Mathf.RoundToInt(settings.Size.y / settings.CellSize);
@@ -41,12 +41,12 @@ namespace PlowParty.Gameplay.Snow.Simulation
             _nextRegrowthTime = new float[Width * Height];
             for (var index = 0; index < Width * Height; index++)
             {
-                _nextRegrowthTime[index] = float.PositiveInfinity;
                 var centre = CellCentre(index);
                 _masked[index] = arena.Contains(centre);
                 _snowFree[index] = snowFree != null && snowFree.Contains(centre);
-                SetDepth(index, TakesSnowfall(index) ? settings.FullDepth : 0);
             }
+
+            Reset(seed);
         }
 
         public int Width { get; }
@@ -74,6 +74,18 @@ namespace PlowParty.Gameplay.Snow.Simulation
         public void SetWord(int index, int value)
         {
             _words[index] = value;
+        }
+
+        public void Reset(int seed)
+        {
+            _seed = seed;
+            _now = 0f;
+            Array.Clear(_blizzardProgress, 0, _blizzardProgress.Length);
+            for (var index = 0; index < _nextRegrowthTime.Length; index++)
+            {
+                _nextRegrowthTime[index] = float.PositiveInfinity;
+                SetDepth(index, TakesSnowfall(index) ? _settings.FullDepth : 0);
+            }
         }
 
         public int Scrape(SnowBlade blade, int room)

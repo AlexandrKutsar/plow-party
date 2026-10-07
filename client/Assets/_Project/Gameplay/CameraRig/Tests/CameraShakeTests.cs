@@ -34,6 +34,37 @@ namespace PlowParty.Gameplay.CameraRig.Tests
         }
 
         [Test]
+        public void Sustain_BelowLevel_RaisesTraumaToLevel()
+        {
+            _shake.Add(0.1f);
+
+            _shake.Sustain(0.4f);
+
+            Assert.That(_shake.Trauma, Is.EqualTo(0.4f).Within(Tolerance));
+        }
+
+        [Test]
+        public void Sustain_AboveLevel_KeepsHigherTrauma()
+        {
+            _shake.Add(0.8f);
+
+            _shake.Sustain(0.4f);
+
+            Assert.That(_shake.Trauma, Is.EqualTo(0.8f).Within(Tolerance));
+        }
+
+        [Test]
+        public void Sustain_EveryFrame_HoldsTraumaAgainstDecay()
+        {
+            _shake.Sustain(0.4f);
+            _shake.Step(0.1f, CameraTestSettings.Shake());
+
+            _shake.Sustain(0.4f);
+
+            Assert.That(_shake.Trauma, Is.EqualTo(0.4f).Within(Tolerance));
+        }
+
+        [Test]
         public void Step_NoTrauma_GivesNoOffsetOrRoll()
         {
             var sample = _shake.Step(0.1f, CameraTestSettings.Shake());

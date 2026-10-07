@@ -20,6 +20,7 @@ namespace PlowParty.Gameplay.Snow.Network
         private VehicleRegistry _registry;
         private IScrapeLimit _limit;
         private ISnowFreeArea _snowFree;
+        private ISnowClock _clock;
         private SnowConfig _config;
         private SnowSettings _settings;
         private SnowGrid _grid;
@@ -29,15 +30,14 @@ namespace PlowParty.Gameplay.Snow.Network
 
         [Networked, Capacity(VehicleWorldDriver.MaxVehicles)] private NetworkArray<NetworkBool> PlowingPileBySlot { get; }
 
-        [Networked] private int StartTick { get; set; }
-
         public event Action<VehicleScrape> Scraped;
 
         public bool IsReady => _grid != null;
 
         [Inject]
-        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit, ISnowFreeArea snowFree)
+        public void Construct(VehicleRegistry registry, SnowConfig config, IScrapeLimit limit, ISnowFreeArea snowFree, ISnowClock clock)
         {
+            _clock = clock;
             _registry = registry;
             _config = config;
             _limit = limit;
@@ -47,8 +47,7 @@ namespace PlowParty.Gameplay.Snow.Network
         public override void Spawned()
         {
             _settings = _config.ToSettings();
-            var seed = HasStateAuthority ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : 0;
-            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), _snowFree, seed);
+            _grid = new SnowGrid(_settings, VehicleArenaReader.Read(_arenaRoot), _snowFree, NewSeed());
             if (_grid.WordCount > MaxWords)
             {
                 throw new InvalidOperationException(
@@ -57,13 +56,14 @@ namespace PlowParty.Gameplay.Snow.Network
 
             if (HasStateAuthority)
             {
-                StartTick = Runner.Tick;
                 CopyGridToWords();
+                _clock.MatchRestarted += OnMatchRestarted;
             }
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            _clock.MatchRestarted -= OnMatchRestarted;
             _grid = null;
         }
 
@@ -96,7 +96,11 @@ namespace PlowParty.Gameplay.Snow.Network
             }
 
             ScrapeUnderBlades();
-            _grid.Tick((Runner.Tick - StartTick) * Runner.DeltaTime);
+            if (_clock.IsPlaying)
+            {
+                _grid.Tick(_clock.PlayingElapsed);
+            }
+
             CopyGridToWords();
             CopyPlowingSlots();
             ReportScrapes();
@@ -125,6 +129,17 @@ namespace PlowParty.Gameplay.Snow.Network
                     _plowingSlots[vehicle.Slot] = true;
                 }
             }
+        }
+
+        private void OnMatchRestarted()
+        {
+            _grid.Reset(NewSeed());
+            CopyGridToWords();
+        }
+
+        private int NewSeed()
+        {
+            return HasStateAuthority ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : 0;
         }
 
         private static bool HasSlot(NetworkVehicle vehicle)

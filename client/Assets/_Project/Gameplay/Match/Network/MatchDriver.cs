@@ -3,6 +3,7 @@ using Fusion;
 using PlowParty.Gameplay.DropOff.Network;
 using PlowParty.Gameplay.Match.Config;
 using PlowParty.Gameplay.Match.Simulation;
+using PlowParty.Gameplay.Snow.Network;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
 using VContainer;
@@ -10,7 +11,7 @@ using VContainer;
 namespace PlowParty.Gameplay.Match.Network
 {
     [DefaultExecutionOrder(-100)]
-    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults
+    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults, ISnowClock
     {
         private const int MaxPlacements = VehicleWorldDriver.MaxVehicles;
 
@@ -43,6 +44,8 @@ namespace PlowParty.Gameplay.Match.Network
         public event Action MatchRestarted;
 
         public bool IsRunning => _rules != null;
+
+        public bool IsPlaying => IsRunning && Phase == MatchPhase.Playing;
 
         public float PhaseRemaining => IsRunning ? _rules.PhaseRemaining(Phase, PhaseElapsed) : 0f;
 

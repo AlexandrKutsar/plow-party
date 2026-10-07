@@ -57,29 +57,13 @@ namespace PlowParty.Gameplay.CameraRig.View
 
         private CameraPose CurrentPose()
         {
-            if (ActivePreset != CameraPreset.Overview && TryFindLocalVehicle(out var vehicle))
+            if (ActivePreset != CameraPreset.Overview && _vehicles.TryGetLocal(out var vehicle))
             {
                 return _follow.Step(TargetOf(vehicle), _config.ToFollowSettings(ActivePreset), _arena.Area, _camera.aspect, Time.deltaTime);
             }
 
             _follow.Release();
             return OverviewFraming.Fit(_arena, _config.ToOverviewSettings(), _camera.aspect);
-        }
-
-        private bool TryFindLocalVehicle(out NetworkVehicle local)
-        {
-            var vehicles = _vehicles.Vehicles;
-            for (var i = 0; i < vehicles.Count; i++)
-            {
-                if (vehicles[i].HasInputAuthority)
-                {
-                    local = vehicles[i];
-                    return true;
-                }
-            }
-
-            local = null;
-            return false;
         }
 
         private static CameraTarget TargetOf(NetworkVehicle vehicle)

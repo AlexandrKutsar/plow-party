@@ -3,6 +3,7 @@
     "rootNamespace": "PlowParty.Gameplay.CameraRig",
     "references": [
         "PlowParty.Gameplay.Vehicle",
+        "PlowParty.Gameplay.Snow",
         "Fusion.Unity",
         "VContainer",
         "Unity.InputSystem"

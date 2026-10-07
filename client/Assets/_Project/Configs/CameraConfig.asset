@@ -54,3 +54,4 @@ MonoBehaviour:
   _shakeDecayPerSecond: 1.5
   _ramVictimShake: 0.5
   _ramRammerShake: 0.25
+  _pilePlowShake: 0.4

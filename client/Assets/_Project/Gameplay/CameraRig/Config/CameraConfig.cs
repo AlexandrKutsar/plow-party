@@ -16,12 +16,15 @@ namespace PlowParty.Gameplay.CameraRig.Config
         [SerializeField, Min(0f)] private float _shakeDecayPerSecond = 1.5f;
         [SerializeField, Range(0f, 1f)] private float _ramVictimShake = 0.5f;
         [SerializeField, Range(0f, 1f)] private float _ramRammerShake = 0.25f;
+        [SerializeField, Range(0f, 1f)] private float _pilePlowShake = 0.4f;
 
         public CameraPreset DefaultPreset => _defaultPreset;
 
         public float RamVictimShake => _ramVictimShake;
 
         public float RamRammerShake => _ramRammerShake;
+
+        public float PilePlowShake => _pilePlowShake;
 
         public OverviewSettings ToOverviewSettings()
         {

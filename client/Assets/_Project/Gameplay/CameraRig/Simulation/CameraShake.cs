@@ -17,6 +17,11 @@ namespace PlowParty.Gameplay.CameraRig.Simulation
             Trauma = Mathf.Clamp01(Trauma + Mathf.Max(0f, strength));
         }
 
+        public void Sustain(float strength)
+        {
+            Trauma = Mathf.Max(Trauma, Mathf.Clamp01(strength));
+        }
+
         public CameraShakeSample Step(float deltaTime, ShakeSettings settings)
         {
             Trauma = Mathf.Max(0f, Trauma - settings.DecayPerSecond * deltaTime);

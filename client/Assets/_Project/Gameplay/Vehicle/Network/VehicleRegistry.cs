@@ -35,6 +35,21 @@ namespace PlowParty.Gameplay.Vehicle.Network
             return false;
         }
 
+        public bool TryGetLocal(out NetworkVehicle local)
+        {
+            for (var i = 0; i < _vehicles.Count; i++)
+            {
+                if (_vehicles[i].HasInputAuthority)
+                {
+                    local = _vehicles[i];
+                    return true;
+                }
+            }
+
+            local = null;
+            return false;
+        }
+
         public void ReportRam(VehicleRam ram)
         {
             Rammed?.Invoke(ram);
