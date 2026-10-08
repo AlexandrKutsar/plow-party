@@ -1,6 +1,4 @@
 using System;
-using System.Text;
-using PlowParty.Meta.Party.Simulation;
 using PlowParty.Meta.Session;
 
 namespace PlowParty.Meta.Lobby.Simulation
@@ -8,17 +6,14 @@ namespace PlowParty.Meta.Lobby.Simulation
     public static class LobbyText
     {
         private const string SearchTitleText = "Поиск игры…";
-        private const string StopSearchText = "Остановить";
+        private const string StopSearchText = "Остановить поиск";
         private const int SecondsPerMinute = 60;
         private const string ConnectingTitle = "Подключение…";
         private const string StartingText = "Матч начинается…";
-        private const string SearchText = "Искать матч";
-        private const string ReadyText = "Я готов";
-        private const string NotReadyText = "Не готов";
-        private const string LeaderMark = " (лидер)";
-        private const string ReadyMark = " — готов";
-        private const string NotReadyMark = " — не готов";
-        private const string MemberSeparator = ", ";
+        private const string ReadyButtonText = "Я готов";
+        private const string NotReadyButtonText = "Не готов";
+        private const string ReadyMark = "Готов";
+        private const string NotReadyMark = "Не готов";
 
         public static string SearchTitle()
         {
@@ -51,37 +46,14 @@ namespace PlowParty.Meta.Lobby.Simulation
             return connecting || code == null ? ConnectingTitle : $"Группа {code}";
         }
 
-        public static string PartyMembers(PartyState party)
+        public static string ReadyButton(bool isReady)
         {
-            var text = new StringBuilder();
-            for (var i = 0; i < party.Count; i++)
-            {
-                var member = party.Members[i];
-                if (i > 0)
-                {
-                    text.Append(MemberSeparator);
-                }
-
-                text.Append(member.Nickname);
-                text.Append(i == 0 ? LeaderMark : member.IsReady ? ReadyMark : NotReadyMark);
-            }
-
-            return text.ToString();
+            return isReady ? NotReadyButtonText : ReadyButtonText;
         }
 
-        public static string PartySize(int count, int maxSlots)
+        public static string MemberReady(bool isReady)
         {
-            return $"Игроки: {count} / {maxSlots}";
-        }
-
-        public static string PartyAction(bool isLeader, bool isReady)
-        {
-            if (isLeader)
-            {
-                return SearchText;
-            }
-
-            return isReady ? NotReadyText : ReadyText;
+            return isReady ? ReadyMark : NotReadyMark;
         }
     }
 }
