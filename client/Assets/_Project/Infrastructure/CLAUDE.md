@@ -20,4 +20,4 @@ Engine, platform, and network plumbing used by both Gameplay and Meta: things th
 
 ## Depends on
 
-Shared, UniTask, VContainer, `Fusion.Unity`, Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`).
+Shared, UniTask, VContainer, `Fusion.Unity`, `Photon.Realtime` (the session-list runner's `JoinSessionLobby` signature), Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`).
