@@ -18,7 +18,12 @@ namespace PlowParty.Gameplay.Match.Tests
         {
             Assert.That(_rules.PhaseRemaining(MatchPhase.Countdown, 1f), Is.EqualTo(2f));
             Assert.That(_rules.PhaseRemaining(MatchPhase.Playing, 30f), Is.EqualTo(150f));
-            Assert.That(_rules.PhaseRemaining(MatchPhase.Results, 5f), Is.EqualTo(3f));
+        }
+
+        [Test]
+        public void PhaseRemaining_DuringResults_IsZeroBecauseResultsHasNoTimer()
+        {
+            Assert.That(_rules.PhaseRemaining(MatchPhase.Results, 5f), Is.EqualTo(0f));
         }
 
         [Test]

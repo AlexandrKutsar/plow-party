@@ -32,6 +32,7 @@ namespace PlowParty.Gameplay.Match.Network
         private float[] _botArrivals = Array.Empty<float>();
         private bool _isPlanned;
         private bool _isClosed;
+        private bool _isHurried;
 
         public MatchSeating(
             NetworkRunnerEvents events,
@@ -108,6 +109,7 @@ namespace PlowParty.Gameplay.Match.Network
                 return;
             }
 
+            HurryBotsOnceEveryoneIsIn(phaseElapsed);
             var bots = _rules.BotsToSeat(_plan, PlayerCount, BotCount, phaseElapsed, _botArrivals);
             for (var i = 0; i < bots; i++)
             {
@@ -121,12 +123,21 @@ namespace PlowParty.Gameplay.Match.Network
             Debug.Log($"[Match] Countdown starts with {PlayerCount} Player(s) and {BotCount} Bot(s)");
         }
 
-        public void FillFreeSlots(NetworkRunner runner)
+        private void HurryBotsOnceEveryoneIsIn(float waitingElapsed)
         {
-            while (_isPlanned && WaitingRules.HasFreeSlot(_plan, PlayerCount, BotCount))
+            if (_isHurried || !WaitingRules.AllExpectedPlayersSeated(_plan, PlayerCount))
             {
-                SeatBot(runner);
+                return;
             }
+
+            _isHurried = true;
+            _botArrivals = _rules.HurryBotArrivals(_botArrivals, BotCount, waitingElapsed, _random);
+            Debug.Log($"[Match] Every expected Player is in after {waitingElapsed:0.0} s; the remaining Bots arrive by {LastArrival():0.0} s");
+        }
+
+        private float LastArrival()
+        {
+            return _botArrivals.Length > 0 ? _botArrivals[_botArrivals.Length - 1] : 0f;
         }
 
         private void SeatArrivals(NetworkRunner runner)
@@ -152,18 +163,18 @@ namespace PlowParty.Gameplay.Match.Network
             var slot = FirstFreeSlot();
             var token = ParticipantToken.TryFromBytes(runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
             var nickname = ParticipantProfiles.PlayerNickname(token?.Nickname, slot);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), false);
+            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), FreeColor(ParticipantColors.NoPreference), false);
             _playerSlots[player] = slot;
             _roster.Seat(slot, profile, token?.AccountId);
             _spawner.Spawn(runner, slot, player);
-            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname}");
+            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname} with Participant Color {profile.Color}");
         }
 
         private void SeatBot(NetworkRunner runner)
         {
             var slot = RandomFreeSlot();
             var nickname = ParticipantProfiles.BotNickname(_participants.BotNicknames, TakenNicknames(), slot, _random);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), true);
+            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), FreeColor(ParticipantColors.NoPreference), true);
             _botSlots[slot] = true;
             _roster.Seat(slot, profile, null);
             _spawner.Spawn(runner, slot, PlayerRef.None);
@@ -250,6 +261,25 @@ namespace PlowParty.Gameplay.Match.Network
                 if (_roster.TryGetProfile(slot, out var profile))
                 {
                     taken.Add(profile.Nickname);
+                }
+            }
+
+            return taken;
+        }
+
+        private int FreeColor(int preferred)
+        {
+            return ParticipantColors.Assign(preferred, TakenColors(), _participants.ColorCount, _random);
+        }
+
+        private List<int> TakenColors()
+        {
+            var taken = new List<int>(ParticipantRoster.MaxSlots);
+            for (var slot = 0; slot < ParticipantRoster.MaxSlots; slot++)
+            {
+                if (_roster.TryGetProfile(slot, out var profile))
+                {
+                    taken.Add(profile.Color);
                 }
             }
 

@@ -1,6 +1,6 @@
-using PlowParty.Gameplay.Hud.Simulation;
 using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Match.Simulation;
+using PlowParty.Gameplay.Participants.Config;
 using PlowParty.Gameplay.Participants.Network;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
@@ -13,36 +13,33 @@ namespace PlowParty.Gameplay.Hud.View
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private ScoreRowView[] _rows;
-        [SerializeField] private Text _nextMatchLabel;
-        [SerializeField] private Button _restartButton;
         [SerializeField] private Button _menuButton;
 
         private IMatchClock _match;
         private IMatchResults _results;
         private VehicleRegistry _vehicles;
         private ParticipantRoster _roster;
+        private ParticipantsConfig _participants;
         private IMatchExit _exit;
-        private int _shownSeconds = -1;
 
         [Inject]
-        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit)
+        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit, ParticipantsConfig participants)
         {
             _match = match;
             _results = results;
             _vehicles = vehicles;
             _roster = roster;
+            _participants = participants;
             _exit = exit;
         }
 
         private void Awake()
         {
-            _restartButton.onClick.AddListener(OnRestartClicked);
             _menuButton.onClick.AddListener(OnMenuClicked);
         }
 
         private void OnDestroy()
         {
-            _restartButton.onClick.RemoveListener(OnRestartClicked);
             _menuButton.onClick.RemoveListener(OnMenuClicked);
         }
 
@@ -56,8 +53,6 @@ namespace PlowParty.Gameplay.Hud.View
             }
 
             ShowPlacements();
-            ShowNextMatch(_results.WaitsForHost ? 0 : Mathf.Max(1, HudText.WholeSecondsLeft(_match.PhaseRemaining)));
-            _restartButton.gameObject.SetActive(_results.CanRequestRestart);
         }
 
         private void ShowPlacements()
@@ -72,25 +67,9 @@ namespace PlowParty.Gameplay.Hud.View
                 }
 
                 var placement = _results.GetPlacement(i);
-                _rows[i].Show(_roster.NicknameOf(placement.Slot), placement.Slot == localSlot, placement.Score);
+                _rows[i].Show(_roster.NicknameOf(placement.Slot), _participants.ParticipantColor(_roster.ColorOf(placement.Slot)), placement.Slot == localSlot, placement.Score);
                 _rows[i].ShowPlace(placement.Place);
             }
-        }
-
-        private void ShowNextMatch(int seconds)
-        {
-            if (seconds == _shownSeconds)
-            {
-                return;
-            }
-
-            _shownSeconds = seconds;
-            _nextMatchLabel.text = seconds > 0 ? HudText.NextMatchIn(seconds) : HudText.WaitingForHost;
-        }
-
-        private void OnRestartClicked()
-        {
-            _results.RequestRestart();
         }
 
         private void OnMenuClicked()

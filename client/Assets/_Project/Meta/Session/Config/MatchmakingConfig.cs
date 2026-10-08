@@ -1,3 +1,4 @@
+using Fusion;
 using UnityEngine;
 
 namespace PlowParty.Meta.Session.Config
@@ -7,18 +8,24 @@ namespace PlowParty.Meta.Session.Config
     {
         [SerializeField, Min(1f)] private float _searchSeconds = 10f;
         [SerializeField, Range(1, 6)] private int _maxSlots = 6;
-        [SerializeField, Min(1)] private int _roomCodeAttempts = 3;
-        [SerializeField, Min(0f)] private float _hostJitterMinSeconds = 0.3f;
-        [SerializeField, Min(0f)] private float _hostJitterMaxSeconds = 1.5f;
+        [SerializeField, Min(0f)] private float _minSecondsBeforeStart = 3f;
+        [SerializeField, Min(0.5f)] private float _listWaitSeconds = 3f;
+        [SerializeField, Min(0.1f)] private float _mergeCheckSeconds = 1f;
+        [SerializeField, Min(0f)] private float _moveGraceSeconds = 0.3f;
+        [SerializeField] private NetworkObject _lobbyLinkPrefab;
 
         public float SearchSeconds => _searchSeconds;
 
         public int MaxSlots => _maxSlots;
 
-        public int RoomCodeAttempts => _roomCodeAttempts;
+        public float MinSecondsBeforeStart => _minSecondsBeforeStart;
 
-        public float HostJitterMinSeconds => _hostJitterMinSeconds;
+        public float ListWaitSeconds => _listWaitSeconds;
 
-        public float HostJitterMaxSeconds => Mathf.Max(_hostJitterMinSeconds, _hostJitterMaxSeconds);
+        public float MergeCheckSeconds => _mergeCheckSeconds;
+
+        public float MoveGraceSeconds => _moveGraceSeconds;
+
+        public NetworkObject LobbyLinkPrefab => _lobbyLinkPrefab;
     }
 }

@@ -8,6 +8,7 @@ namespace PlowParty.Gameplay.Hud.Config
         [SerializeField, Min(0f)] private float _blizzardAnnouncementLead = 5f;
         [SerializeField, Min(0f)] private float _goBannerDuration = 1f;
         [SerializeField, Min(0f)] private float _loadBarHeight = 2.2f;
+        [SerializeField, Min(0f)] private float _nicknameLabelHeight = 2.9f;
         [SerializeField, Min(0f)] private float _scorePopupInterval = 0.3f;
         [SerializeField, Min(0.1f)] private float _scorePopupDuration = 1.2f;
         [SerializeField, Min(0f)] private float _scorePopupRise = 120f;
@@ -18,6 +19,8 @@ namespace PlowParty.Gameplay.Hud.Config
         public float GoBannerDuration => _goBannerDuration;
 
         public float LoadBarHeight => _loadBarHeight;
+
+        public float NicknameLabelHeight => _nicknameLabelHeight;
 
         public float ScorePopupInterval => _scorePopupInterval;
 

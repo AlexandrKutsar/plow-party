@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using PlowParty.Meta.Lobby.Simulation;
 using PlowParty.Meta.Lobby.View;
+using PlowParty.Meta.Party;
 using PlowParty.Meta.Session;
-using PlowParty.Meta.Session.Simulation;
+using PlowParty.Shared;
 using VContainer.Unity;
 
 namespace PlowParty.Meta.Lobby
@@ -12,118 +14,184 @@ namespace PlowParty.Meta.Lobby
     public sealed class LobbyPresenter : IStartable, ITickable, IDisposable
     {
         private readonly Matchmaker _matchmaker;
+        private readonly PartyService _party;
         private readonly PlayMenuView _playMenu;
-        private readonly LobbyPanelView _lobbyPanel;
+        private readonly PartyPanelView _partyPanel;
+        private readonly SearchView _search;
+        private readonly PodiumView _podium;
+        private readonly MemberLooks _looks;
+        private readonly List<MemberLook> _lineup = new List<MemberLook>();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
-        private int _shownPlayers = -1;
         private int _shownSeconds = -1;
 
-        public LobbyPresenter(Matchmaker matchmaker, PlayMenuView playMenu, LobbyPanelView lobbyPanel)
+        public LobbyPresenter(
+            Matchmaker matchmaker,
+            PartyService party,
+            PlayMenuView playMenu,
+            PartyPanelView partyPanel,
+            SearchView search,
+            PodiumView podium,
+            MemberLooks looks)
         {
             _matchmaker = matchmaker;
+            _party = party;
             _playMenu = playMenu;
-            _lobbyPanel = lobbyPanel;
+            _partyPanel = partyPanel;
+            _search = search;
+            _podium = podium;
+            _looks = looks;
         }
 
         public void Start()
         {
             _matchmaker.Changed += Refresh;
-            _playMenu.QuickPlayRequested += OnQuickPlayRequested;
-            _playMenu.CreateRoomRequested += OnCreateRoomRequested;
+            _party.Changed += Refresh;
+            _playMenu.QuickPlayRequested += OnSearchRequested;
+            _playMenu.CreatePartyRequested += OnCreatePartyRequested;
             _playMenu.JoinRequested += OnJoinRequested;
-            _lobbyPanel.StartRequested += _matchmaker.RequestStart;
-            _lobbyPanel.LeaveRequested += OnLeaveRequested;
+            _partyPanel.RemoveRequested += OnRemoveRequested;
+            _partyPanel.ModeRequested += OnModeRequested;
+            _partyPanel.ReadyRequested += OnReadyRequested;
+            _partyPanel.SearchRequested += OnSearchRequested;
+            _partyPanel.LeaveRequested += OnLeaveRequested;
+            _search.StopRequested += OnStopRequested;
             Refresh();
         }
 
         public void Tick()
         {
-            if (_matchmaker.Stage != LobbyStage.Gathering)
+            if (_matchmaker.Stage == LobbyStage.Searching)
             {
-                return;
-            }
-
-            ShowPlayers();
-            if (_matchmaker.Mode == LobbyMode.QuickPlay)
-            {
-                ShowSearchTimer();
+                ShowStopwatch();
             }
         }
 
         public void Dispose()
         {
             _matchmaker.Changed -= Refresh;
-            _playMenu.QuickPlayRequested -= OnQuickPlayRequested;
-            _playMenu.CreateRoomRequested -= OnCreateRoomRequested;
+            _party.Changed -= Refresh;
+            _playMenu.QuickPlayRequested -= OnSearchRequested;
+            _playMenu.CreatePartyRequested -= OnCreatePartyRequested;
             _playMenu.JoinRequested -= OnJoinRequested;
-            _lobbyPanel.StartRequested -= _matchmaker.RequestStart;
-            _lobbyPanel.LeaveRequested -= OnLeaveRequested;
+            _partyPanel.RemoveRequested -= OnRemoveRequested;
+            _partyPanel.ModeRequested -= OnModeRequested;
+            _partyPanel.ReadyRequested -= OnReadyRequested;
+            _partyPanel.SearchRequested -= OnSearchRequested;
+            _partyPanel.LeaveRequested -= OnLeaveRequested;
+            _search.StopRequested -= OnStopRequested;
             _lifetime.Cancel();
             _lifetime.Dispose();
         }
 
         private void Refresh()
         {
-            var stage = _matchmaker.Stage;
-            var idle = stage == LobbyStage.Idle;
-            _playMenu.Show(idle, _matchmaker.Failure);
-            _lobbyPanel.SetVisible(!idle);
-            if (idle)
+            var screen = LobbyScreens.For(_party.Stage, _matchmaker.Stage);
+            _playMenu.Show(screen == LobbyScreen.Solo, _party.Failure ?? _matchmaker.Failure);
+            _partyPanel.SetVisible(screen == LobbyScreen.Party);
+            _search.SetVisible(screen == LobbyScreen.Search);
+            if (screen == LobbyScreen.Party)
             {
-                return;
+                RefreshParty();
+            }
+            else if (screen == LobbyScreen.Search)
+            {
+                RefreshSearch();
             }
 
-            var gathering = stage == LobbyStage.Gathering;
-            var canStart = gathering && _matchmaker.IsHost && _matchmaker.Mode == LobbyMode.Room;
-            _lobbyPanel.ShowTitle(LobbyText.Title(stage, _matchmaker.Mode, _matchmaker.RoomCode), canStart, stage != LobbyStage.Starting);
-            _lobbyPanel.ShowStatus(LobbyText.Status(stage, _matchmaker.Mode, _matchmaker.IsHost, _matchmaker.SecondsLeft));
-            _shownPlayers = -1;
+            RefreshPodium();
+        }
+
+        private void RefreshParty()
+        {
+            var state = PartyPanelState.For(_party.Stage, _party.Code, _party.Party, _party.LocalId, _matchmaker.CanSearch);
+            _partyPanel.Show(state);
+            for (var i = 0; i < _partyPanel.RowCount; i++)
+            {
+                if (i < state.Rows.Count)
+                {
+                    var row = state.Rows[i];
+                    _partyPanel.ShowRow(i, row, _looks.LookOf(row.MemberId).Color);
+                }
+                else
+                {
+                    _partyPanel.HideRow(i);
+                }
+            }
+        }
+
+        private void RefreshSearch()
+        {
             _shownSeconds = -1;
-            ShowPlayers();
+            _search.Show(LobbyText.SearchTitle(), LobbyText.StopSearch(), _matchmaker.CanStopSearch);
+            _search.ShowStopwatch(LobbyText.SearchStatus(_matchmaker.Stage, _matchmaker.SearchSeconds));
         }
 
-        private void ShowPlayers()
+        private void RefreshPodium()
         {
-            var players = _matchmaker.PlayerCount;
-            if (players == _shownPlayers)
+            _lineup.Clear();
+            foreach (var member in _party.Party.Members)
             {
-                return;
+                _lineup.Add(_looks.LookOf(member.Id));
             }
 
-            _shownPlayers = players;
-            _lobbyPanel.ShowPlayers(_matchmaker.Stage == LobbyStage.Connecting ? string.Empty : LobbyText.Players(players, _matchmaker.MaxSlots));
+            if (_lineup.Count == 0)
+            {
+                _lineup.Add(_looks.LookOf(MemberLooks.SoloId));
+            }
+
+            _podium.Show(_lineup);
         }
 
-        private void ShowSearchTimer()
+        private void ShowStopwatch()
         {
-            var seconds = LobbyText.WholeSeconds(_matchmaker.SecondsLeft);
+            var seconds = LobbyText.WholeSeconds(_matchmaker.SearchSeconds);
             if (seconds == _shownSeconds)
             {
                 return;
             }
 
             _shownSeconds = seconds;
-            _lobbyPanel.ShowStatus(LobbyText.SearchTimer(seconds));
+            _search.ShowStopwatch(LobbyText.Stopwatch(_matchmaker.SearchSeconds));
         }
 
-        private void OnQuickPlayRequested()
+        private void OnSearchRequested()
         {
-            _matchmaker.QuickPlayAsync(_lifetime.Token).Forget();
+            _matchmaker.Search();
         }
 
-        private void OnCreateRoomRequested()
+        private void OnStopRequested()
         {
-            _matchmaker.CreateRoomAsync(_lifetime.Token).Forget();
+            _matchmaker.StopSearch();
+        }
+
+        private void OnCreatePartyRequested()
+        {
+            _party.CreateAsync(_lifetime.Token).Forget();
         }
 
         private void OnJoinRequested(string code)
         {
-            _matchmaker.JoinRoomAsync(code, _lifetime.Token).Forget();
+            _party.JoinAsync(code, _lifetime.Token).Forget();
+        }
+
+        private void OnRemoveRequested(int memberId)
+        {
+            _party.Remove(memberId);
+        }
+
+        private void OnModeRequested(PartyMode mode)
+        {
+            _party.SetMode(mode);
+        }
+
+        private void OnReadyRequested()
+        {
+            _party.SetReady(!_party.IsReady);
         }
 
         private void OnLeaveRequested()
         {
-            _matchmaker.LeaveAsync().Forget();
+            _party.LeaveAsync().Forget();
         }
     }
 }

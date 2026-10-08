@@ -18,6 +18,16 @@ def _object(name, mesh_builder, location, collection, parent):
     return obj
 
 
+def join(objects, name):
+    target = objects[0]
+    if len(objects) > 1:
+        with bpy.context.temp_override(active_object=target, selected_editable_objects=objects, selected_objects=objects):
+            bpy.ops.object.join()
+    target.name = name
+    target.data.name = name
+    return target
+
+
 def _chamfer(bm, amount):
     if amount > 0:
         bmesh.ops.bevel(bm, geom=list(bm.edges), offset=amount, segments=1, affect="EDGES", profile=0.5)

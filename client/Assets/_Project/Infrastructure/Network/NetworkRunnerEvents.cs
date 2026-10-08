@@ -19,6 +19,8 @@ namespace PlowParty.Infrastructure.Network
 
         public event Action<NetworkRunner, ShutdownReason> ShutDown;
 
+        public event Action<NetworkRunner, List<SessionInfo>> SessionListUpdated;
+
         void INetworkRunnerCallbacks.OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
             PlayerJoined?.Invoke(runner, player);
@@ -74,6 +76,7 @@ namespace PlowParty.Infrastructure.Network
 
         void INetworkRunnerCallbacks.OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
         {
+            SessionListUpdated?.Invoke(runner, sessionList);
         }
 
         void INetworkRunnerCallbacks.OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data)

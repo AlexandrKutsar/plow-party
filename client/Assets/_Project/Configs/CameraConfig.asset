@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99186068be992bb4994a5ae3fba856a9, type: 3}
   m_Name: CameraConfig
   m_EditorClassIdentifier: 
-  _defaultPreset: 1
   _overview:
     _pitch: 60
     _yaw: 0

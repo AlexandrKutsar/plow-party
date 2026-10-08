@@ -6,12 +6,6 @@ namespace PlowParty.Gameplay.Match.Network
     {
         int PlacementCount { get; }
 
-        bool WaitsForHost { get; }
-
-        bool CanRequestRestart { get; }
-
         MatchPlacement GetPlacement(int index);
-
-        void RequestRestart();
     }
 }
