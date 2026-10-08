@@ -4,7 +4,7 @@ namespace PlowParty.Shared
 {
     public readonly struct MatchmakingResult
     {
-        public MatchmakingResult(int expectedHumans, int maxSlots)
+        public MatchmakingResult(int expectedHumans, int maxSlots, PartyMode mode = PartyMode.QuickPlay)
         {
             if (maxSlots < 1)
             {
@@ -18,9 +18,11 @@ namespace PlowParty.Shared
 
             ExpectedHumans = expectedHumans;
             MaxSlots = maxSlots;
+            Mode = mode;
         }
 
         public int ExpectedHumans { get; }
         public int MaxSlots { get; }
+        public PartyMode Mode { get; }
     }
 }

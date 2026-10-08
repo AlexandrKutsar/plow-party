@@ -61,6 +61,31 @@ namespace PlowParty.Meta.Party.Tests
         }
 
         [Test]
+        public void Next_PartyStillInItsMatch_KeepsWaitingToRejoin()
+        {
+            Assert.That(Next(PartyRole.Member, PartyReturnStep.Join, SessionStartOutcome.Refused, 12f), Is.EqualTo(PartyReturnStep.Join));
+        }
+
+        [Test]
+        public void Next_LeaderFindsTheOldMatchStillClosing_KeepsWaitingToRejoin()
+        {
+            Assert.That(Next(PartyRole.Leader, PartyReturnStep.Join, SessionStartOutcome.Refused, 2f), Is.EqualTo(PartyReturnStep.Join));
+        }
+
+        [Test]
+        public void RestartsWait_PartyStillInItsMatch_IsTrue()
+        {
+            Assert.That(PartyReturnRules.RestartsWait(SessionStartOutcome.Refused), Is.True);
+        }
+
+        [TestCase(SessionStartOutcome.NotFound)]
+        [TestCase(SessionStartOutcome.NameTaken)]
+        public void RestartsWait_PartyGoneOrTaken_IsFalse(SessionStartOutcome outcome)
+        {
+            Assert.That(PartyReturnRules.RestartsWait(outcome), Is.False);
+        }
+
+        [Test]
         public void RoleAfterLeaderLeft_LongestStandingMember_Leads()
         {
             var party = PartyOf(Anna, Boris, Vera);

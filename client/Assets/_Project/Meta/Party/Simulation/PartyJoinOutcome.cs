@@ -5,5 +5,6 @@ namespace PlowParty.Meta.Party.Simulation
         Joined,
         AlreadyMember,
         Full,
+        Guest,
     }
 }

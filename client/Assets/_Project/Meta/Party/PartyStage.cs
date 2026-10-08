@@ -5,5 +5,6 @@ namespace PlowParty.Meta.Party
         None,
         Connecting,
         InParty,
+        Away,
     }
 }

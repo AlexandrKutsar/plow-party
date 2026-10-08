@@ -26,6 +26,8 @@ namespace PlowParty.Meta.Party.Network
 
         [Networked] public PartyMode Mode { get; private set; }
 
+        [Networked] public NetworkBool IsSearching { get; private set; }
+
         [Networked] public int Revision { get; private set; }
 
         [Inject]
@@ -89,14 +91,16 @@ namespace PlowParty.Meta.Party.Network
                 return;
             }
 
-            if (Admit(player) == PartyJoinOutcome.Full)
+            switch (Admit(player))
             {
-                Debug.LogWarning($"[Party] Player {player} refused: the Party is full");
-                Runner.Disconnect(player);
-                return;
+                case PartyJoinOutcome.Full:
+                    Debug.LogWarning($"[Party] Player {player} refused: the Party is full");
+                    Runner.Disconnect(player);
+                    return;
+                case PartyJoinOutcome.Joined:
+                    Publish();
+                    return;
             }
-
-            Publish();
         }
 
         public void PlayerLeft(PlayerRef player)
@@ -118,7 +122,7 @@ namespace PlowParty.Meta.Party.Network
                 _readMembers.Add(new PartyMember(seat.Player.RawEncoded, seat.Nickname.ToString(), seat.IsReady));
             }
 
-            return PartyState.Restore(capacity, Mode, _readMembers);
+            return PartyState.Restore(capacity, Mode, _readMembers, IsSearching);
         }
 
         public void RequestReady(bool isReady)
@@ -126,9 +130,22 @@ namespace PlowParty.Meta.Party.Network
             RPC_SetReady(isReady);
         }
 
+        public void RequestStartSearch()
+        {
+            RPC_StartSearch();
+        }
+
         public void RequestStopSearch()
         {
             RPC_StopSearch();
+        }
+
+        public void RequestMoveTo(string sessionName)
+        {
+            if (HasStateAuthority)
+            {
+                RPC_MoveTo(sessionName);
+            }
         }
 
         public void RequestRemove(int memberId)
@@ -160,6 +177,22 @@ namespace PlowParty.Meta.Party.Network
 
             _hostState.StopSearch(info.Source.RawEncoded);
             Publish();
+            DisconnectGuests();
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        private void RPC_StartSearch(RpcInfo info = default)
+        {
+            if (_hostState != null && _hostState.StartSearch(info.Source.RawEncoded))
+            {
+                Publish();
+            }
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_MoveTo(NetworkString<_64> sessionName)
+        {
+            _links.NotifyMoveRequested(sessionName.ToString());
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
@@ -191,6 +224,17 @@ namespace PlowParty.Meta.Party.Network
             _links.NotifyRemoved();
         }
 
+        private void DisconnectGuests()
+        {
+            foreach (var player in Runner.ActivePlayers)
+            {
+                if (player != Runner.LocalPlayer && !_hostState.Contains(player.RawEncoded))
+                {
+                    Runner.Disconnect(player);
+                }
+            }
+        }
+
         private PartyJoinOutcome Admit(PlayerRef player)
         {
             var token = ParticipantToken.TryFromBytes(Runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
@@ -207,6 +251,7 @@ namespace PlowParty.Meta.Party.Network
 
             MemberCount = members.Count;
             Mode = _hostState.Mode;
+            IsSearching = _hostState.IsSearching;
             Revision++;
         }
 

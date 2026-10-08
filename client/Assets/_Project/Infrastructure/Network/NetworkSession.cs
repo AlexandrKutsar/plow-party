@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Fusion;
@@ -139,6 +140,29 @@ namespace PlowParty.Infrastructure.Network
 
             _runner.SessionInfo.IsOpen = false;
             _runner.SessionInfo.IsVisible = false;
+        }
+
+        public void OpenAsLobby(Dictionary<string, SessionProperty> properties)
+        {
+            if (!IsHost)
+            {
+                return;
+            }
+
+            _runner.SessionInfo.UpdateCustomProperties(properties);
+            _runner.SessionInfo.IsOpen = true;
+            _runner.SessionInfo.IsVisible = true;
+        }
+
+        public void Hide(Dictionary<string, SessionProperty> properties)
+        {
+            if (!IsHost)
+            {
+                return;
+            }
+
+            _runner.SessionInfo.IsVisible = false;
+            _runner.SessionInfo.UpdateCustomProperties(properties);
         }
 
         public void LoadScene(string sceneName)

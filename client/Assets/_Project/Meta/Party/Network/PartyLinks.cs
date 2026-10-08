@@ -7,6 +7,8 @@ namespace PlowParty.Meta.Party.Network
     {
         public event Action Removed;
 
+        public event Action<string> MoveRequested;
+
         public PartyLink Current { get; private set; }
 
         public void Spawn(NetworkRunner runner, NetworkObject prefab)
@@ -28,6 +30,11 @@ namespace PlowParty.Meta.Party.Network
             {
                 Current = null;
             }
+        }
+
+        public void NotifyMoveRequested(string sessionName)
+        {
+            MoveRequested?.Invoke(sessionName);
         }
 
         public void NotifyRemoved()

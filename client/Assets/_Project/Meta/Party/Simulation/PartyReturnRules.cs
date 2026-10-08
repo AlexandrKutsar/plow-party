@@ -16,12 +16,22 @@ namespace PlowParty.Meta.Party.Simulation
                 return PartyReturnStep.Stop;
             }
 
+            if (RestartsWait(outcome))
+            {
+                return PartyReturnStep.Join;
+            }
+
             if (last == PartyReturnStep.Host)
             {
                 return outcome == SessionStartOutcome.NameTaken ? PartyReturnStep.Join : PartyReturnStep.Host;
             }
 
             return role == PartyRole.Leader || elapsedSeconds >= rejoinSeconds ? PartyReturnStep.Host : PartyReturnStep.Join;
+        }
+
+        public static bool RestartsWait(SessionStartOutcome outcome)
+        {
+            return outcome == SessionStartOutcome.Refused;
         }
 
         public static PartyRole RoleAfterLeaderLeft(PartyState lastKnown, int localId)

@@ -16,7 +16,6 @@ namespace PlowParty.Meta.Lobby
         private readonly PlayMenuView _playMenu;
         private readonly LobbyPanelView _lobbyPanel;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
-        private int _shownPlayers = -1;
         private int _shownSeconds = -1;
 
         public LobbyPresenter(Matchmaker matchmaker, PartyService party, PlayMenuView playMenu, LobbyPanelView lobbyPanel)
@@ -43,13 +42,10 @@ namespace PlowParty.Meta.Lobby
 
         public void Tick()
         {
-            if (InParty || _matchmaker.Stage != LobbyStage.Gathering)
+            if (_matchmaker.Stage == LobbyStage.Searching)
             {
-                return;
+                ShowStopwatch();
             }
-
-            ShowPlayers(_matchmaker.PlayerCount);
-            ShowSearchTimer();
         }
 
         public void Dispose()
@@ -67,7 +63,8 @@ namespace PlowParty.Meta.Lobby
 
         private void Refresh()
         {
-            var idle = !InParty && _matchmaker.Stage == LobbyStage.Idle;
+            var searching = _matchmaker.Stage != LobbyStage.Idle;
+            var idle = !InParty && !searching;
             _playMenu.Show(idle, _party.Failure ?? _matchmaker.Failure);
             _lobbyPanel.SetVisible(!idle);
             if (idle)
@@ -75,63 +72,49 @@ namespace PlowParty.Meta.Lobby
                 return;
             }
 
-            _shownPlayers = -1;
             _shownSeconds = -1;
-            if (InParty)
+            if (searching)
             {
-                RefreshParty();
+                RefreshSearch();
             }
             else
             {
-                RefreshSearch();
+                RefreshParty();
             }
         }
 
         private void RefreshParty()
         {
-            var connecting = _party.Stage == PartyStage.Connecting;
-            var starting = _matchmaker.Stage == LobbyStage.Starting;
-            _lobbyPanel.ShowTitle(LobbyText.PartyTitle(connecting, _party.Code), !starting);
-            _lobbyPanel.ShowStatus(starting ? LobbyText.PartyStarting() : LobbyText.PartyMembers(_party.Party));
-            _lobbyPanel.ShowAction(!connecting && !starting, LobbyText.PartyAction(_party.IsLeader, _party.IsReady), !_party.IsLeader || _party.CanStart);
-            ShowPlayers(connecting ? -1 : _party.Party.Count);
+            var connecting = _party.Stage != PartyStage.InParty;
+            _lobbyPanel.ShowTitle(LobbyText.PartyTitle(connecting, _party.Code), true);
+            _lobbyPanel.ShowStatus(LobbyText.PartyMembers(_party.Party));
+            _lobbyPanel.ShowAction(!connecting, LobbyText.PartyAction(_party.IsLeader, _party.IsReady), !_party.IsLeader || _matchmaker.CanSearch);
+            _lobbyPanel.ShowPlayers(connecting ? string.Empty : LobbyText.PartySize(_party.Party.Count, _matchmaker.MaxSlots));
         }
 
         private void RefreshSearch()
         {
-            var stage = _matchmaker.Stage;
-            _lobbyPanel.ShowTitle(LobbyText.Title(stage), stage != LobbyStage.Starting);
-            _lobbyPanel.ShowStatus(LobbyText.Status(stage, _matchmaker.SecondsLeft));
-            _lobbyPanel.ShowAction(false, string.Empty, false);
-            ShowPlayers(stage == LobbyStage.Connecting ? -1 : _matchmaker.PlayerCount);
+            _lobbyPanel.ShowTitle(LobbyText.SearchTitle(), false);
+            _lobbyPanel.ShowStatus(LobbyText.SearchStatus(_matchmaker.Stage, _matchmaker.SearchSeconds));
+            _lobbyPanel.ShowAction(_matchmaker.CanStopSearch, LobbyText.StopSearch(), true);
+            _lobbyPanel.ShowPlayers(string.Empty);
         }
 
-        private void ShowPlayers(int players)
+        private void ShowStopwatch()
         {
-            if (players == _shownPlayers)
-            {
-                return;
-            }
-
-            _shownPlayers = players;
-            _lobbyPanel.ShowPlayers(players < 0 ? string.Empty : LobbyText.Players(players, _matchmaker.MaxSlots));
-        }
-
-        private void ShowSearchTimer()
-        {
-            var seconds = LobbyText.WholeSeconds(_matchmaker.SecondsLeft);
+            var seconds = LobbyText.WholeSeconds(_matchmaker.SearchSeconds);
             if (seconds == _shownSeconds)
             {
                 return;
             }
 
             _shownSeconds = seconds;
-            _lobbyPanel.ShowStatus(LobbyText.SearchTimer(seconds));
+            _lobbyPanel.ShowStatus(LobbyText.Stopwatch(_matchmaker.SearchSeconds));
         }
 
         private void OnQuickPlayRequested()
         {
-            _matchmaker.QuickPlayAsync(_lifetime.Token).Forget();
+            _matchmaker.Search();
         }
 
         private void OnCreatePartyRequested()
@@ -146,9 +129,13 @@ namespace PlowParty.Meta.Lobby
 
         private void OnActionRequested()
         {
-            if (_party.IsLeader)
+            if (_matchmaker.CanStopSearch)
             {
-                _matchmaker.StartPartyMatch();
+                _matchmaker.StopSearch();
+            }
+            else if (_party.IsLeader)
+            {
+                _matchmaker.Search();
             }
             else
             {
@@ -161,10 +148,6 @@ namespace PlowParty.Meta.Lobby
             if (InParty)
             {
                 _party.LeaveAsync().Forget();
-            }
-            else
-            {
-                _matchmaker.LeaveAsync().Forget();
             }
         }
     }

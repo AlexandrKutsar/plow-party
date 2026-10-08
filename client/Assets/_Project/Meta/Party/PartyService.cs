@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -10,6 +9,7 @@ using PlowParty.Meta.Account;
 using PlowParty.Meta.Party.Config;
 using PlowParty.Meta.Party.Network;
 using PlowParty.Meta.Party.Simulation;
+using PlowParty.Shared;
 using VContainer.Unity;
 using Random = System.Random;
 
@@ -24,8 +24,6 @@ namespace PlowParty.Meta.Party
         public const string InMatchText = "Матч уже начался";
         public const string ConnectFailedText = "Не удалось подключиться";
 
-        private const string PoolProperty = "pool";
-
         private readonly NetworkSession _session;
         private readonly AccountService _account;
         private readonly MatchmakingPool _pool;
@@ -35,6 +33,7 @@ namespace PlowParty.Meta.Party
         private readonly Random _random = new Random();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private int _shownRevision = -1;
+        private bool _restoreReady;
         private bool _disposed;
 
         public PartyService(NetworkSession session, AccountService account, MatchmakingPool pool, PartyConfig config, PartyMemory memory, PartyLinks links)
@@ -50,6 +49,8 @@ namespace PlowParty.Meta.Party
 
         public event Action Changed;
 
+        public event Action<string> MoveRequested;
+
         public PartyStage Stage { get; private set; }
 
         public string Code { get; private set; }
@@ -63,6 +64,8 @@ namespace PlowParty.Meta.Party
         public bool IsLeader => Stage == PartyStage.InParty && Party.IsLeader(LocalId);
 
         public bool CanStart => IsLeader && Party.CanStart;
+
+        public bool IsSearching => Stage == PartyStage.InParty && Party.IsSearching;
 
         public bool IsReady
         {
@@ -84,6 +87,7 @@ namespace PlowParty.Meta.Party
         {
             _session.Ended += OnSessionEnded;
             _links.Removed += OnRemoved;
+            _links.MoveRequested += OnMoveRequested;
             if (_memory.HasParty)
             {
                 ReturnAsync(_memory.Code, _memory.Role).Forget();
@@ -100,6 +104,7 @@ namespace PlowParty.Meta.Party
 
             _shownRevision = link.Revision;
             Party = link.Read(_config.Capacity);
+            RestoreReady(link);
             Remember();
             Changed?.Invoke();
         }
@@ -109,6 +114,8 @@ namespace PlowParty.Meta.Party
             _disposed = true;
             _session.Ended -= OnSessionEnded;
             _links.Removed -= OnRemoved;
+            _links.MoveRequested -= OnMoveRequested;
+            _memory.ForgetReady();
             _lifetime.Cancel();
             _lifetime.Dispose();
         }
@@ -190,11 +197,51 @@ namespace PlowParty.Meta.Party
             }
         }
 
+        public void StartSearch()
+        {
+            if (CanStart)
+            {
+                _links.Current?.RequestStartSearch();
+            }
+        }
+
         public void StopSearch()
         {
             if (Stage == PartyStage.InParty)
             {
                 _links.Current?.RequestStopSearch();
+            }
+            else if (Stage == PartyStage.Away)
+            {
+                _memory.ForgetReady();
+            }
+        }
+
+        public void MoveTo(string sessionName)
+        {
+            if (IsLeader)
+            {
+                _links.Current?.RequestMoveTo(sessionName);
+            }
+        }
+
+        public void LeaveForLobby()
+        {
+            if (Stage != PartyStage.InParty)
+            {
+                return;
+            }
+
+            Remember();
+            UnityEngine.Debug.Log($"[Party] Party {Code} moves to another Lobby");
+            Enter(PartyStage.Away, null);
+        }
+
+        public void ReturnFromLobby()
+        {
+            if (Stage == PartyStage.Away && _memory.HasParty)
+            {
+                ReturnAsync(_memory.Code, _memory.Role).Forget();
             }
         }
 
@@ -246,6 +293,11 @@ namespace PlowParty.Meta.Party
                     return;
                 }
 
+                if (PartyReturnRules.RestartsWait(outcome))
+                {
+                    clock.Restart();
+                }
+
                 step = PartyReturnRules.Next(role, step, outcome, (float)clock.Elapsed.TotalSeconds, _config.RejoinSeconds, _config.GiveUpSeconds);
                 if (step == PartyReturnStep.Stop)
                 {
@@ -269,7 +321,7 @@ namespace PlowParty.Meta.Party
             {
                 Mode = hosting ? GameMode.Host : GameMode.Client,
                 SessionName = PartyCode.SessionName(_pool.Name, code),
-                Properties = hosting ? new Dictionary<string, SessionProperty> { [PoolProperty] = _pool.Name } : null,
+                Properties = hosting ? LobbyProperties.Hidden(_pool.Name) : null,
                 ConnectionToken = _account.ToParticipantToken().ToBytes(),
                 MaxPlayers = _config.Capacity,
                 IsVisible = false,
@@ -297,12 +349,13 @@ namespace PlowParty.Meta.Party
             LocalId = _session.Runner.LocalPlayer.RawEncoded;
             Party = new PartyState(_config.Capacity, _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay);
             _shownRevision = -1;
+            _restoreReady = !hosting && _memory.HasParty && _memory.IsReady;
             if (hosting)
             {
                 _links.Spawn(_session.Runner, _config.PartyLinkPrefab);
             }
 
-            _memory.Remember(code, hosting ? PartyRole.Leader : PartyRole.Member, Party.Mode);
+            _memory.Remember(code, hosting ? PartyRole.Leader : PartyRole.Member, Party.Mode, _restoreReady);
             UnityEngine.Debug.Log($"[Party] In Party {code} as {(hosting ? PartyRole.Leader : PartyRole.Member)}");
             Enter(PartyStage.InParty, null);
         }
@@ -311,7 +364,29 @@ namespace PlowParty.Meta.Party
         {
             if (Code != null)
             {
-                _memory.Remember(Code, IsLeader ? PartyRole.Leader : PartyRole.Member, Party.Mode);
+                _memory.Remember(Code, IsLeader ? PartyRole.Leader : PartyRole.Member, Party.Mode, IsReady);
+            }
+        }
+
+        private void RestoreReady(PartyLink link)
+        {
+            if (!_restoreReady || !Party.Contains(LocalId))
+            {
+                return;
+            }
+
+            _restoreReady = false;
+            if (!IsReady && !IsLeader)
+            {
+                link.RequestReady(true);
+            }
+        }
+
+        private void OnMoveRequested(string sessionName)
+        {
+            if (Stage == PartyStage.InParty && !IsLeader)
+            {
+                MoveRequested?.Invoke(sessionName);
             }
         }
 
