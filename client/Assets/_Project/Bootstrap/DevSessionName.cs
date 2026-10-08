@@ -8,6 +8,7 @@ namespace PlowParty.Bootstrap
 
         private const string Prefix = "plow-party-dev";
         private const string VirtualPlayerFolder = "/Library/VP/";
+        private const string AgentWorktreeFolder = "/.claude/worktrees/";
         private const uint FnvOffset = 2166136261;
         private const uint FnvPrime = 16777619;
 
@@ -18,7 +19,13 @@ namespace PlowParty.Bootstrap
                 return overrideName;
             }
 
-            return isEditor ? $"{Prefix}-{Hash(ProjectRoot(dataPath)):x8}" : Prefix;
+            if (!isEditor)
+            {
+                return Prefix;
+            }
+
+            var root = ProjectRoot(dataPath);
+            return root.Contains(AgentWorktreeFolder) ? $"{Prefix}-{Hash(root):x8}" : Prefix;
         }
 
         private static string ProjectRoot(string dataPath)

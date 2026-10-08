@@ -9,7 +9,7 @@ Matchmaking in the Menu: Quick Play, Room Codes, the Lobby's search timer, start
 - `RoomCode` (`Simulation/`) — 5 symbols from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no I, L, O, 0, 1); `Generate(Random)`, `TryParse` (trims, upper-cases, rejects anything outside the alphabet).
 - `LobbyRules` (`Simulation/`) — `ShouldStart` (Quick Play: timer over or Session full; Room: Host pressed Start), `MatchmakingResultFor` (clamps to 1..MaxSlots), `SecondsLeft` from a Unix-millisecond deadline, `FoundNothingToJoin` (`NotFound` or `Refused`), `HostJitterSeconds(roll, min, max)`.
 - `MatchmakingConfig` — search seconds (10), max Slots (6), Room Code attempts, Quick Play host jitter (0.3–1.5 s); asset `_Project/Configs/MatchmakingConfig.asset`.
-- `MatchmakingPool` — the pool name every Session carries as its `pool` property: `<DevSessionName>-<Application.version>`, built by `RootLifetimeScope`, so Editors of different worktrees never match each other and builds of different versions never mix.
+- `MatchmakingPool` — the pool name every Session carries as its `pool` property: `<DevSessionName>-<Application.version>`, built by `RootLifetimeScope`, so Editors on agent worktrees never match each other while the main checkout's Editor matches phones and builds of different versions never mix.
 
 ## Rules worth knowing
 
