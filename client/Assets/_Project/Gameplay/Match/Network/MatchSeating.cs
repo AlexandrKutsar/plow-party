@@ -32,6 +32,7 @@ namespace PlowParty.Gameplay.Match.Network
         private float[] _botArrivals = Array.Empty<float>();
         private bool _isPlanned;
         private bool _isClosed;
+        private bool _isHurried;
 
         public MatchSeating(
             NetworkRunnerEvents events,
@@ -108,6 +109,7 @@ namespace PlowParty.Gameplay.Match.Network
                 return;
             }
 
+            HurryBotsOnceEveryoneIsIn(phaseElapsed);
             var bots = _rules.BotsToSeat(_plan, PlayerCount, BotCount, phaseElapsed, _botArrivals);
             for (var i = 0; i < bots; i++)
             {
@@ -121,12 +123,21 @@ namespace PlowParty.Gameplay.Match.Network
             Debug.Log($"[Match] Countdown starts with {PlayerCount} Player(s) and {BotCount} Bot(s)");
         }
 
-        public void FillFreeSlots(NetworkRunner runner)
+        private void HurryBotsOnceEveryoneIsIn(float waitingElapsed)
         {
-            while (_isPlanned && WaitingRules.HasFreeSlot(_plan, PlayerCount, BotCount))
+            if (_isHurried || !WaitingRules.AllExpectedPlayersSeated(_plan, PlayerCount))
             {
-                SeatBot(runner);
+                return;
             }
+
+            _isHurried = true;
+            _botArrivals = _rules.HurryBotArrivals(_botArrivals, BotCount, waitingElapsed, _random);
+            Debug.Log($"[Match] Every expected Player is in after {waitingElapsed:0.0} s; the remaining Bots arrive by {LastArrival():0.0} s");
+        }
+
+        private float LastArrival()
+        {
+            return _botArrivals.Length > 0 ? _botArrivals[_botArrivals.Length - 1] : 0f;
         }
 
         private void SeatArrivals(NetworkRunner runner)

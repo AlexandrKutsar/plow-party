@@ -96,7 +96,7 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Lobby | `_Project/Meta/Lobby/` | active | Menu scene's play and Lobby panels: Quick Play, Room Code entry, search timer, Players found, Start/Leave |
 | Session | `_Project/Meta/Session/` | active | Matchmaking in the Menu (Quick Play, Room Codes), Matchmaking Result, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016) |
 | Tournament | `_Project/Meta/Tournament/` | active | "Турнир дня" panel (top, around me, Medal) and Match reporting: register, confirm, Vote (GDD 9.2–9.3, ADR-0017) |
-| Match | `_Project/Gameplay/Match/` | active | Match state machine WaitingForPlayers → Countdown → Playing → Results → next Match, seating Players and Bots into Slots, Match clock, input lock, placement table (GDD 3.2–3.3) |
+| Match | `_Project/Gameplay/Match/` | active | Match state machine WaitingForPlayers → Countdown → Playing → Results (one Match per Session), seating Players and Bots into Slots, Match clock, input lock, placement table (GDD 3.2–3.3) |
 | Participants | `_Project/Gameplay/Participants/` | active | Networked Participant profile per Slot (Nickname, Critter Species, Bot or Player), Critter on the Vehicle seat (GDD 3.1, 8) |
 | Vehicle | `_Project/Gameplay/Vehicle/` | active | Kinematics, collisions, ramming, input source (GDD 5) |
 | Snow | `_Project/Gameplay/Snow/` | active | Snow Grid, Blade scraping, Regrowth, Blizzard waves, Snow Piles and their weight, displaced snow surface (GDD 4.1, 4.3, 4.4) |
@@ -107,5 +107,5 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Gadgets | `_Project/Gameplay/Gadgets/` | planned | Gadget slot, targeted/instant/thrown gadgets, immunity (GDD 7) |
 | Bots | `_Project/Gameplay/Bots/` | active | Utility-AI Bots on the Host: nav grid and A*, collect/deliver/Pile/Ram/evade scoring, difficulty profiles (GDD 8) |
 | Hud | `_Project/Gameplay/Hud/` | active | Virtual stick, timer, Load bar, Score list and popups, Blizzard announcement, Drop-Off arrow, Results; later gadget button and portraits |
-| CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Camera Presets (overview, follow, follow rotating), Camera Shake, dev preset switcher |
+| CameraRig | `_Project/Gameplay/CameraRig/` | active | Local camera: Follow preset in builds (overview and follow rotating kept for the Editor, key C), Camera Shake |
 | Levels | `_Project/Levels/<Map>/` | active | Map composition, no code: obstacle prefabs and the scene layout note; `Farm` (40 × 40 m) is the only map, laid out in `Scenes/Match.unity` |

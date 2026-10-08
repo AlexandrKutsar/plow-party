@@ -4,23 +4,24 @@ namespace PlowParty.Gameplay.Match.Tests
 {
     internal static class MatchTestSettings
     {
-        public static MatchSettings Create(float resultsDuration = 8f)
+        public static MatchSettings Create()
         {
             return new MatchSettings
             {
                 WaitingDuration = 15f,
                 BotArrivalStart = 1f,
                 BotArrivalEnd = 8f,
+                QuickBotArrivalStart = 0.5f,
+                QuickBotArrivalEnd = 2.5f,
                 FallbackSlotCount = 6,
                 CountdownDuration = 3f,
                 PlayingDuration = 180f,
-                ResultsDuration = resultsDuration,
             };
         }
 
-        public static MatchRules CreateRules(float resultsDuration = 8f)
+        public static MatchRules CreateRules()
         {
-            return new MatchRules(Create(resultsDuration));
+            return new MatchRules(Create());
         }
 
         public static WaitingRules CreateWaitingRules()
