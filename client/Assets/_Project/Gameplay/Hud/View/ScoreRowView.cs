@@ -8,17 +8,25 @@ namespace PlowParty.Gameplay.Hud.View
     {
         [SerializeField] private Text _placeLabel;
         [SerializeField] private Text _nameLabel;
+        [SerializeField] private Graphic _colorMark;
         [SerializeField] private Text _scoreLabel;
         [SerializeField] private Graphic _highlight;
 
         private int _shownPlace = -1;
         private string _shownNickname;
         private bool _shownLocal;
+        private Color _shownColor;
         private int _shownScore = -1;
 
-        public void Show(string nickname, bool isLocal, int score)
+        public void Show(string nickname, Color color, bool isLocal, int score)
         {
             gameObject.SetActive(true);
+            if (color != _shownColor)
+            {
+                _shownColor = color;
+                _colorMark.color = color;
+            }
+
             if (!ReferenceEquals(nickname, _shownNickname) || isLocal != _shownLocal)
             {
                 _shownNickname = nickname;

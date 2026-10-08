@@ -56,7 +56,7 @@ namespace PlowParty.Gameplay.Participants.Network
             }
 
             var seat = Seats[slot];
-            profile = new ParticipantProfile(NicknameOf(slot), (CritterSpecies)seat.Species, seat.IsBot);
+            profile = new ParticipantProfile(NicknameOf(slot), (CritterSpecies)seat.Species, seat.Color, seat.IsBot);
             return true;
         }
 
@@ -75,6 +75,11 @@ namespace PlowParty.Gameplay.Participants.Network
             }
 
             return _nicknameTexts[slot];
+        }
+
+        public int ColorOf(int slot)
+        {
+            return IsSeated(slot) ? Seats[slot].Color : ParticipantColors.NoPreference;
         }
 
         public bool TryGetAccountId(int slot, out string accountId)
@@ -103,6 +108,7 @@ namespace PlowParty.Gameplay.Participants.Network
             {
                 Nickname = profile.Nickname,
                 Species = (byte)profile.Species,
+                Color = (byte)profile.Color,
                 IsBot = profile.IsBot,
                 IsSeated = true,
             });

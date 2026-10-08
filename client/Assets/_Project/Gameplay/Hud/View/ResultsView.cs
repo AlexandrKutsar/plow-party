@@ -1,5 +1,6 @@
 using PlowParty.Gameplay.Match.Network;
 using PlowParty.Gameplay.Match.Simulation;
+using PlowParty.Gameplay.Participants.Config;
 using PlowParty.Gameplay.Participants.Network;
 using PlowParty.Gameplay.Vehicle.Network;
 using UnityEngine;
@@ -18,15 +19,17 @@ namespace PlowParty.Gameplay.Hud.View
         private IMatchResults _results;
         private VehicleRegistry _vehicles;
         private ParticipantRoster _roster;
+        private ParticipantsConfig _participants;
         private IMatchExit _exit;
 
         [Inject]
-        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit)
+        public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit, ParticipantsConfig participants)
         {
             _match = match;
             _results = results;
             _vehicles = vehicles;
             _roster = roster;
+            _participants = participants;
             _exit = exit;
         }
 
@@ -64,7 +67,7 @@ namespace PlowParty.Gameplay.Hud.View
                 }
 
                 var placement = _results.GetPlacement(i);
-                _rows[i].Show(_roster.NicknameOf(placement.Slot), placement.Slot == localSlot, placement.Score);
+                _rows[i].Show(_roster.NicknameOf(placement.Slot), _participants.ParticipantColor(_roster.ColorOf(placement.Slot)), placement.Slot == localSlot, placement.Score);
                 _rows[i].ShowPlace(placement.Place);
             }
         }
