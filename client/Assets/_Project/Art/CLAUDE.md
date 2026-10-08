@@ -54,7 +54,7 @@ So the look of anything can be replaced by editing or swapping its `V_` prefab, 
 ## Materials and budgets
 
 - One URP material for all models: `M_Palette.mat` (Simple Lit, palette as base map). Faces pick colors by UV. A new color goes into the palette; a new material needs a reason recorded in ADR-0009 or a new ADR (transparency, a snow shader, UI).
-- Per-Participant colors use a material property block or a palette swap, never a material copy.
+- Per-Participant colors use a material property block or a palette swap, never a material copy. The Vehicle's tintable parts are one white mesh named `Body`; Participants' `VehicleBodyColorView` multiplies it by the Participant Color through `_BaseColor`. A Podium or other screen showing `V_Vehicle` tints `Body` the same way.
 - A Vehicle or Critter stays under ~1500 triangles; a texture other than the palette needs a reason.
 
 ## Sources and generated files

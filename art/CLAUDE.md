@@ -41,7 +41,7 @@ Without model names it builds every entry of `MODELS` in `build.py`. In a live B
 
 | Model | Script | Output |
 |---|---|---|
-| Vehicle | `blender/models/vehicle.py` | `client/Assets/_Project/Art/Vehicles/Vehicle/SM_Vehicle.fbx` — tractor-style Vehicle with front Bucket, open seat, `CritterSeat` anchor; ~1100 triangles |
+| Vehicle | `blender/models/vehicle.py` | `client/Assets/_Project/Art/Vehicles/Vehicle/SM_Vehicle.fbx` — tractor-style Vehicle with front Bucket, open seat, `CritterSeat` anchor, and one white `Body` mesh (hood, rear body, fenders) that the game tints in the Participant Color; ~1100 triangles |
 | Critter Fox | `blender/models/critter_fox.py` | `client/Assets/_Project/Art/Critters/Critter_Fox/SM_Critter_Fox.fbx` — orange, pointed black-lined ears, bushy white-tipped tail; ~630 triangles |
 | Critter Bear | `blender/models/critter_bear.py` | `client/Assets/_Project/Art/Critters/Critter_Bear/SM_Critter_Bear.fbx` — brown, round ears, tan muzzle and belly; ~700 triangles |
 | Critter Rabbit | `blender/models/critter_rabbit.py` | `client/Assets/_Project/Art/Critters/Critter_Rabbit/SM_Critter_Rabbit.fbx` — white, long pink-lined ears swept back; ~650 triangles |
