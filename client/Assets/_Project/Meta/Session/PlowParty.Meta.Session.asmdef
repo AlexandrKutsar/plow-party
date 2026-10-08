@@ -10,5 +10,6 @@
         "UniTask",
         "VContainer"
     ],
+    "allowUnsafeCode": true,
     "autoReferenced": false
 }
