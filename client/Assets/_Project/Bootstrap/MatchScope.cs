@@ -78,6 +78,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<VirtualStickView>();
             builder.RegisterComponentInHierarchy<WaitingForPlayersView>();
             builder.Register<MatchExitAdapter>(Lifetime.Singleton).As<IMatchExit>();
+            builder.RegisterEntryPoint<MatchStandingFeed>();
         }
     }
 }

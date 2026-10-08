@@ -61,13 +61,11 @@ namespace PlowParty.Gameplay.Snow.Network
             if (HasStateAuthority)
             {
                 CopyGridToWords();
-                _clock.MatchRestarted += OnMatchRestarted;
             }
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
-            _clock.MatchRestarted -= OnMatchRestarted;
             _grid = null;
         }
 
@@ -138,12 +136,6 @@ namespace PlowParty.Gameplay.Snow.Network
                     _plowingSlots[vehicle.Slot] = true;
                 }
             }
-        }
-
-        private void OnMatchRestarted()
-        {
-            _grid.Reset(NewSeed());
-            CopyGridToWords();
         }
 
         private int NewSeed()

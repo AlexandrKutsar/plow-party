@@ -11,16 +11,9 @@ namespace PlowParty.Gameplay.Match.Simulation
             _settings = settings;
         }
 
-        public bool WaitsForRestartRequest => _settings.ResultsDuration <= 0f;
-
         public static bool IsInputLocked(MatchPhase phase)
         {
             return phase != MatchPhase.Playing;
-        }
-
-        public static bool StartsNextMatch(MatchPhase from, MatchPhase to)
-        {
-            return from == MatchPhase.Results && to == MatchPhase.Countdown;
         }
 
         public static float PhaseElapsed(int tick, int phaseStartTick, float deltaTime)
@@ -28,7 +21,7 @@ namespace PlowParty.Gameplay.Match.Simulation
             return Mathf.Max(0, tick - phaseStartTick) * deltaTime;
         }
 
-        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool restartRequested, bool allSlotsFilled)
+        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool allSlotsFilled)
         {
             switch (phase)
             {
@@ -39,7 +32,7 @@ namespace PlowParty.Gameplay.Match.Simulation
                 case MatchPhase.Playing:
                     return phaseElapsed >= _settings.PlayingDuration ? MatchPhase.Results : phase;
                 default:
-                    return restartRequested || ResultsTimedOut(phaseElapsed) ? MatchPhase.Countdown : phase;
+                    return phase;
             }
         }
 
@@ -78,13 +71,8 @@ namespace PlowParty.Gameplay.Match.Simulation
                 case MatchPhase.Playing:
                     return _settings.PlayingDuration;
                 default:
-                    return _settings.ResultsDuration;
+                    return 0f;
             }
-        }
-
-        private bool ResultsTimedOut(float phaseElapsed)
-        {
-            return !WaitsForRestartRequest && phaseElapsed >= _settings.ResultsDuration;
         }
     }
 }

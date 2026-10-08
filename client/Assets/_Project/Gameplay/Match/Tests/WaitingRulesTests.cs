@@ -112,6 +112,47 @@ namespace PlowParty.Gameplay.Match.Tests
         }
 
         [Test]
+        public void BotsToSeat_CapReachedWithEveryExpectedPlayerSeated_KeepsTheSchedule()
+        {
+            var plan = new SeatPlan(6, 2);
+
+            Assert.That(_rules.BotsToSeat(plan, 2, 1, 15f, new[] { 14f, 15f, 16f, 16.5f }), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void AllExpectedPlayersSeated_SomeoneStillLoading_IsFalse()
+        {
+            var plan = new SeatPlan(6, 3);
+
+            Assert.That(WaitingRules.AllExpectedPlayersSeated(plan, 2), Is.False);
+            Assert.That(WaitingRules.AllExpectedPlayersSeated(plan, 3), Is.True);
+            Assert.That(WaitingRules.AllExpectedPlayersSeated(plan, 4), Is.True);
+        }
+
+        [Test]
+        public void HurryBotArrivals_EveryPlayerSeated_RemainingBotsArriveInTheQuickWindowFromNow()
+        {
+            var hurried = _rules.HurryBotArrivals(new[] { 2f, 6f, 7f, 8f }, 1, 3f, new Random(7));
+
+            Assert.That(hurried.Length, Is.EqualTo(4));
+            Assert.That(hurried[0], Is.EqualTo(2f));
+            for (var i = 1; i < hurried.Length; i++)
+            {
+                Assert.That(hurried[i], Is.InRange(3.5f, 5.5f));
+                Assert.That(hurried[i], Is.GreaterThanOrEqualTo(hurried[i - 1]));
+            }
+        }
+
+        [Test]
+        public void HurryBotArrivals_HurriedSchedule_SeatsEveryBotWithinTwoAndAHalfSeconds()
+        {
+            var plan = new SeatPlan(6, 1);
+            var hurried = _rules.HurryBotArrivals(_rules.ScheduleBotArrivals(5, new Random(3)), 0, 0f, new Random(11));
+
+            Assert.That(_rules.BotsToSeat(plan, 1, 0, 2.5f, hurried), Is.EqualTo(5));
+        }
+
+        [Test]
         public void BotsToSeat_AllSlotsFilled_IsZeroEvenAtTheCap()
         {
             var plan = new SeatPlan(4, 2);

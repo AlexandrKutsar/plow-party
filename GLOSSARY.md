@@ -84,7 +84,7 @@ The factor a Match's Scores are multiplied by for the Tournament: 1 for a full M
 A Confirmed Player's Score times the Match Weight, rounded down; what the Tournament ranks.
 
 **WaitingForPlayers** (ожидание игроков):
-The first phase of a Match: the Host seats Players as they connect and adds Bots into the other Slots until every Slot is taken or the wait cap runs out.
+The first phase of a Match: the Host seats Players as they connect and adds Bots into the other Slots until every Slot is taken; once every expected Player is in, the remaining Bots arrive within seconds, and the wait cap only fills the Slots while an expected Player is still loading.
 _Avoid_: Lobby (that is the Meta menu), warmup
 
 **Seat Plan** (план мест):
@@ -114,10 +114,10 @@ The phase after WaitingForPlayers: 3 seconds with every Vehicle on its Spawn Poi
 The 180-second phase of a Match in which Vehicles move and Score counts; its elapsed time is the clock Regrowth and Blizzards run on.
 
 **Results** (итоги):
-The last phase of a Match: the Placement table is frozen and shown until the next Match starts in the same Session.
+The last phase of a Match: the Placement table is frozen and shown until the Player presses "В меню"; there is no timer and no "Play again".
 
 **Match Number** (номер матча):
-How many Matches the current Session has started, counting from 1; a restart after Results starts the next one.
+How many Matches the current Session has started, counting from 1; a Session plays one Match, so it is always 1.
 _Avoid_: Round
 
 **Match Clock** (часы матча):
@@ -342,7 +342,7 @@ _Avoid_: Session (that is the Fusion Session), API key
 ## Camera
 
 **Camera Preset** (режим камеры):
-One way the local camera frames the Match: Overview (the whole Arena), Follow (the local Vehicle, north up), or Follow Rotating (the local Vehicle, turning with its heading).
+One way the local camera frames the Match: Overview (the whole Arena), Follow (the local Vehicle, north up), or Follow Rotating (the local Vehicle, turning with its heading). Builds use Follow only; the others stay for the Editor.
 _Avoid_: Camera mode
 
 **Camera Shake** (тряска камеры):
