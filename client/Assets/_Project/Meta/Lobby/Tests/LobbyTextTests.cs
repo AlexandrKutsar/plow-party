@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using PlowParty.Meta.Lobby.Simulation;
+using PlowParty.Meta.Party.Simulation;
 using PlowParty.Meta.Session;
-using PlowParty.Meta.Session.Simulation;
 
 namespace PlowParty.Meta.Lobby.Tests
 {
@@ -22,45 +22,59 @@ namespace PlowParty.Meta.Lobby.Tests
         }
 
         [Test]
-        public void Title_QuickPlay_IsQuickPlay()
+        public void Title_Gathering_IsQuickPlay()
         {
-            Assert.That(LobbyText.Title(LobbyStage.Gathering, LobbyMode.QuickPlay, null), Is.EqualTo("Быстрая игра"));
-        }
-
-        [Test]
-        public void Title_Room_ShowsCode()
-        {
-            Assert.That(LobbyText.Title(LobbyStage.Gathering, LobbyMode.Room, "AB3XZ"), Is.EqualTo("Комната AB3XZ"));
+            Assert.That(LobbyText.Title(LobbyStage.Gathering), Is.EqualTo("Быстрая игра"));
         }
 
         [Test]
         public void Title_Connecting_IsConnecting()
         {
-            Assert.That(LobbyText.Title(LobbyStage.Connecting, LobbyMode.QuickPlay, null), Is.EqualTo("Подключение…"));
+            Assert.That(LobbyText.Title(LobbyStage.Connecting), Is.EqualTo("Подключение…"));
         }
 
         [Test]
-        public void Status_RoomGuest_WaitsForHost()
+        public void Status_Gathering_ShowsTimer()
         {
-            Assert.That(LobbyText.Status(LobbyStage.Gathering, LobbyMode.Room, false, 5f), Is.EqualTo("Ждём, пока хост начнёт матч"));
-        }
-
-        [Test]
-        public void Status_RoomHost_AsksToStart()
-        {
-            Assert.That(LobbyText.Status(LobbyStage.Gathering, LobbyMode.Room, true, 5f), Is.EqualTo("Сообщите код друзьям и нажмите «Начать»"));
-        }
-
-        [Test]
-        public void Status_QuickPlay_ShowsTimer()
-        {
-            Assert.That(LobbyText.Status(LobbyStage.Gathering, LobbyMode.QuickPlay, false, 4.5f), Is.EqualTo("Поиск игроков: 5 с"));
+            Assert.That(LobbyText.Status(LobbyStage.Gathering, 4.5f), Is.EqualTo("Поиск игроков: 5 с"));
         }
 
         [Test]
         public void Status_Starting_IsStarting()
         {
-            Assert.That(LobbyText.Status(LobbyStage.Starting, LobbyMode.QuickPlay, true, 0f), Is.EqualTo("Матч начинается…"));
+            Assert.That(LobbyText.Status(LobbyStage.Starting, 0f), Is.EqualTo("Матч начинается…"));
+        }
+
+        [Test]
+        public void PartyTitle_InParty_ShowsPartyCode()
+        {
+            Assert.That(LobbyText.PartyTitle(false, "AB3XZ"), Is.EqualTo("Группа AB3XZ"));
+        }
+
+        [Test]
+        public void PartyTitle_Connecting_IsConnecting()
+        {
+            Assert.That(LobbyText.PartyTitle(true, "AB3XZ"), Is.EqualTo("Подключение…"));
+        }
+
+        [Test]
+        public void PartyMembers_LeaderAndMembers_MarksLeaderAndReady()
+        {
+            var party = new PartyState(6);
+            party.Join(1, "Аня");
+            party.Join(2, "Борис");
+            party.Join(3, "Вера");
+            party.SetReady(2, true);
+
+            Assert.That(LobbyText.PartyMembers(party), Is.EqualTo("Аня (лидер), Борис — готов, Вера — не готов"));
+        }
+
+        [TestCase(true, false, "Искать матч")]
+        [TestCase(false, false, "Я готов")]
+        [TestCase(false, true, "Не готов")]
+        public void PartyAction_RoleAndReady_NamesTheButton(bool isLeader, bool isReady, string expected)
+        {
+            Assert.That(LobbyText.PartyAction(isLeader, isReady), Is.EqualTo(expected));
         }
     }
 }

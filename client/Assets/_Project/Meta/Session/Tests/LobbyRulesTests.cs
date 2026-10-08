@@ -9,40 +9,27 @@ namespace PlowParty.Meta.Session.Tests
         private const int MaxSlots = 6;
 
         [Test]
-        public void ShouldStart_QuickPlaySearching_IsFalse()
+        public void ShouldStart_Searching_IsFalse()
         {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.QuickPlay, 2, MaxSlots, 4.5f, false), Is.False);
+            Assert.That(LobbyRules.ShouldStart(2, MaxSlots, 4.5f), Is.False);
         }
 
         [Test]
-        public void ShouldStart_QuickPlayTimerOver_IsTrue()
+        public void ShouldStart_TimerOver_IsTrue()
         {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.QuickPlay, 1, MaxSlots, 0f, false), Is.True);
+            Assert.That(LobbyRules.ShouldStart(1, MaxSlots, 0f), Is.True);
         }
 
         [Test]
-        public void ShouldStart_QuickPlayFull_IsTrueBeforeTimer()
+        public void ShouldStart_Full_IsTrueBeforeTimer()
         {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.QuickPlay, MaxSlots, MaxSlots, 8f, false), Is.True);
-        }
-
-        [Test]
-        public void ShouldStart_RoomTimerOver_WaitsForHost()
-        {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.Room, 3, MaxSlots, 0f, false), Is.False);
-        }
-
-        [Test]
-        public void ShouldStart_RoomStartRequested_IsTrue()
-        {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.Room, 1, MaxSlots, 0f, true), Is.True);
+            Assert.That(LobbyRules.ShouldStart(MaxSlots, MaxSlots, 8f), Is.True);
         }
 
         [Test]
         public void ShouldStart_NoPlayersYet_IsFalse()
         {
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.Room, 0, MaxSlots, 0f, true), Is.False);
-            Assert.That(LobbyRules.ShouldStart(LobbyMode.QuickPlay, 0, MaxSlots, 0f, false), Is.False);
+            Assert.That(LobbyRules.ShouldStart(0, MaxSlots, 0f), Is.False);
         }
 
         [Test]

@@ -8,22 +8,22 @@ using PlowParty.Infrastructure.Network;
 using PlowParty.Infrastructure.Scenes;
 using PlowParty.Infrastructure.Session;
 using PlowParty.Meta.Account;
+using PlowParty.Meta.Party;
 using PlowParty.Meta.Session.Config;
 using PlowParty.Meta.Session.Simulation;
+using UnityEngine;
 using VContainer.Unity;
+using Random = System.Random;
 
 namespace PlowParty.Meta.Session
 {
     public sealed class Matchmaker : ITickable, IDisposable
     {
         public const string ConnectFailedText = "Не удалось подключиться";
-        public const string RoomNotFoundText = "Комната не найдена";
-        public const string BadCodeText = "Код — 5 символов";
         public const string SessionLostText = "Связь с хостом потеряна";
         public const string MatchStartedText = "Матч уже начался";
 
         private const string PoolProperty = "pool";
-        private const string CodeProperty = "code";
         private const string DeadlineProperty = "deadline";
         private const float MillisecondsPerSecond = 1000f;
 
@@ -32,17 +32,18 @@ namespace PlowParty.Meta.Session
         private readonly MatchmakingResultStore _matchmakingResults;
         private readonly MatchmakingConfig _config;
         private readonly MatchmakingPool _pool;
+        private readonly PartyService _party;
         private readonly Random _random = new Random();
         private long _deadline;
-        private bool _startRequested;
 
-        public Matchmaker(NetworkSession session, AccountService account, MatchmakingResultStore matchmakingResults, MatchmakingConfig config, MatchmakingPool pool, SessionExit exit)
+        public Matchmaker(NetworkSession session, AccountService account, MatchmakingResultStore matchmakingResults, MatchmakingConfig config, MatchmakingPool pool, PartyService party, SessionExit exit)
         {
             _session = session;
             _account = account;
             _matchmakingResults = matchmakingResults;
             _config = config;
             _pool = pool;
+            _party = party;
             Failure = exit.TakeNotice();
             _session.Ended += OnSessionEnded;
         }
@@ -50,10 +51,6 @@ namespace PlowParty.Meta.Session
         public event Action Changed;
 
         public LobbyStage Stage { get; private set; }
-
-        public LobbyMode Mode { get; private set; }
-
-        public string RoomCode { get; private set; }
 
         public string Failure { get; private set; }
 
@@ -99,76 +96,22 @@ namespace PlowParty.Meta.Session
             EnterLobby();
         }
 
-        public async UniTask CreateRoomAsync(CancellationToken cancellationToken)
-        {
-            Enter(LobbyStage.Connecting);
-            for (var attempt = 0; attempt < _config.RoomCodeAttempts; attempt++)
-            {
-                var code = Simulation.RoomCode.Generate(_random);
-                var properties = PoolProperties();
-                properties[CodeProperty] = code;
-                var outcome = await StartAsync(GameMode.Host, _pool.RoomSessionName(code), properties, cancellationToken);
-                if (await AbandonedAsync(outcome))
-                {
-                    return;
-                }
-
-                if (outcome == SessionStartOutcome.Started)
-                {
-                    EnterLobby();
-                    return;
-                }
-
-                if (outcome != SessionStartOutcome.NameTaken)
-                {
-                    break;
-                }
-            }
-
-            Fail(ConnectFailedText);
-        }
-
-        public async UniTask JoinRoomAsync(string input, CancellationToken cancellationToken)
-        {
-            if (!Simulation.RoomCode.TryParse(input, out var code))
-            {
-                Fail(BadCodeText);
-                return;
-            }
-
-            Enter(LobbyStage.Connecting);
-            var outcome = await StartAsync(GameMode.Client, _pool.RoomSessionName(code), null, cancellationToken);
-            if (await AbandonedAsync(outcome))
-            {
-                return;
-            }
-
-            switch (outcome)
-            {
-                case SessionStartOutcome.Started:
-                    EnterLobby();
-                    break;
-                case SessionStartOutcome.NotFound:
-                    Fail(RoomNotFoundText);
-                    break;
-                case SessionStartOutcome.Refused:
-                    Fail(MatchStartedText);
-                    break;
-                default:
-                    Fail(ConnectFailedText);
-                    break;
-            }
-        }
-
         public async UniTask LeaveAsync()
         {
             Enter(LobbyStage.Idle);
             await _session.LeaveAsync();
         }
 
-        public void RequestStart()
+        public void StartPartyMatch()
         {
-            _startRequested = Stage == LobbyStage.Gathering && IsHost;
+            if (Stage != LobbyStage.Idle || !_party.CanStart || !_session.IsHost)
+            {
+                return;
+            }
+
+            Debug.Log($"[Session] Party Leader starts the Match with {PlayerCount} Players");
+            _party.CloseForMatch();
+            StartMatch();
         }
 
         public void Tick()
@@ -185,7 +128,7 @@ namespace PlowParty.Meta.Session
             }
 
             ReadSessionProperties();
-            if (IsHost && LobbyRules.ShouldStart(Mode, PlayerCount, MaxSlots, SecondsLeft, _startRequested))
+            if (IsHost && LobbyRules.ShouldStart(PlayerCount, MaxSlots, SecondsLeft))
             {
                 StartMatch();
             }
@@ -240,13 +183,6 @@ namespace PlowParty.Meta.Session
 
         private void ReadSessionProperties()
         {
-            if (RoomCode == null && _session.TryGetProperty(CodeProperty, out var code) && code.IsString)
-            {
-                RoomCode = code.PropertyValue as string;
-                Mode = LobbyMode.Room;
-                Changed?.Invoke();
-            }
-
             if (_deadline == 0 && _session.TryGetProperty(DeadlineProperty, out var deadline) && deadline.IsString)
             {
                 long.TryParse(deadline.PropertyValue as string, NumberStyles.Integer, CultureInfo.InvariantCulture, out _deadline);
@@ -263,7 +199,6 @@ namespace PlowParty.Meta.Session
 
         private void EnterLobby()
         {
-            Mode = LobbyMode.QuickPlay;
             ReadSessionProperties();
             Enter(LobbyStage.Gathering);
         }
@@ -272,9 +207,7 @@ namespace PlowParty.Meta.Session
         {
             if (stage != LobbyStage.Gathering && stage != LobbyStage.Starting)
             {
-                RoomCode = null;
                 _deadline = 0;
-                _startRequested = false;
             }
 
             Stage = stage;

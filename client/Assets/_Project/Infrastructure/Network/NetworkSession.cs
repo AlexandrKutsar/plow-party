@@ -92,6 +92,7 @@ namespace PlowParty.Infrastructure.Network
                 SceneManager = _runner.GetComponent<NetworkSceneManagerDefault>(),
                 ObjectProvider = _provider,
                 StartGameCancellationToken = _startCancellation.Token,
+                IsVisible = start.IsVisible,
             };
             if (start.MaxPlayers > 0)
             {
@@ -245,6 +246,8 @@ namespace PlowParty.Infrastructure.Network
         {
             switch (reason)
             {
+                case ShutdownReason.GameIsFull:
+                    return SessionStartOutcome.Full;
                 case ShutdownReason.GameNotFound:
                     return SessionStartOutcome.NotFound;
                 case ShutdownReason.GameIdAlreadyExists:

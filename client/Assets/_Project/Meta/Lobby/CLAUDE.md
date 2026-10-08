@@ -1,10 +1,10 @@
 # Lobby
 
-The Menu's play panel and Lobby panel: "Быстрая игра", "Создать комнату", Room Code entry, and, once in a Session, the title, search timer or Room instructions, Players found, "Начать" for a Room Host, and "Выйти" (GDD 3.2 Lobby, 3.3). Presentation only; the matchmaking logic is `Meta/Session`. Spec: `.scratch/meta/spec.md`.
+The Menu's play panel and Lobby panel: "Быстрая игра", "Создать группу", Party Code entry, and, once in a Session, either the Quick Play search (title, search timer, Players found) or the Party (title "Группа <code>", one line of members with the Leader and Ready marks, Players, the action button: "Искать матч" for the Leader, enabled when the Party `CanStart`, "Я готов" / "Не готов" for other members) and "Выйти" (GDD 3.2 Lobby, 3.3). Presentation only; the logic is `Meta/Session` and `Meta/Party`. These are the minimal Party hooks of ticket 01; the tabbed Menu, Party rows with removal and the mode switch come with ticket 04. Spec: `.scratch/party/spec.md`.
 
 ## Entry points
 
-- `LobbyPresenter` — MenuScope entry point; wires `PlayMenuView` and `LobbyPanelView` to `Matchmaker`. Labels are rewritten only when the shown number changes.
+- `LobbyPresenter` — MenuScope entry point; wires `PlayMenuView` and `LobbyPanelView` to `Matchmaker` and `PartyService`; the Party view wins while `PartyService.Stage` is not `None`, failures come from the Party first. Labels are rewritten only when the shown number changes.
 - `PlayMenuView`, `LobbyPanelView` (`View/`) — uGUI views in `Scenes/Menu.unity`, raising C# events for clicks.
 - `LobbyText` (`Simulation/`) — every Russian string and number format of the panel.
 
@@ -14,4 +14,4 @@ The Menu's play panel and Lobby panel: "Быстрая игра", "Создат�
 
 ## Depends on
 
-Session (`Matchmaker`, `LobbyStage`, `LobbyMode`), UniTask, VContainer, uGUI.
+Session (`Matchmaker`, `LobbyStage`), Party (`PartyService`, `PartyStage`, `PartyState`), UniTask, VContainer, uGUI.

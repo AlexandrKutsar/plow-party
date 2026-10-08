@@ -1,8 +1,8 @@
 using System;
 
-namespace PlowParty.Meta.Session.Simulation
+namespace PlowParty.Meta.Party.Simulation
 {
-    public static class RoomCode
+    public static class PartyCode
     {
         public const int Length = 5;
         public const string Alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -35,6 +35,11 @@ namespace PlowParty.Meta.Session.Simulation
             }
 
             return true;
+        }
+
+        public static string SessionName(string poolName, string code)
+        {
+            return $"{poolName}-party-{code}";
         }
     }
 }
