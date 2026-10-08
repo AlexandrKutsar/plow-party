@@ -1,5 +1,3 @@
-using System;
-
 namespace PlowParty.Gameplay.Snow.Network
 {
     public interface ISnowClock
@@ -7,7 +5,5 @@ namespace PlowParty.Gameplay.Snow.Network
         bool IsPlaying { get; }
 
         float PlayingElapsed { get; }
-
-        event Action MatchRestarted;
     }
 }

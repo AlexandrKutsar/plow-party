@@ -23,6 +23,11 @@ namespace PlowParty.Gameplay.Match.Simulation
             return !AllSlotsFilled(plan, players, bots);
         }
 
+        public static bool AllExpectedPlayersSeated(SeatPlan plan, int players)
+        {
+            return players >= plan.ExpectedPlayers;
+        }
+
         public SeatPlan PlanSeats(bool hasMatchmakingResult, MatchmakingResult matchmakingResult, int playersPresent, int slotLimit)
         {
             var slotCount = Math.Min(hasMatchmakingResult ? matchmakingResult.MaxSlots : _settings.FallbackSlotCount, slotLimit);
@@ -33,14 +38,27 @@ namespace PlowParty.Gameplay.Match.Simulation
         public float[] ScheduleBotArrivals(int botCount, Random random)
         {
             var arrivals = new float[Math.Max(0, botCount)];
-            var window = _settings.BotArrivalEnd - _settings.BotArrivalStart;
             for (var i = 0; i < arrivals.Length; i++)
             {
-                arrivals[i] = _settings.BotArrivalStart + (float)random.NextDouble() * window;
+                arrivals[i] = InWindow(_settings.BotArrivalStart, _settings.BotArrivalEnd, random);
             }
 
             Array.Sort(arrivals);
             return arrivals;
+        }
+
+        public float[] HurryBotArrivals(IReadOnlyList<float> arrivals, int seatedBots, float now, Random random)
+        {
+            var hurried = new float[arrivals.Count];
+            for (var i = 0; i < hurried.Length; i++)
+            {
+                hurried[i] = i < seatedBots
+                    ? arrivals[i]
+                    : now + InWindow(_settings.QuickBotArrivalStart, _settings.QuickBotArrivalEnd, random);
+            }
+
+            Array.Sort(hurried);
+            return hurried;
         }
 
         public int BotsToSeat(SeatPlan plan, int players, int bots, float waitingElapsed, IReadOnlyList<float> arrivals)
@@ -51,7 +69,7 @@ namespace PlowParty.Gameplay.Match.Simulation
                 return 0;
             }
 
-            if (waitingElapsed >= _settings.WaitingDuration)
+            if (waitingElapsed >= _settings.WaitingDuration && !AllExpectedPlayersSeated(plan, players))
             {
                 return free;
             }
@@ -65,6 +83,11 @@ namespace PlowParty.Gameplay.Match.Simulation
             }
 
             return Math.Max(0, Math.Min(due - bots, botRoom));
+        }
+
+        private static float InWindow(float start, float end, Random random)
+        {
+            return start + (float)random.NextDouble() * (end - start);
         }
     }
 }

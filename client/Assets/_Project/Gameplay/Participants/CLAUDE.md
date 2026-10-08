@@ -12,7 +12,7 @@ Who sits in each Slot of a Match: the Participant Profile (Nickname, Critter Spe
 
 ## Rules worth knowing
 
-- The profile lives per Slot on a scene object, not on the Vehicle, so it survives the respawn at every new Match: Nicknames and Critters stay the same across "Play again".
+- The profile lives per Slot on a scene object, not on the Vehicle, so it outlives any Vehicle respawn and stays the Match's record of who sits where.
 - A Bot looks like a Player everywhere on screen (GDD 8): pool Nicknames, random Critters, no marker. `IsBot` is networked only because the Host needs it after a restart and a client may need it later (portraits); views must not show it.
 - Player Critters are random for now; a chosen Critter would come in the `ParticipantToken` from Meta.
 
