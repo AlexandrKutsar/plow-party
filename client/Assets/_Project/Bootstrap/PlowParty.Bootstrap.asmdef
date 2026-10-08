@@ -17,6 +17,7 @@
         "PlowParty.Gameplay.Hud",
         "PlowParty.Gameplay.CameraRig",
         "PlowParty.Meta.Account",
+        "PlowParty.Meta.Party",
         "PlowParty.Meta.Session",
         "PlowParty.Meta.Lobby",
         "PlowParty.Meta.Tournament"

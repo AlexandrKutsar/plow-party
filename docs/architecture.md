@@ -32,7 +32,7 @@ Asmdef naming: `PlowParty.<Area>` or `PlowParty.<Area>.<Feature>`; namespaces ma
 
 Gameplay knows nothing about menus, accounts, or the backend. The two sides meet at exactly two points:
 
-1. **Into a match** — `Meta/Session` gathers Players in a Fusion Session while in the Menu (Quick Play or Room Code), each presenting its `ParticipantToken` as connection token, writes the `MatchmakingResult` (Shared: expected Players, Slot count) into Infrastructure's `MatchmakingResultStore`, and loads the Match scene for every peer through Fusion; `MatchScope` binds to the running Session and takes over from WaitingForPlayers, where the Host seats the arriving Players and fills the remaining Slots with Bots (ADR-0016, ADR-0018).
+1. **Into a match** — `Meta/Session` gathers Players in a Fusion Session while in the Menu (Quick Play, or a Party's hidden Session from `Meta/Party`), each presenting its `ParticipantToken` as connection token, writes the `MatchmakingResult` (Shared: expected Players, Slot count) into Infrastructure's `MatchmakingResultStore`, and loads the Match scene for every peer through Fusion; `MatchScope` binds to the running Session and takes over from WaitingForPlayers, where the Host seats the arriving Players and fills the remaining Slots with Bots (ADR-0016, ADR-0018).
 2. **Out of a match** — `Meta/Tournament`'s reporter reads the Match through ports Bootstrap adapts from Gameplay's read seams (`IMatchClock`, `IMatchResults`, `IScoreReader`, Participants' `ParticipantRoster`) and votes the Match Result to the backend; Hud's "В меню" raises Hud's `IMatchExit`, which Bootstrap routes to `Meta/Session` (ADR-0017).
 
 ## Lifetime scopes (VContainer)
@@ -93,8 +93,9 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
 | Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules, Android Player settings and development APK build |
 | Account | `_Project/Meta/Account/` | active | Guest login by Device Id, Auth Token and 401 re-login, Nickname and its rename panel (GDD 9.1) |
-| Lobby | `_Project/Meta/Lobby/` | active | Menu scene's play and Lobby panels: Quick Play, Room Code entry, search timer, Players found, Start/Leave |
-| Session | `_Project/Meta/Session/` | active | Matchmaking in the Menu (Quick Play, Room Codes), Matchmaking Result, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016) |
+| Lobby | `_Project/Meta/Lobby/` | active | Menu screens: bottom tabs Игра / Турнир, solo panel (Quick Play, Party create, Party Code entry), Party panel (code and copy, member rows with crown, Ready and removal, mode switch, Ready, Leader's search, Leave), "Поиск игры…" with a local stopwatch and Stop, and the 3D Podium of the Party's tractors and Critters |
+| Session | `_Project/Meta/Session/` | active | Quick Play search over the Lobby list (pick, Party as Lobby, merge into an older Lobby, stop by any member), Matchmaking Result, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016, ADR-0019) |
+| Party | `_Project/Meta/Party/` | active | Party in the Menu: hidden Party Session by Party Code, members in join order, Party Leader and succession, Ready, removal, mode, the Party's search flag and moves into another Lobby, return to the Party after a Match (ADR-0019) |
 | Tournament | `_Project/Meta/Tournament/` | active | "Турнир дня" panel (top, around me, Medal) and Match reporting: register, confirm, Vote (GDD 9.2–9.3, ADR-0017) |
 | Match | `_Project/Gameplay/Match/` | active | Match state machine WaitingForPlayers → Countdown → Playing → Results (one Match per Session), seating Players and Bots into Slots, Match clock, input lock, placement table (GDD 3.2–3.3) |
 | Participants | `_Project/Gameplay/Participants/` | active | Networked Participant profile per Slot (Nickname, Critter Species, Participant Color, Bot or Player), Critter on the Vehicle seat, Vehicle body tint, colour palette and assignment rules (GDD 3.1, 8) |

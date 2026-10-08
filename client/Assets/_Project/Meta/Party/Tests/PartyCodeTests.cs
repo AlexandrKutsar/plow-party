@@ -1,10 +1,10 @@
 using System;
 using NUnit.Framework;
-using PlowParty.Meta.Session.Simulation;
+using PlowParty.Meta.Party.Simulation;
 
-namespace PlowParty.Meta.Session.Tests
+namespace PlowParty.Meta.Party.Tests
 {
-    public sealed class RoomCodeTests
+    public sealed class PartyCodeTests
     {
         [Test]
         public void Generate_AnySeed_HasFiveSymbolsFromAlphabet()
@@ -12,12 +12,12 @@ namespace PlowParty.Meta.Session.Tests
             var random = new Random(7);
             for (var i = 0; i < 200; i++)
             {
-                var code = RoomCode.Generate(random);
+                var code = PartyCode.Generate(random);
 
-                Assert.That(code.Length, Is.EqualTo(RoomCode.Length));
+                Assert.That(code.Length, Is.EqualTo(PartyCode.Length));
                 foreach (var symbol in code)
                 {
-                    Assert.That(RoomCode.Alphabet, Does.Contain(symbol.ToString()));
+                    Assert.That(PartyCode.Alphabet, Does.Contain(symbol.ToString()));
                 }
             }
         }
@@ -25,7 +25,7 @@ namespace PlowParty.Meta.Session.Tests
         [Test]
         public void Generate_SameSeed_SameCode()
         {
-            Assert.That(RoomCode.Generate(new Random(42)), Is.EqualTo(RoomCode.Generate(new Random(42))));
+            Assert.That(PartyCode.Generate(new Random(42)), Is.EqualTo(PartyCode.Generate(new Random(42))));
         }
 
         [TestCase('I')]
@@ -35,13 +35,13 @@ namespace PlowParty.Meta.Session.Tests
         [TestCase('1')]
         public void Alphabet_AmbiguousSymbol_IsExcluded(char symbol)
         {
-            Assert.That(RoomCode.Alphabet, Does.Not.Contain(symbol.ToString()));
+            Assert.That(PartyCode.Alphabet, Does.Not.Contain(symbol.ToString()));
         }
 
         [Test]
         public void TryParse_LowerCaseWithSpaces_ReturnsUpperCaseCode()
         {
-            Assert.That(RoomCode.TryParse("  ab3xz ", out var code), Is.True);
+            Assert.That(PartyCode.TryParse("  ab3xz ", out var code), Is.True);
             Assert.That(code, Is.EqualTo("AB3XZ"));
         }
 
@@ -54,7 +54,13 @@ namespace PlowParty.Meta.Session.Tests
         [TestCase("AB-CD")]
         public void TryParse_Malformed_ReturnsFalse(string input)
         {
-            Assert.That(RoomCode.TryParse(input, out _), Is.False);
+            Assert.That(PartyCode.TryParse(input, out _), Is.False);
+        }
+
+        [Test]
+        public void SessionName_PoolAndCode_NamesThePartySessionInsideThePool()
+        {
+            Assert.That(PartyCode.SessionName("dev-0.1", "AB3XZ"), Is.EqualTo("dev-0.1-party-AB3XZ"));
         }
     }
 }

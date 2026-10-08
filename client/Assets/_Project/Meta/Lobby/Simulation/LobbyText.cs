@@ -1,55 +1,59 @@
 using System;
 using PlowParty.Meta.Session;
-using PlowParty.Meta.Session.Simulation;
 
 namespace PlowParty.Meta.Lobby.Simulation
 {
     public static class LobbyText
     {
-        private const string QuickPlayTitle = "Быстрая игра";
+        private const string SearchTitleText = "Поиск игры…";
+        private const string StopSearchText = "Остановить поиск";
+        private const int SecondsPerMinute = 60;
         private const string ConnectingTitle = "Подключение…";
-        private const string WaitingForHost = "Ждём, пока хост начнёт матч";
-        private const string ShareCode = "Сообщите код друзьям и нажмите «Начать»";
         private const string StartingText = "Матч начинается…";
+        private const string ReadyButtonText = "Я готов";
+        private const string NotReadyButtonText = "Не готов";
+        private const string ReadyMark = "Готов";
+        private const string NotReadyMark = "Не готов";
 
-        public static string Players(int count, int maxSlots)
+        public static string SearchTitle()
         {
-            return $"Игроки: {count} / {maxSlots}";
+            return SearchTitleText;
         }
 
-        public static string SearchTimer(float secondsLeft)
+        public static string StopSearch()
         {
-            return $"Поиск игроков: {WholeSeconds(secondsLeft)} с";
+            return StopSearchText;
         }
 
-        public static int WholeSeconds(float secondsLeft)
+        public static string SearchStatus(LobbyStage stage, float seconds)
         {
-            return Math.Max(0, (int)Math.Ceiling(secondsLeft));
+            return stage == LobbyStage.Starting ? StartingText : Stopwatch(seconds);
         }
 
-        public static string Title(LobbyStage stage, LobbyMode mode, string roomCode)
+        public static string Stopwatch(float seconds)
         {
-            if (stage == LobbyStage.Connecting)
-            {
-                return ConnectingTitle;
-            }
-
-            return mode == LobbyMode.Room ? $"Комната {roomCode}" : QuickPlayTitle;
+            var whole = WholeSeconds(seconds);
+            return $"{whole / SecondsPerMinute}:{whole % SecondsPerMinute:00}";
         }
 
-        public static string Status(LobbyStage stage, LobbyMode mode, bool isHost, float secondsLeft)
+        public static int WholeSeconds(float seconds)
         {
-            switch (stage)
-            {
-                case LobbyStage.Starting:
-                    return StartingText;
-                case LobbyStage.Gathering when mode == LobbyMode.Room:
-                    return isHost ? ShareCode : WaitingForHost;
-                case LobbyStage.Gathering:
-                    return SearchTimer(secondsLeft);
-                default:
-                    return string.Empty;
-            }
+            return Math.Max(0, (int)Math.Floor(seconds));
+        }
+
+        public static string PartyTitle(bool connecting, string code)
+        {
+            return connecting || code == null ? ConnectingTitle : $"Группа {code}";
+        }
+
+        public static string ReadyButton(bool isReady)
+        {
+            return isReady ? NotReadyButtonText : ReadyButtonText;
+        }
+
+        public static string MemberReady(bool isReady)
+        {
+            return isReady ? ReadyMark : NotReadyMark;
         }
     }
 }

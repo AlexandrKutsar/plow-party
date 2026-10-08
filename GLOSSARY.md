@@ -25,19 +25,43 @@ The Player whose device runs the authoritative Fusion simulation for the Match.
 _Avoid_: Server, master
 
 **Session** (сессия):
-The Fusion network session a Match runs in; created by Quick Play or a Room Code.
+The Fusion network session Players share: a Party's hidden Session in the Menu, or the Session a Match runs in, reached by Quick Play.
 _Avoid_: Room, lobby (as the network concept)
 
-**Room Code** (код комнаты):
-A 5-character code a Host shares so friends join the same Session.
+**Party** (группа):
+Up to 6 friends gathered in the Menu by a Party Code who search for and play Matches together and return to the Party after each one; a hidden Session hosted by the Party Leader. Not the Roster or the Matchmaking Result.
+_Avoid_: Room, group, team, squad
+
+**Party Leader** (лидер группы):
+The Party member who has been in the Party longest; hosts the Party's Session, starts the search, chooses the mode and may remove members.
+_Avoid_: Owner, captain, admin
+
+**Party Code** (код группы):
+The 5-character code (no I, L, O, 0, 1) that names a Party's Session; friends type it to join, and members use it to come back after a Match.
+_Avoid_: Room Code, invite code
+
+**Ready** (готов):
+A Party member's own mark that they are set to play; the Party Leader can start only when every other member is Ready, and a new member joins Not Ready.
+_Avoid_: Confirmed (that is the Confirmed Player), accepted
+
+**Podium** (подиум):
+The 3D stage on the Menu's Игра tab showing the tractor and Critter of the Player, or of every Party member side by side in join order.
+_Avoid_: Garage (a future screen), showcase, lineup
 
 **Quick Play** (быстрая игра):
-Joining any open Session of the same Matchmaking Pool, or hosting a new one when none is open; the Match starts when the search timer ends or the Session is full.
+The mode that counts for the Tournament: the Player or the whole Party joins the best open Lobby of its Matchmaking Pool (room for everyone, at least 3 s before its start; most Players, then soonest start), or opens its own Lobby when none fits, and moves into an older fitting Lobby while waiting alone.
 _Avoid_: Random match, auto match
 
 **Lobby** (лобби):
-The Menu panel where Players gathered in a Session wait for the Match: the search timer or Room Code, the number of Players found, and the Host's Start.
-_Avoid_: Room (as a code type), waiting room
+A Session open to Quick Play, listed in its Matchmaking Pool with its start time; only its Host's clock starts the Match when the search time ends or 6 Players are in. A Party Session becomes one when Quick Play finds nothing to join.
+_Avoid_: Room, waiting room, Party (that is the friends' group)
+
+**Search** (поиск игры):
+The time from pressing Quick Play until the Match loads, shown as "Поиск игры…" with a stopwatch from the local clock; any searching Party member can stop it, which brings the whole Party back to its hidden Session.
+_Avoid_: Queue, search timer (the start time belongs to the Lobby Host)
+
+**Lobby Merge** (слияние лобби):
+A Lobby holding only its own Party moving, Party and all, into an older open Lobby that fits it, so that two Parties searching at once end up together; the older Lobby never moves.
 
 **Matchmaking Pool** (пул подбора):
 The set of Sessions that may meet each other: the same build version and dev-session name; Quick Play only joins Sessions of its own pool.

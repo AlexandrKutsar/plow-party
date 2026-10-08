@@ -11,5 +11,6 @@ The asmdef sets `overrideReferences` with no precompiled DLLs, so Fusion types c
 
 ## Types
 
-- `MatchmakingResult` — what Meta's matchmaking found before the Match scene loads: `ExpectedHumans` (Players the Host waits for) and `MaxSlots`. Meta writes it into Infrastructure's `MatchmakingResultStore`; Match reads it on the Host during WaitingForPlayers.
+- `MatchmakingResult` — what Meta's matchmaking found before the Match scene loads: `ExpectedHumans` (Players the Host waits for), `MaxSlots` and `Mode` (`PartyMode`; Quick Play until the Custom Game lands). Meta writes it into Infrastructure's `MatchmakingResultStore`; Match reads it on the Host during WaitingForPlayers.
+- `PartyMode` — Quick Play or Custom Game: the Party's chosen mode and the mode of the Match it starts.
 - `ParticipantToken` — a Player's Account Id and Nickname, carried as the Fusion connection token (at most `MaxBytes`). Meta encodes it when joining; Gameplay decodes it on the Host to name the Participant and to build the backend Roster.
