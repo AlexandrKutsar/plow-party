@@ -45,12 +45,19 @@ A Party member's own mark that they are set to play; the Party Leader can start 
 _Avoid_: Confirmed (that is the Confirmed Player), accepted
 
 **Quick Play** (быстрая игра):
-Joining any open Session of the same Matchmaking Pool, or hosting a new one when none is open; the Match starts when the search timer ends or the Session is full.
+The mode that counts for the Tournament: the Player or the whole Party joins the best open Lobby of its Matchmaking Pool (room for everyone, at least 3 s before its start; most Players, then soonest start), or opens its own Lobby when none fits, and moves into an older fitting Lobby while waiting alone.
 _Avoid_: Random match, auto match
 
 **Lobby** (лобби):
-The Menu panel where Players gathered in a Session wait for the Match: the search timer and the number of Players found.
+A Session open to Quick Play, listed in its Matchmaking Pool with its start time; only its Host's clock starts the Match when the search time ends or 6 Players are in. A Party Session becomes one when Quick Play finds nothing to join.
 _Avoid_: Room, waiting room, Party (that is the friends' group)
+
+**Search** (поиск игры):
+The time from pressing Quick Play until the Match loads, shown as "Поиск игры…" with a stopwatch from the local clock; any searching Party member can stop it, which brings the whole Party back to its hidden Session.
+_Avoid_: Queue, search timer (the start time belongs to the Lobby Host)
+
+**Lobby Merge** (слияние лобби):
+A Lobby holding only its own Party moving, Party and all, into an older open Lobby that fits it, so that two Parties searching at once end up together; the older Lobby never moves.
 
 **Matchmaking Pool** (пул подбора):
 The set of Sessions that may meet each other: the same build version and dev-session name; Quick Play only joins Sessions of its own pool.

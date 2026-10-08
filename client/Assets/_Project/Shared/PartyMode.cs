@@ -1,4 +1,4 @@
-namespace PlowParty.Meta.Party.Simulation
+namespace PlowParty.Shared
 {
     public enum PartyMode : byte
     {

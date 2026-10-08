@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using PlowParty.Meta.Party.Simulation;
+using PlowParty.Shared;
 
 namespace PlowParty.Meta.Party.Tests
 {
@@ -138,6 +139,57 @@ namespace PlowParty.Meta.Party.Tests
         }
 
         [Test]
+        public void StartSearch_LeaderWithEveryoneReady_Searches()
+        {
+            var party = PartyOf(Anna, Boris);
+            party.SetReady(Boris, true);
+
+            Assert.That(party.StartSearch(Anna), Is.True);
+            Assert.That(party.IsSearching, Is.True);
+        }
+
+        [Test]
+        public void StartSearch_MemberNotReady_DoesNotSearch()
+        {
+            var party = PartyOf(Anna, Boris);
+
+            Assert.That(party.StartSearch(Anna), Is.False);
+            Assert.That(party.IsSearching, Is.False);
+        }
+
+        [Test]
+        public void StartSearch_ByMember_DoesNotSearch()
+        {
+            var party = PartyOf(Anna, Boris);
+            party.SetReady(Boris, true);
+
+            Assert.That(party.StartSearch(Boris), Is.False);
+            Assert.That(party.IsSearching, Is.False);
+        }
+
+        [Test]
+        public void StopSearch_ByAnyMember_EndsTheSearch()
+        {
+            var party = PartyOf(Anna, Boris);
+            party.SetReady(Boris, true);
+            party.StartSearch(Anna);
+
+            party.StopSearch(Boris);
+
+            Assert.That(party.IsSearching, Is.False);
+        }
+
+        [Test]
+        public void Join_StrangerWhileSearching_IsAGuestNotAMember()
+        {
+            var party = PartyOf(Anna);
+            party.StartSearch(Anna);
+
+            Assert.That(party.Join(Boris, "Boris"), Is.EqualTo(PartyJoinOutcome.Guest));
+            Assert.That(party.Contains(Boris), Is.False);
+        }
+
+        [Test]
         public void CanStart_EveryOtherMemberReady_IsTrue()
         {
             var party = PartyOf(Anna, Boris, Vera);
@@ -204,6 +256,14 @@ namespace PlowParty.Meta.Party.Tests
             Assert.That(party.LeaderId, Is.EqualTo(Boris));
             Assert.That(party.Members[1].IsReady, Is.True);
             Assert.That(party.Mode, Is.EqualTo(PartyMode.CustomGame));
+        }
+
+        [Test]
+        public void Restore_SearchingParty_KeepsSearching()
+        {
+            var party = PartyState.Restore(Capacity, PartyMode.QuickPlay, new[] { new PartyMember(Anna, "Anna", false) }, true);
+
+            Assert.That(party.IsSearching, Is.True);
         }
 
         private static PartyState PartyOf(params int[] ids)

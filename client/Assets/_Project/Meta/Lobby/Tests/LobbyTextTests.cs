@@ -8,41 +8,29 @@ namespace PlowParty.Meta.Lobby.Tests
     public sealed class LobbyTextTests
     {
         [Test]
-        public void Players_CountAndSlots_ShowsBoth()
+        public void PartySize_CountAndSlots_ShowsBoth()
         {
-            Assert.That(LobbyText.Players(3, 6), Is.EqualTo("Игроки: 3 / 6"));
+            Assert.That(LobbyText.PartySize(3, 6), Is.EqualTo("Игроки: 3 / 6"));
         }
 
-        [TestCase(9.2f, "Поиск игроков: 10 с")]
-        [TestCase(0.4f, "Поиск игроков: 1 с")]
-        [TestCase(0f, "Поиск игроков: 0 с")]
-        public void SearchTimer_SecondsLeft_RoundsUp(float seconds, string expected)
+        [TestCase(0f, "0:00")]
+        [TestCase(7.9f, "0:07")]
+        [TestCase(65f, "1:05")]
+        public void Stopwatch_SecondsSinceThePress_ShowsMinutesAndSeconds(float seconds, string expected)
         {
-            Assert.That(LobbyText.SearchTimer(seconds), Is.EqualTo(expected));
-        }
-
-        [Test]
-        public void Title_Gathering_IsQuickPlay()
-        {
-            Assert.That(LobbyText.Title(LobbyStage.Gathering), Is.EqualTo("Быстрая игра"));
+            Assert.That(LobbyText.Stopwatch(seconds), Is.EqualTo(expected));
         }
 
         [Test]
-        public void Title_Connecting_IsConnecting()
+        public void SearchStatus_Searching_ShowsTheStopwatch()
         {
-            Assert.That(LobbyText.Title(LobbyStage.Connecting), Is.EqualTo("Подключение…"));
+            Assert.That(LobbyText.SearchStatus(LobbyStage.Searching, 12f), Is.EqualTo("0:12"));
         }
 
         [Test]
-        public void Status_Gathering_ShowsTimer()
+        public void SearchStatus_Starting_IsStarting()
         {
-            Assert.That(LobbyText.Status(LobbyStage.Gathering, 4.5f), Is.EqualTo("Поиск игроков: 5 с"));
-        }
-
-        [Test]
-        public void Status_Starting_IsStarting()
-        {
-            Assert.That(LobbyText.Status(LobbyStage.Starting, 0f), Is.EqualTo("Матч начинается…"));
+            Assert.That(LobbyText.SearchStatus(LobbyStage.Starting, 12f), Is.EqualTo("Матч начинается…"));
         }
 
         [Test]

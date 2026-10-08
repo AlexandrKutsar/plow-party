@@ -1,5 +1,4 @@
 using System;
-using PlowParty.Infrastructure.Network;
 using PlowParty.Shared;
 
 namespace PlowParty.Meta.Session.Simulation
@@ -13,20 +12,14 @@ namespace PlowParty.Meta.Session.Simulation
             return players >= 1 && (players >= maxSlots || secondsLeft <= 0f);
         }
 
-        public static MatchmakingResult MatchmakingResultFor(int players, int maxSlots)
+        public static MatchmakingResult MatchmakingResultFor(int players, int maxSlots, PartyMode mode)
         {
-            return new MatchmakingResult(Math.Clamp(players, 1, maxSlots), maxSlots);
+            return new MatchmakingResult(Math.Clamp(players, 1, maxSlots), maxSlots, mode);
         }
 
-        public static bool FoundNothingToJoin(SessionStartOutcome outcome)
+        public static long StartsAt(long openedAtUnixMilliseconds, float searchSeconds)
         {
-            return outcome == SessionStartOutcome.NotFound || outcome == SessionStartOutcome.Refused;
-        }
-
-        public static float HostJitterSeconds(double roll, float minSeconds, float maxSeconds)
-        {
-            var clampedRoll = Math.Clamp(roll, 0d, 1d);
-            return minSeconds + (float)clampedRoll * Math.Max(0f, maxSeconds - minSeconds);
+            return openedAtUnixMilliseconds + (long)(searchSeconds * MillisecondsPerSecond);
         }
 
         public static float SecondsLeft(long deadlineUnixMilliseconds, long nowUnixMilliseconds)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PlowParty.Shared;
 
 namespace PlowParty.Meta.Party.Simulation
 {
@@ -16,6 +17,8 @@ namespace PlowParty.Meta.Party.Simulation
         public IReadOnlyList<PartyMember> Members => _members;
 
         public PartyMode Mode { get; private set; }
+
+        public bool IsSearching { get; private set; }
 
         public int Count => _members.Count;
 
@@ -46,9 +49,9 @@ namespace PlowParty.Meta.Party.Simulation
             }
         }
 
-        public static PartyState Restore(int capacity, PartyMode mode, IEnumerable<PartyMember> members)
+        public static PartyState Restore(int capacity, PartyMode mode, IEnumerable<PartyMember> members, bool isSearching = false)
         {
-            var party = new PartyState(capacity, mode);
+            var party = new PartyState(capacity, mode) { IsSearching = isSearching };
             foreach (var member in members)
             {
                 if (!party.IsFull && !party.Contains(member.Id))
@@ -75,6 +78,11 @@ namespace PlowParty.Meta.Party.Simulation
             if (Contains(id))
             {
                 return PartyJoinOutcome.AlreadyMember;
+            }
+
+            if (IsSearching)
+            {
+                return PartyJoinOutcome.Guest;
             }
 
             if (IsFull)
@@ -115,8 +123,25 @@ namespace PlowParty.Meta.Party.Simulation
             return true;
         }
 
+        public bool StartSearch(int requesterId)
+        {
+            if (!IsLeader(requesterId) || !CanStart)
+            {
+                return false;
+            }
+
+            IsSearching = true;
+            return true;
+        }
+
         public void StopSearch(int memberId)
         {
+            if (!Contains(memberId))
+            {
+                return;
+            }
+
+            IsSearching = false;
             SetReady(memberId, false);
         }
 
