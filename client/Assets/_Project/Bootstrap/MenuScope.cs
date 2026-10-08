@@ -29,8 +29,13 @@ namespace PlowParty.Bootstrap
             builder.Register<LobbyLinks>(Lifetime.Singleton);
             builder.RegisterEntryPoint<Matchmaker>().AsSelf();
             builder.RegisterComponentInHierarchy<PlayMenuView>();
-            builder.RegisterComponentInHierarchy<LobbyPanelView>();
+            builder.RegisterComponentInHierarchy<PartyPanelView>();
+            builder.RegisterComponentInHierarchy<SearchView>();
+            builder.RegisterComponentInHierarchy<PodiumView>();
+            builder.Register<MemberLooks>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LobbyPresenter>();
+            builder.RegisterComponentInHierarchy<MenuTabsView>();
+            builder.RegisterEntryPoint<MenuTabsPresenter>();
             builder.Register<TournamentService>(Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<TournamentView>();
             builder.RegisterEntryPoint<TournamentPresenter>();

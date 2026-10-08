@@ -1,18 +1,11 @@
 using NUnit.Framework;
 using PlowParty.Meta.Lobby.Simulation;
-using PlowParty.Meta.Party.Simulation;
 using PlowParty.Meta.Session;
 
 namespace PlowParty.Meta.Lobby.Tests
 {
     public sealed class LobbyTextTests
     {
-        [Test]
-        public void PartySize_CountAndSlots_ShowsBoth()
-        {
-            Assert.That(LobbyText.PartySize(3, 6), Is.EqualTo("Игроки: 3 / 6"));
-        }
-
         [TestCase(0f, "0:00")]
         [TestCase(7.9f, "0:07")]
         [TestCase(65f, "1:05")]
@@ -45,24 +38,24 @@ namespace PlowParty.Meta.Lobby.Tests
             Assert.That(LobbyText.PartyTitle(true, "AB3XZ"), Is.EqualTo("Подключение…"));
         }
 
-        [Test]
-        public void PartyMembers_LeaderAndMembers_MarksLeaderAndReady()
+        [TestCase(false, "Я готов")]
+        [TestCase(true, "Не готов")]
+        public void ReadyButton_OwnReady_NamesTheToggle(bool isReady, string expected)
         {
-            var party = new PartyState(6);
-            party.Join(1, "Аня");
-            party.Join(2, "Борис");
-            party.Join(3, "Вера");
-            party.SetReady(2, true);
-
-            Assert.That(LobbyText.PartyMembers(party), Is.EqualTo("Аня (лидер), Борис — готов, Вера — не готов"));
+            Assert.That(LobbyText.ReadyButton(isReady), Is.EqualTo(expected));
         }
 
-        [TestCase(true, false, "Искать матч")]
-        [TestCase(false, false, "Я готов")]
-        [TestCase(false, true, "Не готов")]
-        public void PartyAction_RoleAndReady_NamesTheButton(bool isLeader, bool isReady, string expected)
+        [TestCase(true, "Готов")]
+        [TestCase(false, "Не готов")]
+        public void MemberReady_MemberReady_NamesTheState(bool isReady, string expected)
         {
-            Assert.That(LobbyText.PartyAction(isLeader, isReady), Is.EqualTo(expected));
+            Assert.That(LobbyText.MemberReady(isReady), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void StopSearch_Always_NamesTheStop()
+        {
+            Assert.That(LobbyText.StopSearch(), Is.EqualTo("Остановить поиск"));
         }
     }
 }
