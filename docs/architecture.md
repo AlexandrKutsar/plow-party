@@ -93,9 +93,9 @@ Status: `planned` — designed in the GDD, no folder yet; `active` — folder ex
 | Art | `_Project/Art/` | active | Visual content only: models, palette, materials, visual prefabs; sources in `art/` |
 | Editor | `_Project/Editor/` | active | Editor-only tooling: art import rules, Android Player settings and development APK build |
 | Account | `_Project/Meta/Account/` | active | Guest login by Device Id, Auth Token and 401 re-login, Nickname and its rename panel (GDD 9.1) |
-| Lobby | `_Project/Meta/Lobby/` | active | Menu scene's play and Lobby panels: Quick Play, Party create and Party Code entry, search timer, Players found, Party members with Ready and the Leader's search, Leave |
-| Session | `_Project/Meta/Session/` | active | Matchmaking in the Menu (Quick Play, starting a Party's Match), Matchmaking Result, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016) |
-| Party | `_Project/Meta/Party/` | active | Party in the Menu: hidden Party Session by Party Code, members in join order, Party Leader and succession, Ready, removal, mode, return to the Party after a Match (ADR-0019) |
+| Lobby | `_Project/Meta/Lobby/` | active | Menu scene's play and Lobby panels: Quick Play, Party create and Party Code entry, "Поиск игры…" with a local stopwatch and Stop, Party members with Ready and the Leader's search, Leave |
+| Session | `_Project/Meta/Session/` | active | Quick Play search over the Lobby list (pick, Party as Lobby, merge into an older Lobby, stop by any member), Matchmaking Result, networked load of the Match, leaving to the Menu (GDD 3.3, ADR-0016, ADR-0019) |
+| Party | `_Project/Meta/Party/` | active | Party in the Menu: hidden Party Session by Party Code, members in join order, Party Leader and succession, Ready, removal, mode, the Party's search flag and moves into another Lobby, return to the Party after a Match (ADR-0019) |
 | Tournament | `_Project/Meta/Tournament/` | active | "Турнир дня" panel (top, around me, Medal) and Match reporting: register, confirm, Vote (GDD 9.2–9.3, ADR-0017) |
 | Match | `_Project/Gameplay/Match/` | active | Match state machine WaitingForPlayers → Countdown → Playing → Results (one Match per Session), seating Players and Bots into Slots, Match clock, input lock, placement table (GDD 3.2–3.3) |
 | Participants | `_Project/Gameplay/Participants/` | active | Networked Participant profile per Slot (Nickname, Critter Species, Bot or Player), Critter on the Vehicle seat (GDD 3.1, 8) |
