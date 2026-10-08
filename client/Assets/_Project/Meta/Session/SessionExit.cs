@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using PlowParty.Infrastructure.Network;
 using PlowParty.Infrastructure.Scenes;
 using PlowParty.Infrastructure.Session;
+using PlowParty.Meta.Session.Simulation;
 using VContainer.Unity;
 
 namespace PlowParty.Meta.Session
@@ -16,6 +17,7 @@ namespace PlowParty.Meta.Session
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private bool _leaving;
         private string _notice;
+        private MatchStanding _matchStanding;
 
         public SessionExit(NetworkSession session, SceneLoader scenes, MatchmakingResultStore matchmakingResults)
         {
@@ -38,6 +40,11 @@ namespace PlowParty.Meta.Session
         {
             _notice = notice;
             LeaveToMenuAsync().Forget();
+        }
+
+        public void ObserveMatch(MatchStanding standing)
+        {
+            _matchStanding = standing;
         }
 
         public string TakeNotice()
@@ -71,7 +78,7 @@ namespace PlowParty.Meta.Session
         {
             if (end == SessionEnd.Lost && _scenes.ActiveSceneName == SceneNames.Match)
             {
-                _notice = Matchmaker.SessionLostText;
+                _notice = SessionLossNotice.For(_matchStanding);
                 ReturnToMenuAsync().Forget();
             }
         }
@@ -79,6 +86,7 @@ namespace PlowParty.Meta.Session
         private UniTask ReturnToMenuAsync()
         {
             _matchmakingResults.Clear();
+            _matchStanding = MatchStanding.NotStarted;
             return _scenes.LoadAsync(SceneNames.Menu, _lifetime.Token);
         }
     }
