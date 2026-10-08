@@ -18,6 +18,10 @@ Engine, platform, and network plumbing used by both Gameplay and Meta: things th
 - `Storage/LocalFileStore` + `StorageFolder` — JSON files in a per-install folder: `<project>/Library/PlowParty` in the Editor (so each worktree and each Multiplayer Play Mode virtual player has its own), `persistentDataPath/PlowParty` in builds.
 - `UI/SafeAreaFitter` — fits a `RectTransform` to `Screen.safeArea` clamped to the screen; used by the Menu and the Hud (`DropOffArrowView` also clamps to its `ClampedSafeArea`).
 
+## Tests
+
+`Tests/NetworkWeavingTests` guards Fusion's build requirements for every `PlowParty.*` assembly: each one declaring a `NetworkBehaviour` or `INetworkInput` is listed in `AssembliesToWeave`, each one declaring an `[Rpc]` allows unsafe code, and every RPC reaches Fusion without a `MethodAccessException`. Weaved RPCs call Fusion internals (`NetworkBehaviourUtils.CheckInvokeRpc`); Mono permits that only from an assembly compiled with `allowUnsafeCode`, which emits the skip-verification permission.
+
 ## Depends on
 
 Shared, UniTask, VContainer, `Fusion.Unity`, `Photon.Realtime` (the session-list runner's `JoinSessionLobby` signature), Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`).

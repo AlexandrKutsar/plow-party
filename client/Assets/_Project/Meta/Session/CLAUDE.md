@@ -19,6 +19,7 @@ Matchmaking in the Menu: the Quick Play search over the Lobby list of the Matchm
 - A Party Session that opened as a Lobby keeps its Party: strangers who join are guests (`PartyJoinOutcome.Guest`), not members; stopping the search disconnects them, and their own `Matchmaker` searches again (a solo guest whose Lobby vanishes restarts the search, keeping the stopwatch).
 - A Party whose move fails (the target filled in the meantime) returns to its Party Session instead of trying the next candidate, because members already left; members who did get in stay there. A lost Lobby takes a Party back to its Party, not searching.
 - The Menu scope being destroyed by the networked scene load must not leave the Session, so `Matchmaker.Dispose` only unsubscribes and cancels; the `SessionListFeed` is MenuScope-owned and shuts its runner down on dispose.
+- The asmdef sets `allowUnsafeCode`: `LobbyLink` declares RPCs, and a weaved RPC calls Fusion internals that Mono lets only an unsafe-compiled assembly reach (`MethodAccessException` otherwise; `Infrastructure/Tests/NetworkWeavingTests` guards it).
 
 ## Depends on
 

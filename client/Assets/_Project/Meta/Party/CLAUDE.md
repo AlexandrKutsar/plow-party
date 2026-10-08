@@ -19,6 +19,7 @@ Friends gathered in the Menu by a Party Code: members in join order, the Party L
 - A Party Session is hidden (`IsVisible = false`) but open: the Quick Play list never shows it, a join by name does. It is created with the Lobby properties of `LobbyProperties.Hidden` (`start`/`opened` = 0) so that it can later open as a public Lobby. Fusion's `MaxPlayers` = capacity answers a seventh joiner `Full`.
 - When Quick Play finds no Lobby, the Party Session itself becomes the Lobby and then the Match Session; members returning from that Match meet a closed Session (`Refused`) and wait until the Host leaves it, then rejoin or re-create the Party as usual.
 - New members join Not Ready; after a Match everyone rejoins Not Ready.
+- The asmdef sets `allowUnsafeCode`: `PartyLink` declares RPCs, and a weaved RPC calls Fusion internals that Mono lets only an unsafe-compiled assembly reach (`MethodAccessException` otherwise; `Infrastructure/Tests/NetworkWeavingTests` guards it).
 
 ## Depends on
 
