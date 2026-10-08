@@ -30,7 +30,7 @@ namespace PlowParty.Gameplay.Participants.Tests
                 given.Add(ParticipantColors.Assign(ParticipantColors.NoPreference, new List<int> { 2 }, PaletteSize, new Random(seed)));
             }
 
-            Assert.That(given, Does.Not.Contain(2));
+            Assert.That(given, Has.No.Member(2));
             Assert.That(given.Count, Is.GreaterThan(3));
         }
 
@@ -43,7 +43,7 @@ namespace PlowParty.Gameplay.Participants.Tests
             for (var slot = 0; slot < 6; slot++)
             {
                 var color = ParticipantColors.Assign(ParticipantColors.NoPreference, taken, PaletteSize, random);
-                Assert.That(taken, Does.Not.Contain(color));
+                Assert.That(taken, Has.No.Member(color));
                 taken.Add(color);
             }
         }
