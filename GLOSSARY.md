@@ -44,6 +44,10 @@ _Avoid_: Room Code, invite code
 A Party member's own mark that they are set to play; the Party Leader can start only when every other member is Ready, and a new member joins Not Ready.
 _Avoid_: Confirmed (that is the Confirmed Player), accepted
 
+**Podium** (подиум):
+The 3D stage on the Menu's Игра tab showing the tractor and Critter of the Player, or of every Party member side by side in join order.
+_Avoid_: Garage (a future screen), showcase, lineup
+
 **Quick Play** (быстрая игра):
 The mode that counts for the Tournament: the Player or the whole Party joins the best open Lobby of its Matchmaking Pool (room for everyone, at least 3 s before its start; most Players, then soonest start), or opens its own Lobby when none fits, and moves into an older fitting Lobby while waiting alone.
 _Avoid_: Random match, auto match
