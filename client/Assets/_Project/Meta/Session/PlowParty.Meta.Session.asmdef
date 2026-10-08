@@ -5,6 +5,7 @@
         "PlowParty.Shared",
         "PlowParty.Infrastructure",
         "PlowParty.Meta.Account",
+        "PlowParty.Meta.Party",
         "Fusion.Unity",
         "UniTask",
         "VContainer"

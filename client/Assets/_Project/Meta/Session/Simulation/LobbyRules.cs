@@ -8,14 +8,9 @@ namespace PlowParty.Meta.Session.Simulation
     {
         private const float MillisecondsPerSecond = 1000f;
 
-        public static bool ShouldStart(LobbyMode mode, int players, int maxSlots, float secondsLeft, bool startRequested)
+        public static bool ShouldStart(int players, int maxSlots, float secondsLeft)
         {
-            if (players < 1)
-            {
-                return false;
-            }
-
-            return mode == LobbyMode.Room ? startRequested : players >= maxSlots || secondsLeft <= 0f;
+            return players >= 1 && (players >= maxSlots || secondsLeft <= 0f);
         }
 
         public static MatchmakingResult MatchmakingResultFor(int players, int maxSlots)

@@ -104,7 +104,8 @@
         "PlowParty.Gameplay.Match",
         "PlowParty.Gameplay.Participants",
         "PlowParty.Gameplay.Bots",
-        "PlowParty.Meta.Tournament"
+        "PlowParty.Meta.Tournament",
+        "PlowParty.Meta.Party"
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,

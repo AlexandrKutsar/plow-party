@@ -1,4 +1,4 @@
-namespace PlowParty.Meta.Session
+namespace PlowParty.Infrastructure.Session
 {
     public sealed class MatchmakingPool
     {
@@ -8,10 +8,5 @@ namespace PlowParty.Meta.Session
         }
 
         public string Name { get; }
-
-        public string RoomSessionName(string roomCode)
-        {
-            return $"{Name}-room-{roomCode}";
-        }
     }
 }

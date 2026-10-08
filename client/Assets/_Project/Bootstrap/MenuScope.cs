@@ -3,6 +3,8 @@ using PlowParty.Meta.Account;
 using PlowParty.Meta.Account.View;
 using PlowParty.Meta.Lobby;
 using PlowParty.Meta.Lobby.View;
+using PlowParty.Meta.Party;
+using PlowParty.Meta.Party.Network;
 using PlowParty.Meta.Session;
 using PlowParty.Meta.Tournament;
 using PlowParty.Meta.Tournament.View;
@@ -20,6 +22,8 @@ namespace PlowParty.Bootstrap
             builder.RegisterBuildCallback(resolver => resolver.Resolve<NetworkScopeBinding>().Bind());
             builder.RegisterComponentInHierarchy<NicknameView>();
             builder.RegisterEntryPoint<NicknamePresenter>();
+            builder.Register<PartyLinks>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<PartyService>().AsSelf();
             builder.RegisterEntryPoint<Matchmaker>().AsSelf();
             builder.RegisterComponentInHierarchy<PlayMenuView>();
             builder.RegisterComponentInHierarchy<LobbyPanelView>();
