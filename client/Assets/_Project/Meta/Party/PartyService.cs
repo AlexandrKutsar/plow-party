@@ -35,6 +35,7 @@ namespace PlowParty.Meta.Party
         private readonly Random _random = new Random();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private int _shownRevision = -1;
+        private bool _disposed;
 
         public PartyService(NetworkSession session, AccountService account, MatchmakingPool pool, PartyConfig config, PartyMemory memory, PartyLinks links)
         {
@@ -105,6 +106,7 @@ namespace PlowParty.Meta.Party
 
         public void Dispose()
         {
+            _disposed = true;
             _session.Ended -= OnSessionEnded;
             _links.Removed -= OnRemoved;
             _lifetime.Cancel();
@@ -227,12 +229,13 @@ namespace PlowParty.Meta.Party
             Enter(PartyStage.Connecting, null);
             Code = code;
             UnityEngine.Debug.Log($"[Party] Returning to Party {code} as {role}");
+            var lifetime = _lifetime.Token;
             var clock = Stopwatch.StartNew();
             var step = PartyReturnRules.First(role);
             while (true)
             {
-                var outcome = await StartAsync(step, code, _lifetime.Token);
-                if (await AbandonedAsync(outcome))
+                var outcome = await StartAsync(step, code, lifetime);
+                if (lifetime.IsCancellationRequested || await AbandonedAsync(outcome))
                 {
                     return;
                 }
@@ -251,8 +254,8 @@ namespace PlowParty.Meta.Party
                     return;
                 }
 
-                await UniTask.Delay(TimeSpan.FromSeconds(_config.RetryIntervalSeconds), cancellationToken: _lifetime.Token);
-                if (Stage != PartyStage.Connecting)
+                var cancelled = await UniTask.Delay(TimeSpan.FromSeconds(_config.RetryIntervalSeconds), cancellationToken: lifetime).SuppressCancellationThrow();
+                if (cancelled || Stage != PartyStage.Connecting)
                 {
                     return;
                 }
@@ -341,7 +344,7 @@ namespace PlowParty.Meta.Party
 
         private void OnSessionEnded(SessionEnd end)
         {
-            if (end != SessionEnd.Lost || Stage != PartyStage.InParty)
+            if (_disposed || end != SessionEnd.Lost || Stage != PartyStage.InParty)
             {
                 return;
             }
