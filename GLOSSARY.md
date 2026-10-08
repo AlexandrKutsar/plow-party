@@ -107,8 +107,12 @@ What Meta's matchmaking hands the Match when the Lobby ends: how many Players it
 _Avoid_: Lineup, party, roster (that is the registered Match)
 
 **Participant Profile** (профиль участника):
-What every peer knows about the Participant in a Slot: Nickname, Critter Species, and whether it is a Bot; Bots get theirs from a pool.
+What every peer knows about the Participant in a Slot: Nickname, Critter Species, Participant Color, and whether it is a Bot; Bots get theirs from a pool.
 _Avoid_: Player info, avatar
+
+**Participant Color** (цвет участника):
+One of the 8 palette colours, unique within a Match, that marks a Participant's Nickname label, Vehicle body, Score row and Podium tractor; the Host assigns it at seating.
+_Avoid_: Team color, skin, tint
 
 **Bot Difficulty** (сложность бота):
 How well a Bot plays: Strong, Medium, or Weak; every Match with Bots has exactly one Strong Bot.

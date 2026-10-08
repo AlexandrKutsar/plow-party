@@ -163,18 +163,18 @@ namespace PlowParty.Gameplay.Match.Network
             var slot = FirstFreeSlot();
             var token = ParticipantToken.TryFromBytes(runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
             var nickname = ParticipantProfiles.PlayerNickname(token?.Nickname, slot);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), false);
+            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), FreeColor(ParticipantColors.NoPreference), false);
             _playerSlots[player] = slot;
             _roster.Seat(slot, profile, token?.AccountId);
             _spawner.Spawn(runner, slot, player);
-            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname}");
+            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname} with Participant Color {profile.Color}");
         }
 
         private void SeatBot(NetworkRunner runner)
         {
             var slot = RandomFreeSlot();
             var nickname = ParticipantProfiles.BotNickname(_participants.BotNicknames, TakenNicknames(), slot, _random);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), true);
+            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), FreeColor(ParticipantColors.NoPreference), true);
             _botSlots[slot] = true;
             _roster.Seat(slot, profile, null);
             _spawner.Spawn(runner, slot, PlayerRef.None);
@@ -261,6 +261,25 @@ namespace PlowParty.Gameplay.Match.Network
                 if (_roster.TryGetProfile(slot, out var profile))
                 {
                     taken.Add(profile.Nickname);
+                }
+            }
+
+            return taken;
+        }
+
+        private int FreeColor(int preferred)
+        {
+            return ParticipantColors.Assign(preferred, TakenColors(), _participants.ColorCount, _random);
+        }
+
+        private List<int> TakenColors()
+        {
+            var taken = new List<int>(ParticipantRoster.MaxSlots);
+            for (var slot = 0; slot < ParticipantRoster.MaxSlots; slot++)
+            {
+                if (_roster.TryGetProfile(slot, out var profile))
+                {
+                    taken.Add(profile.Color);
                 }
             }
 

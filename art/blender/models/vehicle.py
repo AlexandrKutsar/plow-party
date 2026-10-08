@@ -7,7 +7,8 @@ from plow_art import shapes
 NAME = "Vehicle"
 OUTPUT = "client/Assets/_Project/Art/Vehicles/Vehicle/SM_Vehicle.fbx"
 
-BODY_COLOR = "red"
+BODY_COLOR = "white"
+BODY_NAME = "Body"
 
 FRONT = Vector((0, -1, 0))
 UP = Vector((0, 0, 1))
@@ -31,8 +32,9 @@ SEAT_TOP = (0, 0.3, 0.68)
 
 def build(collection):
     root = shapes.empty(NAME, (0, 0, 0), collection)
-    _build_hood(collection, root)
-    _build_rear(collection, root)
+    hood = _build_hood(collection, root)
+    rear = _build_rear(collection, root)
+    shapes.join([hood, *rear], BODY_NAME)
     _build_wheels(collection, root)
     _build_bucket(collection, root)
     shapes.empty("CritterSeat", SEAT_TOP, collection, root)
@@ -65,17 +67,19 @@ def _build_hood(collection, root):
 
     axle = shapes.box("FrontAxle", (0.5, 0.08, 0.08), (0, FRONT_WHEEL["y"], FRONT_WHEEL["radius"]), collection, root)
     shapes.paint(axle, "tire")
+    return hood
 
 
 def _build_rear(collection, root):
-    body = shapes.box("RearBody", (0.44, 0.5, 0.3), (0, 0.22, 0.45), collection, root, chamfer=0.05)
-    shapes.paint(body, BODY_COLOR)
+    body_parts = [shapes.box("RearBody", (0.44, 0.5, 0.3), (0, 0.22, 0.45), collection, root, chamfer=0.05)]
+    shapes.paint(body_parts[0], BODY_COLOR)
 
     for side, x in (("L", REAR_WHEEL["x"]), ("R", -REAR_WHEEL["x"])):
         fender = shapes.extruded_profile(
             f"Fender{side}", _arc(0.33, 0.37, 10, 170, 8), REAR_WHEEL["width"] + 0.06,
             (x, REAR_WHEEL["y"], REAR_WHEEL["radius"]), collection, root)
         shapes.paint(fender, BODY_COLOR)
+        body_parts.append(fender)
 
     cushion = shapes.box("SeatCushion", (0.3, 0.26, 0.08), (0, 0.3, 0.64), collection, root, chamfer=0.03)
     shapes.paint(cushion, "seat")
@@ -88,6 +92,7 @@ def _build_rear(collection, root):
     wheel = shapes.cylinder("SteeringWheel", 0.1, 0.025, (0, 0.12, 0.85), collection, root, axis="Z", segments=10)
     wheel.rotation_euler = (math.radians(-35), 0, 0)
     shapes.paint(wheel, "black")
+    return body_parts
 
 
 def _build_wheels(collection, root):
