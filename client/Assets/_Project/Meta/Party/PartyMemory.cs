@@ -7,6 +7,7 @@ namespace PlowParty.Meta.Party
     public sealed class PartyMemory
     {
         private readonly List<PartyBot> _bots = new List<PartyBot>();
+        private readonly List<string> _joinOrder = new List<string>();
 
         public string Code { get; private set; }
 
@@ -28,12 +29,20 @@ namespace PlowParty.Meta.Party
 
         public IReadOnlyList<PartyBot> Bots => _bots;
 
+        public IReadOnlyList<string> JoinOrder => _joinOrder;
+
         public void Remember(string code, PartyRole role, PartyMode mode, bool isReady)
         {
             Code = code;
             Role = role;
             Mode = mode;
             IsReady = isReady;
+        }
+
+        public void RememberJoinOrder(IEnumerable<string> keys)
+        {
+            _joinOrder.Clear();
+            _joinOrder.AddRange(keys);
         }
 
         public void RememberSetup(int color, int critter, IEnumerable<PartyBot> bots)
@@ -61,6 +70,7 @@ namespace PlowParty.Meta.Party
             Role = PartyRole.Member;
             Mode = PartyMode.QuickPlay;
             IsReady = false;
+            _joinOrder.Clear();
         }
     }
 }

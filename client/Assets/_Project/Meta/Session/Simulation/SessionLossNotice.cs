@@ -2,19 +2,24 @@ namespace PlowParty.Meta.Session.Simulation
 {
     public static class SessionLossNotice
     {
-        public const string HostLeftText = "Хост вышел, матч прерван";
-
-        public static string For(MatchStanding standing)
+        public static SessionNotice For(MatchStanding standing)
         {
             switch (standing)
             {
-                case MatchStanding.Underway:
-                    return HostLeftText;
+                case MatchStanding.Playing:
+                    return SessionNotice.HostLeft;
+                case MatchStanding.TurnedAway:
+                    return SessionNotice.MatchStarted;
                 case MatchStanding.Finished:
-                    return null;
+                    return SessionNotice.None;
                 default:
-                    return Matchmaker.SessionLostText;
+                    return SessionNotice.ConnectionLost;
             }
+        }
+
+        public static bool KeepsResults(MatchStanding standing)
+        {
+            return standing == MatchStanding.Finished;
         }
     }
 }

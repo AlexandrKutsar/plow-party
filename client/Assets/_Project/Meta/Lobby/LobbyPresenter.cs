@@ -101,7 +101,7 @@ namespace PlowParty.Meta.Lobby
         private void Refresh()
         {
             var screen = LobbyScreens.For(_party.Stage, _matchmaker.Stage, _party.Party.Mode);
-            _playMenu.Show(screen == LobbyScreen.Solo, _party.Failure ?? _matchmaker.Failure);
+            _playMenu.Show(screen == LobbyScreen.Solo, Notice());
             _partyPanel.SetVisible(screen == LobbyScreen.Party);
             _search.SetVisible(screen == LobbyScreen.Search);
             if (screen == LobbyScreen.Party)
@@ -123,7 +123,7 @@ namespace PlowParty.Meta.Lobby
 
         private void RefreshParty()
         {
-            var state = PartyPanelState.For(_party.Stage, _party.Code, _party.Party, _party.LocalId, _matchmaker.CanSearch);
+            var state = PartyPanelState.For(_party.Stage, _party.Code, _party.Party, _party.LocalId, _matchmaker.CanSearch, Notice());
             _partyPanel.Show(state);
             _setup.Show(state, _looks.ColorOf);
             for (var i = 0; i < _partyPanel.RowCount; i++)
@@ -138,6 +138,11 @@ namespace PlowParty.Meta.Lobby
                     _partyPanel.HideRow(i);
                 }
             }
+        }
+
+        private string Notice()
+        {
+            return LobbyText.Notice(_party.Failure, _matchmaker.Failure);
         }
 
         private void RefreshSearch()
@@ -218,7 +223,6 @@ namespace PlowParty.Meta.Lobby
         }
 
         private void OnStopRequested()
-
         {
             _matchmaker.StopSearch();
         }

@@ -2,8 +2,9 @@ namespace PlowParty.Meta.Session.Simulation
 {
     public enum MatchStanding
     {
-        NotStarted,
-        Underway,
+        BeforePlaying,
+        Playing,
         Finished,
+        TurnedAway,
     }
 }

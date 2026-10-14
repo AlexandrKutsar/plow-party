@@ -2,13 +2,14 @@ namespace PlowParty.Meta.Session.Simulation
 {
     public readonly struct LobbyListing
     {
-        public LobbyListing(string name, int players, int maxPlayers, long startsAtMilliseconds, long openedAtMilliseconds)
+        public LobbyListing(string name, int players, int maxPlayers, long startsAtMilliseconds, long openedAtMilliseconds, string parties = null)
         {
             Name = name ?? string.Empty;
             Players = players;
             MaxPlayers = maxPlayers;
             StartsAtMilliseconds = startsAtMilliseconds;
             OpenedAtMilliseconds = openedAtMilliseconds;
+            Parties = parties ?? string.Empty;
         }
 
         public string Name { get; }
@@ -20,6 +21,8 @@ namespace PlowParty.Meta.Session.Simulation
         public long StartsAtMilliseconds { get; }
 
         public long OpenedAtMilliseconds { get; }
+
+        public string Parties { get; }
 
         public int FreeSlots => MaxPlayers - Players;
 

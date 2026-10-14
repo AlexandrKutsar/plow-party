@@ -12,7 +12,10 @@ namespace PlowParty.Meta.Session.Config
         [SerializeField, Min(0.5f)] private float _listWaitSeconds = 3f;
         [SerializeField, Min(0.1f)] private float _mergeCheckSeconds = 1f;
         [SerializeField, Min(0f)] private float _moveGraceSeconds = 0.3f;
+        [SerializeField, Min(1f)] private float _followSeconds = 8f;
         [SerializeField] private NetworkObject _lobbyLinkPrefab;
+
+        public float FollowSeconds => _followSeconds;
 
         public float SearchSeconds => _searchSeconds;
 

@@ -15,5 +15,7 @@ namespace PlowParty.Meta.Party.Network
         public byte Color { get; set; }
 
         public byte Critter { get; set; }
+
+        public NetworkString<_64> Key { get; set; }
     }
 }

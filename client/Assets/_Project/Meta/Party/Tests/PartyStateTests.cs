@@ -266,6 +266,69 @@ namespace PlowParty.Meta.Party.Tests
             Assert.That(party.IsSearching, Is.True);
         }
 
+        [Test]
+        public void Join_RecreatedParty_ReturningMembersKeepTheirOriginalOrder()
+        {
+            var party = RecreatedParty("anna", "boris", "vera");
+
+            party.Join(Anna, "Anna", 0, "anna");
+            party.Join(Vera, "Vera", 0, "vera");
+            party.Join(Boris, "Boris", 0, "boris");
+
+            Assert.That(IdsOf(party), Is.EqualTo(new[] { Anna, Boris, Vera }));
+        }
+
+        [Test]
+        public void Join_RecreatedByALaterMember_TheHostLeadsAndTheOthersKeepTheirOrder()
+        {
+            var party = RecreatedParty("anna", "boris", "vera");
+
+            party.Join(Vera, "Vera", 0, "vera");
+            party.Join(Boris, "Boris", 0, "boris");
+            party.Join(Anna, "Anna", 0, "anna");
+
+            Assert.That(IdsOf(party), Is.EqualTo(new[] { Vera, Anna, Boris }));
+        }
+
+        [Test]
+        public void Join_NewcomerToARecreatedParty_StandsBehindReturningMembers()
+        {
+            const int gleb = 4;
+            var party = RecreatedParty("anna", "boris");
+
+            party.Join(Anna, "Anna", 0, "anna");
+            party.Join(gleb, "Gleb", 0, "gleb");
+            party.Join(Boris, "Boris", 0, "boris");
+
+            Assert.That(IdsOf(party), Is.EqualTo(new[] { Anna, Boris, gleb }));
+        }
+
+        [Test]
+        public void JoinOrder_Members_ListsTheirKeysInJoinOrder()
+        {
+            var party = new PartyState(Capacity);
+            party.Join(Anna, "Anna", 0, "anna");
+            party.Join(Boris, "Boris", 0, "boris");
+
+            Assert.That(party.JoinOrder, Is.EqualTo(new[] { "anna", "boris" }));
+        }
+
+        private static PartyState RecreatedParty(params string[] joinOrder)
+        {
+            return new PartyState(Capacity, PartyMode.QuickPlay, PartyLooks.Default, joinOrder);
+        }
+
+        private static int[] IdsOf(PartyState party)
+        {
+            var ids = new int[party.Count];
+            for (var i = 0; i < ids.Length; i++)
+            {
+                ids[i] = party.Members[i].Id;
+            }
+
+            return ids;
+        }
+
         private static PartyState PartyOf(params int[] ids)
         {
             var party = new PartyState(Capacity);

@@ -1,5 +1,7 @@
 using System;
+using PlowParty.Meta.Party;
 using PlowParty.Meta.Session;
+using PlowParty.Meta.Session.Simulation;
 using PlowParty.Shared;
 
 namespace PlowParty.Meta.Lobby.Simulation
@@ -20,7 +22,19 @@ namespace PlowParty.Meta.Lobby.Simulation
         private const string SearchButtonText = "Искать матч";
         private const string StartButtonText = "Начать";
         private const string EmptySlotText = "Пусто";
+        private const string PartyNotFoundText = "Группа не найдена";
+        private const string PartyFullText = "Группа заполнена";
+        private const string RemovedText = "Вас исключили из группы";
+        private const string MatchStartedText = "Матч уже начался";
+        private const string ConnectFailedText = "Не удалось подключиться";
+        private const string ConnectionLostText = "Связь с хостом потеряна";
+        private const string HostLeftText = "Хост вышел, матч прерван";
         private static readonly string[] CritterNames = { "Лиса", "Медведь", "Заяц", "Енот", "Пингвин", "Бобр" };
+
+        public static string Notice(PartyNotice party, SessionNotice session)
+        {
+            return party != PartyNotice.None ? Notice(party) : Notice(session);
+        }
 
         public static string CustomGameTitle()
         {
@@ -105,6 +119,42 @@ namespace PlowParty.Meta.Lobby.Simulation
         public static string MemberReady(bool isReady)
         {
             return isReady ? ReadyMark : NotReadyMark;
+        }
+
+        private static string Notice(PartyNotice notice)
+        {
+            switch (notice)
+            {
+                case PartyNotice.NotFound:
+                    return PartyNotFoundText;
+                case PartyNotice.Full:
+                    return PartyFullText;
+                case PartyNotice.Removed:
+                    return RemovedText;
+                case PartyNotice.MatchStarted:
+                    return MatchStartedText;
+                case PartyNotice.ConnectFailed:
+                    return ConnectFailedText;
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static string Notice(SessionNotice notice)
+        {
+            switch (notice)
+            {
+                case SessionNotice.ConnectFailed:
+                    return ConnectFailedText;
+                case SessionNotice.ConnectionLost:
+                    return ConnectionLostText;
+                case SessionNotice.HostLeft:
+                    return HostLeftText;
+                case SessionNotice.MatchStarted:
+                    return MatchStartedText;
+                default:
+                    return string.Empty;
+            }
         }
     }
 }

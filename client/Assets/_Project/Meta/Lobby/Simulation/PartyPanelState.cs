@@ -53,7 +53,9 @@ namespace PlowParty.Meta.Lobby.Simulation
 
         public string CritterName { get; private set; }
 
-        public static PartyPanelState For(PartyStage stage, string code, PartyState party, int localId, bool canSearch)
+        public string Failure { get; private set; }
+
+        public static PartyPanelState For(PartyStage stage, string code, PartyState party, int localId, bool canSearch, string failure = null)
         {
             var inParty = stage == PartyStage.InParty;
             var solo = stage == PartyStage.None;
@@ -84,6 +86,7 @@ namespace PlowParty.Meta.Lobby.Simulation
                 CanPickLook = showSetup && hasLocal,
                 Critter = hasLocal ? local.Critter : 0,
                 CritterName = hasLocal ? LobbyText.CritterName(local.Critter) : string.Empty,
+                Failure = failure ?? string.Empty,
             };
         }
 

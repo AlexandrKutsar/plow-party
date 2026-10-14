@@ -20,10 +20,6 @@ namespace PlowParty.Meta.Session
 {
     public sealed class Matchmaker : ITickable, IDisposable
     {
-        public const string ConnectFailedText = "Не удалось подключиться";
-        public const string SessionLostText = "Связь с хостом потеряна";
-        public const string MatchStartedText = "Матч уже начался";
-
         private readonly NetworkSession _session;
         private readonly SessionListFeed _feed;
         private readonly AccountService _account;
@@ -34,9 +30,12 @@ namespace PlowParty.Meta.Session
         private readonly LobbyLinks _lobbyLinks;
         private readonly Stopwatch _searchClock = new Stopwatch();
         private readonly List<LobbyListing> _listings = new List<LobbyListing>();
+        private readonly Dictionary<int, string> _arrivedParties = new Dictionary<int, string>();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private CancellationTokenSource _search;
         private bool _hostsLobby;
+        private bool _followsLeader;
+        private bool _inLeaderLobby;
         private long _hostedOpenedAt;
         private long _hostedStartsAt;
         private bool _disposed;
@@ -55,20 +54,15 @@ namespace PlowParty.Meta.Session
             _session.Ended += OnSessionEnded;
             _party.MoveRequested += OnMoveRequested;
             _lobbyLinks.PartyStopped += OnPartyStopped;
-        }
-
-        private enum MoveOutcome
-        {
-            Joined,
-            Failed,
-            PartyReturned,
+            _lobbyLinks.PartyArrived += OnPartyArrived;
+            _lobbyLinks.PlayerLeft += OnLobbyPlayerLeft;
         }
 
         public event Action Changed;
 
         public LobbyStage Stage { get; private set; }
 
-        public string Failure { get; private set; }
+        public SessionNotice Failure { get; private set; }
 
         public float SearchSeconds => (float)_searchClock.Elapsed.TotalSeconds;
 
@@ -122,7 +116,7 @@ namespace PlowParty.Meta.Session
                     StopPartyAwayAsync().Forget();
                     break;
                 default:
-                    EndSearch(null);
+                    EndSearch(SessionNotice.None);
                     _session.LeaveAsync().Forget();
                     break;
             }
@@ -131,6 +125,7 @@ namespace PlowParty.Meta.Session
         public void Tick()
         {
             FollowPartySearch();
+            CheckLeaderStillHere();
             if (Stage == LobbyStage.Searching && _hostsLobby && _session.IsHost && LobbyRules.ShouldStart(_session.PlayerCount, MaxSlots, LobbyRules.SecondsLeft(_hostedStartsAt, Now())))
             {
                 StartMatch();
@@ -143,6 +138,8 @@ namespace PlowParty.Meta.Session
             _session.Ended -= OnSessionEnded;
             _party.MoveRequested -= OnMoveRequested;
             _lobbyLinks.PartyStopped -= OnPartyStopped;
+            _lobbyLinks.PartyArrived -= OnPartyArrived;
+            _lobbyLinks.PlayerLeft -= OnLobbyPlayerLeft;
             _search?.Cancel();
             _search?.Dispose();
             _lifetime.Cancel();
@@ -167,8 +164,24 @@ namespace PlowParty.Meta.Session
             else if (!_party.IsSearching && Stage == LobbyStage.Searching)
             {
                 HideOwnLobby();
-                EndSearch(null);
+                EndSearch(SessionNotice.None);
             }
+        }
+
+        private void CheckLeaderStillHere()
+        {
+            if (!_inLeaderLobby || Stage != LobbyStage.Searching || !_session.IsRunning)
+            {
+                return;
+            }
+
+            if (_session.TryGetProperty(LobbyProperties.Parties, out var parties) && parties.IsString && LobbyParties.Contains((string)parties.PropertyValue, _party.Code))
+            {
+                return;
+            }
+
+            Debug.LogWarning($"[Session] The Leader of Party {_party.Code} is not in this Lobby: back to the Party");
+            ReturnToPartyAsync().Forget();
         }
 
         private async UniTaskVoid RunSearchAsync(CancellationToken cancellationToken)
@@ -179,7 +192,7 @@ namespace PlowParty.Meta.Session
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        EndSearch(ConnectFailedText);
+                        EndSearch(SessionNotice.ConnectFailed);
                     }
 
                     return;
@@ -192,14 +205,31 @@ namespace PlowParty.Meta.Session
                         await _feed.WaitForUpdateAsync(0, _config.ListWaitSeconds, cancellationToken);
                     }
 
-                    if (await JoinBestLobbyAsync(cancellationToken) != MoveOutcome.Failed || !await OpenOwnLobbyAsync(cancellationToken))
+                    if (await JoinBestLobbyAsync(cancellationToken))
+                    {
+                        return;
+                    }
+
+                    if (_party.LeadsAwayParty)
+                    {
+                        CallPartyHome();
+                        return;
+                    }
+
+                    if (!await OpenOwnLobbyAsync(cancellationToken))
                     {
                         return;
                     }
 
                     var olderLobby = await WaitForOlderLobbyAsync(cancellationToken);
-                    if (olderLobby == null || await MoveAsync(olderLobby, cancellationToken) != MoveOutcome.Failed)
+                    if (olderLobby == null || await MoveAsync(olderLobby, cancellationToken))
                     {
+                        return;
+                    }
+
+                    if (_party.LeadsAwayParty)
+                    {
+                        CallPartyHome();
                         return;
                     }
                 }
@@ -209,26 +239,24 @@ namespace PlowParty.Meta.Session
             }
         }
 
-        private async UniTask<MoveOutcome> JoinBestLobbyAsync(CancellationToken cancellationToken)
+        private async UniTask<bool> JoinBestLobbyAsync(CancellationToken cancellationToken)
         {
             foreach (var candidate in LobbyPick.Candidates(Listings(), PartySize, Now(), _config.MinSecondsBeforeStart))
             {
-                var outcome = await MoveAsync(candidate.Name, cancellationToken);
-                if (outcome != MoveOutcome.Failed)
+                if (await MoveAsync(candidate.Name, cancellationToken))
                 {
-                    return outcome;
+                    return true;
                 }
             }
 
-            return MoveOutcome.Failed;
+            return false;
         }
 
-        private async UniTask<MoveOutcome> MoveAsync(string sessionName, CancellationToken cancellationToken)
+        private async UniTask<bool> MoveAsync(string sessionName, CancellationToken cancellationToken)
         {
             Debug.Log($"[Session] Joining Lobby {sessionName} with {PartySize} Players");
-            var movingParty = _party.Stage == PartyStage.InParty;
             HideOwnLobby();
-            if (movingParty)
+            if (_party.Stage == PartyStage.InParty)
             {
                 _party.MoveTo(sessionName);
                 await UniTask.Delay(TimeSpan.FromSeconds(_config.MoveGraceSeconds), cancellationToken: cancellationToken);
@@ -236,29 +264,49 @@ namespace PlowParty.Meta.Session
             }
 
             var outcome = await JoinAsync(sessionName, cancellationToken);
-            if (outcome == SessionStartOutcome.Started)
+            if (outcome != SessionStartOutcome.Started)
             {
-                _feed.Leave();
-                Debug.Log($"[Session] Joined Lobby {sessionName}");
-                return MoveOutcome.Joined;
+                Debug.LogWarning($"[Session] Could not join Lobby {sessionName} ({outcome}); trying the next one");
+                return false;
             }
 
-            if (!movingParty)
+            _feed.Leave();
+            Debug.Log($"[Session] Joined Lobby {sessionName}");
+            if (_party.LeadsAwayParty)
             {
-                return MoveOutcome.Failed;
+                AnnouncePartyAsync(cancellationToken).Forget();
             }
 
-            Debug.LogWarning($"[Session] The Party could not join Lobby {sessionName} ({outcome}) and returns");
-            EndSearch(null);
-            _party.ReturnFromLobby();
-            return MoveOutcome.PartyReturned;
+            return true;
+        }
+
+        private async UniTaskVoid AnnouncePartyAsync(CancellationToken cancellationToken)
+        {
+            var deadline = TimeSpan.FromSeconds(_config.ListWaitSeconds);
+            var clock = Stopwatch.StartNew();
+            while (_lobbyLinks.Current == null && clock.Elapsed < deadline)
+            {
+                if (await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken).SuppressCancellationThrow())
+                {
+                    return;
+                }
+            }
+
+            if (_lobbyLinks.Current == null)
+            {
+                Debug.LogWarning($"[Session] The Lobby has no Lobby link: Party {_party.Code} cannot call its members");
+                return;
+            }
+
+            Debug.Log($"[Session] Party Leader is in the Lobby: calling the members of Party {_party.Code}");
+            _lobbyLinks.Current.RequestPartyArrived(_party.Code);
         }
 
         private async UniTask<bool> OpenOwnLobbyAsync(CancellationToken cancellationToken)
         {
             var openedAt = Now();
             var startsAt = LobbyRules.StartsAt(openedAt, _config.SearchSeconds);
-            var properties = LobbyProperties.Open(_pool.Name, startsAt, openedAt);
+            var properties = LobbyProperties.Open(_pool.Name, startsAt, openedAt, string.Empty);
             if (_party.Stage == PartyStage.InParty)
             {
                 _session.OpenAsLobby(properties);
@@ -268,7 +316,7 @@ namespace PlowParty.Meta.Session
                 var outcome = await StartSessionAsync(GameMode.Host, null, properties, cancellationToken);
                 if (outcome != SessionStartOutcome.Started)
                 {
-                    EndSearch(ConnectFailedText);
+                    EndSearch(SessionNotice.ConnectFailed);
                     return false;
                 }
             }
@@ -276,6 +324,7 @@ namespace PlowParty.Meta.Session
             _hostedOpenedAt = openedAt;
             _hostedStartsAt = startsAt;
             _hostsLobby = true;
+            _arrivedParties.Clear();
             _lobbyLinks.Spawn(_session.Runner, _config.LobbyLinkPrefab);
             Debug.Log($"[Session] No Lobby fits {PartySize} Players: hosting a Lobby for {_config.SearchSeconds} s");
             return true;
@@ -332,7 +381,7 @@ namespace PlowParty.Meta.Session
 
         private async UniTaskVoid StopPartyAwayAsync()
         {
-            EndSearch(null);
+            EndSearch(SessionNotice.None);
             _party.StopSearch();
             _lobbyLinks.Current?.RequestPartyStop(_party.Code);
             await UniTask.Delay(TimeSpan.FromSeconds(_config.MoveGraceSeconds), cancellationToken: _lifetime.Token).SuppressCancellationThrow();
@@ -344,35 +393,79 @@ namespace PlowParty.Meta.Session
 
         private async UniTask ReturnToPartyAsync()
         {
-            EndSearch(null);
+            EndSearch(SessionNotice.None);
             await _session.LeaveAsync();
             _party.ReturnFromLobby();
         }
 
-        private async UniTaskVoid FollowPartyAsync(string sessionName)
+        private void CallPartyHome()
+        {
+            Debug.LogWarning($"[Session] No Lobby took Party {_party.Code}: the Party returns");
+            EndSearch(SessionNotice.None);
+            _party.ReturnFromLobby();
+        }
+
+        private async UniTaskVoid FollowLeaderAsync()
         {
             if (Stage == LobbyStage.Idle)
             {
                 BeginSearch();
             }
 
+            var cancellationToken = _search.Token;
+            _followsLeader = true;
             _party.LeaveForLobby();
+            await _session.LeaveAsync();
             try
             {
-                var outcome = await JoinAsync(sessionName, _search.Token);
-                if (outcome == SessionStartOutcome.Started)
+                var lobby = await WaitForLeaderLobbyAsync(cancellationToken);
+                if (lobby == null)
                 {
-                    Debug.Log($"[Session] Followed the Party Leader into Lobby {sessionName}");
+                    Debug.LogWarning($"[Session] The Leader of Party {_party.Code} got into no Lobby: back to the Party");
+                    _followsLeader = false;
+                    CallPartyHome();
                     return;
                 }
 
-                Debug.LogWarning($"[Session] Could not follow the Party into Lobby {sessionName} ({outcome})");
-                EndSearch(null);
-                _party.ReturnFromLobby();
+                var outcome = await JoinAsync(lobby, cancellationToken);
+                _followsLeader = false;
+                if (outcome == SessionStartOutcome.Started)
+                {
+                    _feed.Leave();
+                    _inLeaderLobby = true;
+                    Debug.Log($"[Session] Followed the Party Leader into Lobby {lobby}");
+                    return;
+                }
+
+                Debug.LogWarning($"[Session] Could not follow the Party into Lobby {lobby} ({outcome})");
+                CallPartyHome();
             }
             catch (OperationCanceledException)
             {
+                _followsLeader = false;
             }
+        }
+
+        private async UniTask<string> WaitForLeaderLobbyAsync(CancellationToken cancellationToken)
+        {
+            if (!await _feed.JoinAsync(cancellationToken))
+            {
+                return null;
+            }
+
+            var deadline = TimeSpan.FromSeconds(_config.FollowSeconds);
+            var clock = Stopwatch.StartNew();
+            while (clock.Elapsed < deadline)
+            {
+                if (LobbyParties.TryFindLobbyOf(Listings(), _party.Code, out var lobby))
+                {
+                    return lobby.Name;
+                }
+
+                await _feed.WaitForUpdateAsync(_feed.Version, (float)(deadline - clock.Elapsed).TotalSeconds, cancellationToken);
+            }
+
+            return null;
         }
 
         private void StartMatch()
@@ -381,13 +474,13 @@ namespace PlowParty.Meta.Session
             Debug.Log($"[Session] Lobby Host starts the Match with {players} Players");
             CancelSearch();
             _hostsLobby = false;
-            Enter(LobbyStage.Starting, null);
+            Enter(LobbyStage.Starting, SessionNotice.None);
             LoadMatch(LobbyRules.MatchmakingResultFor(players, MaxSlots, PartyMode.QuickPlay));
         }
 
         private async UniTaskVoid StartCustomGameAsync()
         {
-            Enter(LobbyStage.Starting, null);
+            Enter(LobbyStage.Starting, SessionNotice.None);
             if (_party.Stage != PartyStage.InParty)
             {
                 var outcome = await _session.StartAsync(new SessionStart
@@ -404,7 +497,7 @@ namespace PlowParty.Meta.Session
 
                 if (outcome != SessionStartOutcome.Started)
                 {
-                    Enter(LobbyStage.Idle, ConnectFailedText);
+                    Enter(LobbyStage.Idle, SessionNotice.ConnectFailed);
                     return;
                 }
             }
@@ -423,7 +516,6 @@ namespace PlowParty.Meta.Session
             _session.LoadScene(SceneNames.Match);
         }
 
-
         private void HideOwnLobby()
         {
             if (!_hostsLobby)
@@ -432,8 +524,14 @@ namespace PlowParty.Meta.Session
             }
 
             _hostsLobby = false;
+            _arrivedParties.Clear();
             _lobbyLinks.Despawn(_session.Runner);
             _session.Hide(LobbyProperties.Hidden(_pool.Name));
+        }
+
+        private void PublishArrivedParties()
+        {
+            _session.OpenAsLobby(LobbyProperties.Open(_pool.Name, _hostedStartsAt, _hostedOpenedAt, LobbyParties.Format(_arrivedParties.Values)));
         }
 
         private List<LobbyListing> Listings()
@@ -445,7 +543,8 @@ namespace PlowParty.Meta.Session
                 {
                     var startsAt = LobbyProperties.ReadMilliseconds(session.Properties, LobbyProperties.StartsAt);
                     var openedAt = LobbyProperties.ReadMilliseconds(session.Properties, LobbyProperties.OpenedAt);
-                    _listings.Add(new LobbyListing(session.Name, session.PlayerCount, session.MaxPlayers, startsAt, openedAt));
+                    var parties = LobbyProperties.ReadString(session.Properties, LobbyProperties.Parties);
+                    _listings.Add(new LobbyListing(session.Name, session.PlayerCount, session.MaxPlayers, startsAt, openedAt, parties));
                 }
             }
 
@@ -458,13 +557,15 @@ namespace PlowParty.Meta.Session
             _search = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
             _searchClock.Restart();
             Debug.Log($"[Session] Searching for a Lobby for {PartySize} Players");
-            Enter(LobbyStage.Searching, null);
+            Enter(LobbyStage.Searching, SessionNotice.None);
         }
 
-        private void EndSearch(string failure)
+        private void EndSearch(SessionNotice failure)
         {
             CancelSearch();
             _hostsLobby = false;
+            _inLeaderLobby = false;
+            _arrivedParties.Clear();
             _searchClock.Reset();
             Enter(LobbyStage.Idle, failure);
         }
@@ -481,7 +582,7 @@ namespace PlowParty.Meta.Session
             _feed.Leave();
         }
 
-        private void Enter(LobbyStage stage, string failure)
+        private void Enter(LobbyStage stage, SessionNotice failure)
         {
             Stage = stage;
             Failure = failure;
@@ -490,7 +591,8 @@ namespace PlowParty.Meta.Session
 
         private void OnMoveRequested(string sessionName)
         {
-            FollowPartyAsync(sessionName).Forget();
+            Debug.Log($"[Session] The Party Leader is moving to Lobby {sessionName}: waiting until the Leader is in");
+            FollowLeaderAsync().Forget();
         }
 
         private void OnPartyStopped(string partyCode)
@@ -502,9 +604,29 @@ namespace PlowParty.Meta.Session
             }
         }
 
+        private void OnPartyArrived(int leaderId, string partyCode)
+        {
+            if (!_hostsLobby || !_session.IsHost)
+            {
+                return;
+            }
+
+            _arrivedParties[leaderId] = partyCode;
+            Debug.Log($"[Session] The Leader of Party {partyCode} joined this Lobby");
+            PublishArrivedParties();
+        }
+
+        private void OnLobbyPlayerLeft(int playerId)
+        {
+            if (_arrivedParties.Remove(playerId) && _hostsLobby && _session.IsHost)
+            {
+                PublishArrivedParties();
+            }
+        }
+
         private void OnSessionEnded(SessionEnd end)
         {
-            if (_disposed || end != SessionEnd.Lost || Stage != LobbyStage.Searching)
+            if (_disposed || end != SessionEnd.Lost || Stage != LobbyStage.Searching || _followsLeader)
             {
                 return;
             }
@@ -512,7 +634,7 @@ namespace PlowParty.Meta.Session
             switch (_party.Stage)
             {
                 case PartyStage.Away:
-                    EndSearch(null);
+                    EndSearch(SessionNotice.None);
                     _party.ReturnFromLobby();
                     break;
                 case PartyStage.None when !_hostsLobby:
@@ -520,10 +642,10 @@ namespace PlowParty.Meta.Session
                     RestartSearch();
                     break;
                 case PartyStage.None:
-                    EndSearch(SessionLostText);
+                    EndSearch(SessionNotice.ConnectionLost);
                     break;
                 default:
-                    EndSearch(null);
+                    EndSearch(SessionNotice.None);
                     break;
             }
         }

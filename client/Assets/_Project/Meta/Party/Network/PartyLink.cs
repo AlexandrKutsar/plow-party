@@ -10,7 +10,7 @@ namespace PlowParty.Meta.Party.Network
 {
     public sealed class PartyLink : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
-        public const int MaxMembers = 6;
+        private const int MaxMembers = PartyState.MaxCapacity;
         private const byte NoBot = 0;
 
         private readonly List<PartyMember> _readMembers = new List<PartyMember>(MaxMembers);
@@ -53,7 +53,7 @@ namespace PlowParty.Meta.Party.Network
                 return;
             }
 
-            _hostState = new PartyState(Mathf.Min(_config.Capacity, MaxMembers), _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay, _looks);
+            _hostState = new PartyState(_config.Capacity, _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay, _looks, _memory.JoinOrder);
             Admit(Runner.LocalPlayer);
             foreach (var player in Runner.ActivePlayers)
             {
@@ -126,7 +126,7 @@ namespace PlowParty.Meta.Party.Network
             for (var i = 0; i < count; i++)
             {
                 var seat = Seats[i];
-                _readMembers.Add(new PartyMember(seat.Player.RawEncoded, seat.Nickname.ToString(), seat.IsReady, seat.Slot, seat.Color, seat.Critter));
+                _readMembers.Add(new PartyMember(seat.Player.RawEncoded, seat.Nickname.ToString(), seat.IsReady, seat.Slot, seat.Color, seat.Critter, seat.Key.ToString()));
             }
 
             _readBots.Clear();
@@ -311,7 +311,7 @@ namespace PlowParty.Meta.Party.Network
         private PartyJoinOutcome Admit(PlayerRef player)
         {
             var token = ParticipantToken.TryFromBytes(Runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
-            return _hostState.Join(player.RawEncoded, token?.Nickname, _random.Next(_looks.CritterCount));
+            return _hostState.Join(player.RawEncoded, token?.Nickname, _random.Next(_looks.CritterCount), MemberKey(token));
         }
 
         private void Publish()
@@ -339,7 +339,18 @@ namespace PlowParty.Meta.Party.Network
                 Slot = (byte)member.Slot,
                 Color = (byte)member.Color,
                 Critter = (byte)member.Critter,
+                Key = member.Key,
             };
+        }
+
+        private static string MemberKey(ParticipantToken token)
+        {
+            if (token == null)
+            {
+                return null;
+            }
+
+            return string.IsNullOrEmpty(token.AccountId) ? token.Nickname : token.AccountId;
         }
     }
 }
