@@ -17,13 +17,6 @@ namespace PlowParty.Meta.Party
 {
     public sealed class PartyService : IStartable, ITickable, IDisposable
     {
-        public const string NotFoundText = "Группа не найдена";
-        public const string FullText = "Группа заполнена";
-        public const string RemovedText = "Вас исключили из группы";
-        public const string BadCodeText = "Код — 5 символов";
-        public const string InMatchText = "Матч уже начался";
-        public const string ConnectFailedText = "Не удалось подключиться";
-
         private readonly NetworkSession _session;
         private readonly AccountService _account;
         private readonly MatchmakingPool _pool;
@@ -33,6 +26,8 @@ namespace PlowParty.Meta.Party
         private readonly Random _random = new Random();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private readonly PartyLooks _looks;
+        private readonly SoloPartyEditor _solo;
+        private readonly LinkedPartyEditor _linked;
         private int _shownRevision = -1;
         private bool _restoreReady;
         private bool _restoreSetup;
@@ -47,7 +42,9 @@ namespace PlowParty.Meta.Party
             _memory = memory;
             _links = links;
             _looks = new PartyLooks(palette.ColorCount, palette.CritterCount);
-            Party = SoloParty();
+            _solo = new SoloPartyEditor(memory, _looks, config.Capacity, _random);
+            _linked = new LinkedPartyEditor(links);
+            Party = _solo.Reset(account.Nickname);
         }
 
         public event Action Changed;
@@ -58,13 +55,15 @@ namespace PlowParty.Meta.Party
 
         public string Code { get; private set; }
 
-        public string Failure { get; private set; }
+        public PartyNotice Failure { get; private set; }
 
         public PartyState Party { get; private set; }
 
         public int LocalId { get; private set; } = -1;
 
         public bool IsLeader => Stage == PartyStage.InParty && Party.IsLeader(LocalId);
+
+        public bool LeadsAwayParty => Stage == PartyStage.Away && _memory.Role == PartyRole.Leader;
 
         public bool CanStart => IsLeader && Party.CanStart;
 
@@ -89,6 +88,7 @@ namespace PlowParty.Meta.Party
         public void Start()
         {
             _session.Ended += OnSessionEnded;
+            _solo.Changed += OnSoloChanged;
             _links.Removed += OnRemoved;
             _links.MoveRequested += OnMoveRequested;
             if (_memory.HasParty)
@@ -121,6 +121,7 @@ namespace PlowParty.Meta.Party
         {
             _disposed = true;
             _session.Ended -= OnSessionEnded;
+            _solo.Changed -= OnSoloChanged;
             _links.Removed -= OnRemoved;
             _links.MoveRequested -= OnMoveRequested;
             _memory.ForgetReady();
@@ -130,7 +131,7 @@ namespace PlowParty.Meta.Party
 
         public async UniTask CreateAsync(CancellationToken cancellationToken)
         {
-            Enter(PartyStage.Connecting, null);
+            Enter(PartyStage.Connecting, PartyNotice.None);
             for (var attempt = 0; attempt < _config.CodeAttempts; attempt++)
             {
                 var code = PartyCode.Generate(_random);
@@ -152,18 +153,18 @@ namespace PlowParty.Meta.Party
                 }
             }
 
-            Fail(ConnectFailedText);
+            Fail(PartyNotice.ConnectFailed);
         }
 
         public async UniTask JoinAsync(string input, CancellationToken cancellationToken)
         {
             if (!PartyCode.TryParse(input, out var code))
             {
-                Fail(BadCodeText);
+                Fail(PartyNotice.NotFound);
                 return;
             }
 
-            Enter(PartyStage.Connecting, null);
+            Enter(PartyStage.Connecting, PartyNotice.None);
             var outcome = await StartAsync(PartyReturnStep.Join, code, cancellationToken);
             if (await AbandonedAsync(outcome))
             {
@@ -176,16 +177,16 @@ namespace PlowParty.Meta.Party
                     EnterParty(code, false);
                     break;
                 case SessionStartOutcome.NotFound:
-                    Fail(NotFoundText);
+                    Fail(PartyNotice.NotFound);
                     break;
                 case SessionStartOutcome.Full:
-                    Fail(FullText);
+                    Fail(PartyNotice.Full);
                     break;
                 case SessionStartOutcome.Refused:
-                    Fail(InMatchText);
+                    Fail(PartyNotice.MatchStarted);
                     break;
                 default:
-                    Fail(ConnectFailedText);
+                    Fail(PartyNotice.ConnectFailed);
                     break;
             }
         }
@@ -193,7 +194,7 @@ namespace PlowParty.Meta.Party
         public async UniTask LeaveAsync()
         {
             _memory.Forget();
-            Enter(PartyStage.None, null);
+            Enter(PartyStage.None, PartyNotice.None);
             await _session.LeaveAsync();
         }
 
@@ -242,7 +243,7 @@ namespace PlowParty.Meta.Party
 
             Remember();
             UnityEngine.Debug.Log($"[Party] Party {Code} moves to another Lobby");
-            Enter(PartyStage.Away, null);
+            Enter(PartyStage.Away, PartyNotice.None);
         }
 
         public void ReturnFromLobby()
@@ -263,63 +264,27 @@ namespace PlowParty.Meta.Party
 
         public void SetMode(PartyMode mode)
         {
-            if (Stage == PartyStage.None)
-            {
-                _memory.RememberSoloMode(mode);
-                EditSolo(solo => solo.SetMode(PartyState.SoloId, mode));
-            }
-            else if (IsLeader)
-            {
-                _links.Current?.RequestMode(mode);
-            }
+            EditorFor(true)?.SetMode(mode);
         }
 
         public void SetBot(int slot, BotDifficulty difficulty)
         {
-            if (Stage == PartyStage.None)
-            {
-                EditSolo(solo => solo.SetBot(PartyState.SoloId, slot, difficulty));
-            }
-            else if (IsLeader)
-            {
-                _links.Current?.RequestBot(slot, difficulty);
-            }
+            EditorFor(true)?.SetBot(slot, difficulty);
         }
 
         public void RemoveBot(int slot)
         {
-            if (Stage == PartyStage.None)
-            {
-                EditSolo(solo => solo.RemoveBot(PartyState.SoloId, slot));
-            }
-            else if (IsLeader)
-            {
-                _links.Current?.RequestRemoveBot(slot);
-            }
+            EditorFor(true)?.RemoveBot(slot);
         }
 
         public void PickColor(int color)
         {
-            if (Stage == PartyStage.None)
-            {
-                EditSolo(solo => solo.PickColor(PartyState.SoloId, color));
-            }
-            else if (Stage == PartyStage.InParty)
-            {
-                _links.Current?.RequestColor(color);
-            }
+            EditorFor(false)?.PickColor(color);
         }
 
         public void PickCritter(int critter)
         {
-            if (Stage == PartyStage.None)
-            {
-                EditSolo(solo => solo.PickCritter(PartyState.SoloId, critter));
-            }
-            else if (Stage == PartyStage.InParty)
-            {
-                _links.Current?.RequestCritter(critter);
-            }
+            EditorFor(false)?.PickCritter(critter);
         }
 
         public CustomGameSetup CustomGameSetupFor(int localPlayerId)
@@ -339,7 +304,7 @@ namespace PlowParty.Meta.Party
 
         private async UniTask ReturnAsync(string code, PartyRole role)
         {
-            Enter(PartyStage.Connecting, null);
+            Enter(PartyStage.Connecting, PartyNotice.None);
             Code = code;
             UnityEngine.Debug.Log($"[Party] Returning to Party {code} as {role}");
             var lifetime = _lifetime.Token;
@@ -368,7 +333,7 @@ namespace PlowParty.Meta.Party
                 if (step == PartyReturnStep.Stop)
                 {
                     _memory.Forget();
-                    Fail(outcome == SessionStartOutcome.Full ? FullText : NotFoundText);
+                    Fail(outcome == SessionStartOutcome.Full ? PartyNotice.Full : PartyNotice.NotFound);
                     return;
                 }
 
@@ -425,15 +390,18 @@ namespace PlowParty.Meta.Party
 
             _memory.Remember(code, hosting ? PartyRole.Leader : PartyRole.Member, Party.Mode, _restoreReady);
             UnityEngine.Debug.Log($"[Party] In Party {code} as {(hosting ? PartyRole.Leader : PartyRole.Member)}");
-            Enter(PartyStage.InParty, null);
+            Enter(PartyStage.InParty, PartyNotice.None);
         }
 
         private void Remember()
         {
-            if (Code != null)
+            if (Code == null)
             {
-                _memory.Remember(Code, IsLeader ? PartyRole.Leader : PartyRole.Member, Party.Mode, IsReady);
+                return;
             }
+
+            _memory.Remember(Code, IsLeader ? PartyRole.Leader : PartyRole.Member, Party.Mode, IsReady);
+            _memory.RememberJoinOrder(PartyJoinOrder.Merge(_memory.JoinOrder, Party.JoinOrder));
         }
 
         private bool RestoreSetup(PartyLink link)
@@ -474,34 +442,23 @@ namespace PlowParty.Meta.Party
         {
             if (Party.TryGetMember(LocalId, out var local))
             {
-                _memory.RememberSetup(local.Color, local.Critter, IsLeader || Stage == PartyStage.None ? Party.Bots : _memory.Bots);
+                _memory.RememberSetup(local.Color, local.Critter, IsLeader ? Party.Bots : _memory.Bots);
             }
         }
 
-        private PartyState SoloParty()
+        private IPartyEditor EditorFor(bool leaderOnly)
         {
-            var solo = new PartyState(_config.Capacity, _memory.SoloMode, _looks);
-            solo.Join(PartyState.SoloId, _account.Nickname, _random.Next(Math.Max(1, _looks.CritterCount)));
-            if (_memory.HasLook)
+            if (Stage == PartyStage.None)
             {
-                solo.PickColor(PartyState.SoloId, _memory.Color);
-                solo.PickCritter(PartyState.SoloId, _memory.Critter);
-                foreach (var bot in _memory.Bots)
-                {
-                    solo.SetBot(PartyState.SoloId, bot.Slot, bot.Difficulty);
-                }
+                return _solo;
             }
 
-            return solo;
+            return Stage == PartyStage.InParty && (!leaderOnly || IsLeader) ? _linked : null;
         }
 
-        private void EditSolo(Func<PartyState, bool> edit)
+        private void OnSoloChanged()
         {
-            if (edit(Party))
-            {
-                RememberSetup();
-                Changed?.Invoke();
-            }
+            Changed?.Invoke();
         }
 
         private void RestoreReady(PartyLink link)
@@ -526,13 +483,13 @@ namespace PlowParty.Meta.Party
             }
         }
 
-        private void Enter(PartyStage stage, string failure)
+        private void Enter(PartyStage stage, PartyNotice failure)
         {
             if (stage == PartyStage.None)
             {
                 Code = null;
                 LocalId = PartyState.SoloId;
-                Party = SoloParty();
+                Party = _solo.Reset(_account.Nickname);
             }
 
             Stage = stage;
@@ -540,7 +497,7 @@ namespace PlowParty.Meta.Party
             Changed?.Invoke();
         }
 
-        private void Fail(string failure)
+        private void Fail(PartyNotice failure)
         {
             Enter(PartyStage.None, failure);
         }
@@ -549,7 +506,7 @@ namespace PlowParty.Meta.Party
         {
             UnityEngine.Debug.Log("[Party] Removed from the Party by its Leader");
             _memory.Forget();
-            Enter(PartyStage.None, RemovedText);
+            Enter(PartyStage.None, PartyNotice.Removed);
             _session.LeaveAsync().Forget();
         }
 

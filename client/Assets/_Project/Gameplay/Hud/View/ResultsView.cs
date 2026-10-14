@@ -21,6 +21,7 @@ namespace PlowParty.Gameplay.Hud.View
         private ParticipantRoster _roster;
         private ParticipantsConfig _participants;
         private IMatchExit _exit;
+        private bool _hasShownResults;
 
         [Inject]
         public void Construct(IMatchClock match, IMatchResults results, VehicleRegistry vehicles, ParticipantRoster roster, IMatchExit exit, ParticipantsConfig participants)
@@ -45,14 +46,15 @@ namespace PlowParty.Gameplay.Hud.View
 
         private void LateUpdate()
         {
-            var visible = _match.IsRunning && _match.Phase == MatchPhase.Results;
-            _panel.SetActive(visible);
-            if (!visible)
+            if (_match.IsRunning && _match.Phase == MatchPhase.Results)
             {
+                _hasShownResults = true;
+                _panel.SetActive(true);
+                ShowPlacements();
                 return;
             }
 
-            ShowPlacements();
+            _panel.SetActive(_hasShownResults);
         }
 
         private void ShowPlacements()

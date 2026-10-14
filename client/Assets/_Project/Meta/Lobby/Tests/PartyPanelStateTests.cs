@@ -25,6 +25,14 @@ namespace PlowParty.Meta.Lobby.Tests
         }
 
         [Test]
+        public void For_ReturnedAfterTheHostLeft_ShowsTheNotice()
+        {
+            var state = PartyPanelState.For(PartyStage.Connecting, "AB3XZ", new PartyState(6), Member, false, "Хост вышел, матч прерван");
+
+            Assert.That(state.Failure, Is.EqualTo("Хост вышел, матч прерван"));
+        }
+
+        [Test]
         public void For_InParty_TitleNamesTheCode()
         {
             var state = PartyPanelState.For(PartyStage.InParty, "AB3XZ", Party(), Member, false);

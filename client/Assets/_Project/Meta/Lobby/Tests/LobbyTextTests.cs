@@ -1,6 +1,8 @@
 using NUnit.Framework;
 using PlowParty.Meta.Lobby.Simulation;
+using PlowParty.Meta.Party;
 using PlowParty.Meta.Session;
+using PlowParty.Meta.Session.Simulation;
 
 namespace PlowParty.Meta.Lobby.Tests
 {
@@ -56,6 +58,37 @@ namespace PlowParty.Meta.Lobby.Tests
         public void StopSearch_Always_NamesTheStop()
         {
             Assert.That(LobbyText.StopSearch(), Is.EqualTo("Остановить поиск"));
+        }
+
+        [TestCase(PartyNotice.NotFound, "Группа не найдена")]
+        [TestCase(PartyNotice.Full, "Группа заполнена")]
+        [TestCase(PartyNotice.Removed, "Вас исключили из группы")]
+        [TestCase(PartyNotice.MatchStarted, "Матч уже начался")]
+        [TestCase(PartyNotice.ConnectFailed, "Не удалось подключиться")]
+        public void Notice_PartyFailure_NamesIt(PartyNotice party, string expected)
+        {
+            Assert.That(LobbyText.Notice(party, SessionNotice.None), Is.EqualTo(expected));
+        }
+
+        [TestCase(SessionNotice.HostLeft, "Хост вышел, матч прерван")]
+        [TestCase(SessionNotice.ConnectionLost, "Связь с хостом потеряна")]
+        [TestCase(SessionNotice.MatchStarted, "Матч уже начался")]
+        [TestCase(SessionNotice.ConnectFailed, "Не удалось подключиться")]
+        public void Notice_SessionNotice_NamesIt(SessionNotice session, string expected)
+        {
+            Assert.That(LobbyText.Notice(PartyNotice.None, session), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void Notice_PartyAndSessionNotices_PartyComesFirst()
+        {
+            Assert.That(LobbyText.Notice(PartyNotice.Removed, SessionNotice.HostLeft), Is.EqualTo("Вас исключили из группы"));
+        }
+
+        [Test]
+        public void Notice_Nothing_IsEmpty()
+        {
+            Assert.That(LobbyText.Notice(PartyNotice.None, SessionNotice.None), Is.Empty);
         }
     }
 }

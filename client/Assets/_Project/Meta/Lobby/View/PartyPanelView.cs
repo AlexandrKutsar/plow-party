@@ -22,6 +22,7 @@ namespace PlowParty.Meta.Lobby.View
         [SerializeField] private Text _searchLabel;
         [SerializeField] private Button _leaveButton;
         [SerializeField] private GameObject _membersRoot;
+        [SerializeField] private Text _failureLabel;
 
         private string _code;
 
@@ -56,7 +57,7 @@ namespace PlowParty.Meta.Lobby.View
             _searchLabel.text = state.SearchLabel;
             _leaveButton.gameObject.SetActive(state.ShowLeave);
             _membersRoot.SetActive(!state.ShowSetup);
-
+            _failureLabel.text = state.Failure;
         }
 
         public void ShowRow(int index, PartyRow row, Color color)

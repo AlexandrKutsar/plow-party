@@ -6,11 +6,13 @@ namespace PlowParty.Meta.Party.Simulation
     public sealed class PartyState
     {
         public const int SoloId = -1;
+        public const int MaxCapacity = 6;
 
         private readonly List<PartyMember> _members = new List<PartyMember>();
         private readonly List<PartyBot> _bots = new List<PartyBot>();
         private readonly int _capacity;
         private readonly PartyLooks _looks;
+        private readonly List<string> _rememberedOrder = new List<string>();
 
         public PartyState(int capacity, PartyMode mode = PartyMode.QuickPlay)
             : this(capacity, mode, PartyLooks.Default)
@@ -18,10 +20,19 @@ namespace PlowParty.Meta.Party.Simulation
         }
 
         public PartyState(int capacity, PartyMode mode, PartyLooks looks)
+            : this(capacity, mode, looks, null)
+        {
+        }
+
+        public PartyState(int capacity, PartyMode mode, PartyLooks looks, IEnumerable<string> rememberedOrder)
         {
             _capacity = capacity;
             _looks = looks;
             Mode = mode;
+            if (rememberedOrder != null)
+            {
+                _rememberedOrder.AddRange(rememberedOrder);
+            }
         }
 
         public IReadOnlyList<PartyMember> Members => _members;
@@ -33,6 +44,20 @@ namespace PlowParty.Meta.Party.Simulation
         public bool IsSearching { get; private set; }
 
         public int Count => _members.Count;
+
+        public IReadOnlyList<string> JoinOrder
+        {
+            get
+            {
+                var keys = new List<string>(_members.Count);
+                foreach (var member in _members)
+                {
+                    keys.Add(member.Key);
+                }
+
+                return keys;
+            }
+        }
 
         public int SlotCount => _capacity;
 
@@ -145,7 +170,7 @@ namespace PlowParty.Meta.Party.Simulation
             return false;
         }
 
-        public PartyJoinOutcome Join(int id, string nickname, int critter = 0)
+        public PartyJoinOutcome Join(int id, string nickname, int critter = 0, string key = null)
         {
             if (Contains(id))
             {
@@ -164,7 +189,8 @@ namespace PlowParty.Meta.Party.Simulation
 
             var slot = ClaimSlot();
             _bots.RemoveAll(bot => bot.Slot == slot);
-            _members.Add(new PartyMember(id, nickname, false, slot, FirstFreeColor(), ValidCritter(critter) ? critter : 0));
+            var member = new PartyMember(id, nickname, false, slot, FirstFreeColor(), ValidCritter(critter) ? critter : 0, key);
+            _members.Insert(PlaceInJoinOrder(member.Key), member);
             return PartyJoinOutcome.Joined;
         }
 
@@ -307,6 +333,24 @@ namespace PlowParty.Meta.Party.Simulation
             }
 
             return new CustomGameSetup(slots);
+        }
+
+        private int PlaceInJoinOrder(string key)
+        {
+            var rank = SeniorityOf(key);
+            var place = _members.Count;
+            while (place > 1 && SeniorityOf(_members[place - 1].Key) > rank)
+            {
+                place--;
+            }
+
+            return place;
+        }
+
+        private int SeniorityOf(string key)
+        {
+            var rank = string.IsNullOrEmpty(key) ? -1 : _rememberedOrder.IndexOf(key);
+            return rank >= 0 ? rank : int.MaxValue;
         }
 
         private bool ValidCritter(int critter)

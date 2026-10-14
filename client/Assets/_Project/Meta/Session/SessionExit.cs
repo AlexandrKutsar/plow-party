@@ -16,7 +16,7 @@ namespace PlowParty.Meta.Session
         private readonly MatchmakingResultStore _matchmakingResults;
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private bool _leaving;
-        private string _notice;
+        private SessionNotice _notice;
         private MatchStanding _matchStanding;
 
         public SessionExit(NetworkSession session, SceneLoader scenes, MatchmakingResultStore matchmakingResults)
@@ -36,7 +36,7 @@ namespace PlowParty.Meta.Session
             LeaveToMenuAsync().Forget();
         }
 
-        public void LeaveToMenu(string notice)
+        public void LeaveToMenu(SessionNotice notice)
         {
             _notice = notice;
             LeaveToMenuAsync().Forget();
@@ -44,13 +44,23 @@ namespace PlowParty.Meta.Session
 
         public void ObserveMatch(MatchStanding standing)
         {
+            if (standing == _matchStanding)
+            {
+                return;
+            }
+
             _matchStanding = standing;
+            if (standing == MatchStanding.TurnedAway)
+            {
+                UnityEngine.Debug.Log("[Session] The Host turned this Player away: the Match already started");
+                LeaveToMenu(SessionLossNotice.For(standing));
+            }
         }
 
-        public string TakeNotice()
+        public SessionNotice TakeNotice()
         {
             var notice = _notice;
-            _notice = null;
+            _notice = SessionNotice.None;
             return notice;
         }
 
@@ -76,17 +86,25 @@ namespace PlowParty.Meta.Session
 
         private void OnSessionEnded(SessionEnd end)
         {
-            if (end == SessionEnd.Lost && _scenes.ActiveSceneName == SceneNames.Match)
+            if (end != SessionEnd.Lost || _leaving || _scenes.ActiveSceneName != SceneNames.Match)
             {
-                _notice = SessionLossNotice.For(_matchStanding);
-                ReturnToMenuAsync().Forget();
+                return;
             }
+
+            if (SessionLossNotice.KeepsResults(_matchStanding))
+            {
+                UnityEngine.Debug.Log("[Session] The Host left during Results: the Results stay until \"В меню\"");
+                return;
+            }
+
+            _notice = SessionLossNotice.For(_matchStanding);
+            ReturnToMenuAsync().Forget();
         }
 
         private UniTask ReturnToMenuAsync()
         {
             _matchmakingResults.Clear();
-            _matchStanding = MatchStanding.NotStarted;
+            _matchStanding = MatchStanding.BeforePlaying;
             return _scenes.LoadAsync(SceneNames.Menu, _lifetime.Token);
         }
     }

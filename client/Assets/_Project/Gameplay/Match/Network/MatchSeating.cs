@@ -26,6 +26,10 @@ namespace PlowParty.Gameplay.Match.Network
         private readonly WaitingRules _rules;
         private readonly Dictionary<PlayerRef, int> _playerSlots = new Dictionary<PlayerRef, int>();
         private readonly List<PlayerRef> _arrivals = new List<PlayerRef>();
+        private readonly Dictionary<PlayerRef, TickTimer> _turnedAway = new Dictionary<PlayerRef, TickTimer>();
+        private readonly List<PlayerRef> _turnedAwayPlayers = new List<PlayerRef>();
+        private readonly List<PlayerRef> _expiredTurnAways = new List<PlayerRef>();
+        private readonly float _turnAwayGraceSeconds;
         private readonly bool[] _botSlots = new bool[ParticipantRoster.MaxSlots];
         private readonly Random _random = new Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
         private SeatPlan _plan;
@@ -49,7 +53,10 @@ namespace PlowParty.Gameplay.Match.Network
             _matchmakingResults = matchmakingResults;
             _participants = participants;
             _rules = new WaitingRules(config.ToSettings());
+            _turnAwayGraceSeconds = config.TurnAwayGraceSeconds;
         }
+
+        public IReadOnlyList<PlayerRef> TurnedAwayPlayers => _turnedAwayPlayers;
 
         public int PlayerCount => _playerSlots.Count;
 
@@ -121,6 +128,7 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             SeatArrivals(runner);
+            DisconnectTurnedAway(runner);
             if (phase != MatchPhase.WaitingForPlayers)
             {
                 return;
@@ -221,8 +229,38 @@ namespace PlowParty.Gameplay.Match.Network
 
         private void TurnAway(NetworkRunner runner, PlayerRef player)
         {
-            Debug.LogWarning($"[Match] Player {player} arrived after the Match started or with every Slot taken; disconnecting");
-            runner.Disconnect(player);
+            Debug.LogWarning($"[Match] Player {player} arrived after the Match started or with every Slot taken; turned away");
+            _turnedAway[player] = TickTimer.CreateFromSeconds(runner, _turnAwayGraceSeconds);
+            _turnedAwayPlayers.Add(player);
+        }
+
+        private void DisconnectTurnedAway(NetworkRunner runner)
+        {
+            if (_turnedAway.Count == 0)
+            {
+                return;
+            }
+
+            _expiredTurnAways.Clear();
+            foreach (var turnedAway in _turnedAway)
+            {
+                if (turnedAway.Value.Expired(runner))
+                {
+                    _expiredTurnAways.Add(turnedAway.Key);
+                }
+            }
+
+            foreach (var player in _expiredTurnAways)
+            {
+                Forget(player);
+                runner.Disconnect(player);
+            }
+        }
+
+        private void Forget(PlayerRef player)
+        {
+            _turnedAway.Remove(player);
+            _turnedAwayPlayers.Remove(player);
         }
 
         private void OnConnectRequested(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request)
@@ -250,6 +288,7 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             _arrivals.Remove(player);
+            Forget(player);
             if (!_playerSlots.Remove(player, out var slot))
             {
                 return;

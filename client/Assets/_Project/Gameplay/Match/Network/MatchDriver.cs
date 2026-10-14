@@ -11,9 +11,10 @@ using VContainer;
 namespace PlowParty.Gameplay.Match.Network
 {
     [DefaultExecutionOrder(-100)]
-    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults, ISnowClock
+    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults, ISnowClock, IMatchAdmission
     {
         private const int MaxPlacements = VehicleWorldDriver.MaxVehicles;
+        private const int MaxTurnedAway = 8;
 
         private readonly int[] _rankSlots = new int[MaxPlacements];
         private readonly int[] _rankScores = new int[MaxPlacements];
@@ -39,7 +40,11 @@ namespace PlowParty.Gameplay.Match.Network
 
         [Networked, Capacity(MaxPlacements)] private NetworkArray<int> PlacementPlaces { get; }
 
+        [Networked, Capacity(MaxTurnedAway)] private NetworkArray<PlayerRef> TurnedAway { get; }
+
         public bool IsRunning => _rules != null;
+
+        public bool IsLocalPlayerTurnedAway => IsRunning && IsTurnedAway(Runner.LocalPlayer);
 
         public bool IsPlaying => IsRunning && Phase == MatchPhase.Playing;
 
@@ -89,6 +94,7 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             _seating.Tick(Runner, Phase, PhaseElapsed);
+            PublishTurnedAway();
             var next = _rules.NextPhase(Phase, PhaseElapsed, _seating.IsWaitingOver(PhaseElapsed));
             if (next != Phase)
             {
@@ -129,6 +135,32 @@ namespace PlowParty.Gameplay.Match.Network
                 PlacementSlots.Set(i, _placements[i].Slot);
                 PlacementScores.Set(i, _placements[i].Score);
                 PlacementPlaces.Set(i, _placements[i].Place);
+            }
+        }
+
+        private bool IsTurnedAway(PlayerRef player)
+        {
+            for (var i = 0; i < MaxTurnedAway; i++)
+            {
+                if (TurnedAway[i] == player)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void PublishTurnedAway()
+        {
+            var players = _seating.TurnedAwayPlayers;
+            for (var i = 0; i < MaxTurnedAway; i++)
+            {
+                var player = i < players.Count ? players[i] : PlayerRef.None;
+                if (TurnedAway[i] != player)
+                {
+                    TurnedAway.Set(i, player);
+                }
             }
         }
 

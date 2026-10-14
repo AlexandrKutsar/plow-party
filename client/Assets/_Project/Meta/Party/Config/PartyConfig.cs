@@ -1,4 +1,5 @@
 using Fusion;
+using PlowParty.Meta.Party.Simulation;
 using UnityEngine;
 
 namespace PlowParty.Meta.Party.Config
@@ -6,7 +7,7 @@ namespace PlowParty.Meta.Party.Config
     [CreateAssetMenu(menuName = "Plow Party/Party Config", fileName = nameof(PartyConfig))]
     public sealed class PartyConfig : ScriptableObject
     {
-        [SerializeField, Range(1, 6)] private int _capacity = 6;
+        [SerializeField, Range(1, PartyState.MaxCapacity)] private int _capacity = PartyState.MaxCapacity;
         [SerializeField, Min(1)] private int _codeAttempts = 3;
         [SerializeField, Min(1f)] private float _rejoinSeconds = 10f;
         [SerializeField, Min(1f)] private float _giveUpSeconds = 20f;
@@ -14,7 +15,7 @@ namespace PlowParty.Meta.Party.Config
         [SerializeField, Min(0.1f)] private float _removalGraceSeconds = 1f;
         [SerializeField] private NetworkObject _partyLinkPrefab;
 
-        public int Capacity => _capacity;
+        public int Capacity => Mathf.Clamp(_capacity, 1, PartyState.MaxCapacity);
 
         public int CodeAttempts => _codeAttempts;
 

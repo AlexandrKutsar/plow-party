@@ -7,6 +7,10 @@ namespace PlowParty.Meta.Session.Network
     {
         public event Action<string> PartyStopped;
 
+        public event Action<int, string> PartyArrived;
+
+        public event Action<int> PlayerLeft;
+
         public LobbyLink Current { get; private set; }
 
         public void Spawn(NetworkRunner runner, NetworkObject prefab)
@@ -41,6 +45,16 @@ namespace PlowParty.Meta.Session.Network
         public void NotifyPartyStopped(string partyCode)
         {
             PartyStopped?.Invoke(partyCode);
+        }
+
+        public void NotifyPartyArrived(int leaderId, string partyCode)
+        {
+            PartyArrived?.Invoke(leaderId, partyCode);
+        }
+
+        public void NotifyPlayerLeft(int playerId)
+        {
+            PlayerLeft?.Invoke(playerId);
         }
     }
 }

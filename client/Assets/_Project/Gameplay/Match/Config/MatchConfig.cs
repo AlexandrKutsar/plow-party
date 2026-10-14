@@ -14,6 +14,9 @@ namespace PlowParty.Gameplay.Match.Config
         [SerializeField, Range(1, 6)] private int _fallbackSlotCount = 6;
         [SerializeField, Min(0f)] private float _countdownDuration = 3f;
         [SerializeField, Min(1f)] private float _playingDuration = 180f;
+        [SerializeField, Min(0.1f)] private float _turnAwayGraceSeconds = 5f;
+
+        public float TurnAwayGraceSeconds => _turnAwayGraceSeconds;
 
         public MatchSettings ToSettings()
         {
