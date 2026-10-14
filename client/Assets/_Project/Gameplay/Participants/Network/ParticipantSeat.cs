@@ -8,6 +8,8 @@ namespace PlowParty.Gameplay.Participants.Network
 
         public byte Species { get; set; }
 
+        public byte Color { get; set; }
+
         public NetworkBool IsBot { get; set; }
 
         public NetworkBool IsSeated { get; set; }

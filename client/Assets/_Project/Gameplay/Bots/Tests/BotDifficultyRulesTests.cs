@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using PlowParty.Gameplay.Bots.Simulation;
+using PlowParty.Shared;
 
 namespace PlowParty.Gameplay.Bots.Tests
 {

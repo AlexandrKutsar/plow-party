@@ -6,7 +6,6 @@ namespace PlowParty.Gameplay.Hud.Simulation
     public static class HudText
     {
         public const string Go = "СТАРТ!";
-        public const string WaitingForHost = "Ожидание хоста";
 
         public static int WholeSecondsLeft(float seconds)
         {
@@ -26,11 +25,6 @@ namespace PlowParty.Gameplay.Hud.Simulation
         public static string WaitingForPlayers(int seated, int slots)
         {
             return $"Матч скоро начнётся. Ожидание игроков {seated}/{slots}";
-        }
-
-        public static string NextMatchIn(int seconds)
-        {
-            return $"Следующий матч через {seconds}";
         }
 
         public static string BlizzardIn(int seconds)

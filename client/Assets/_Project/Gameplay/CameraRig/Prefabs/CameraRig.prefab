@@ -158,6 +158,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _director: {fileID: 4166291610067106254}
   _cycleKey: 17
-  _buttonHeight: 0.06
-  _buttonAspect: 4
-  _margin: 0.02

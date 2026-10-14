@@ -16,7 +16,7 @@ using Random = System.Random;
 
 namespace PlowParty.Gameplay.Match.Network
 {
-    public sealed class MatchSeating : IStartable, IDisposable
+    public sealed class MatchSeating : IStartable, IDisposable, IBotChoices
     {
         private readonly NetworkRunnerEvents _events;
         private readonly VehicleSpawner _spawner;
@@ -26,12 +26,18 @@ namespace PlowParty.Gameplay.Match.Network
         private readonly WaitingRules _rules;
         private readonly Dictionary<PlayerRef, int> _playerSlots = new Dictionary<PlayerRef, int>();
         private readonly List<PlayerRef> _arrivals = new List<PlayerRef>();
+        private readonly Dictionary<PlayerRef, TickTimer> _turnedAway = new Dictionary<PlayerRef, TickTimer>();
+        private readonly List<PlayerRef> _turnedAwayPlayers = new List<PlayerRef>();
+        private readonly List<PlayerRef> _expiredTurnAways = new List<PlayerRef>();
+        private readonly float _turnAwayGraceSeconds;
         private readonly bool[] _botSlots = new bool[ParticipantRoster.MaxSlots];
         private readonly Random _random = new Random(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
         private SeatPlan _plan;
+        private CustomGameSetup _setup;
         private float[] _botArrivals = Array.Empty<float>();
         private bool _isPlanned;
         private bool _isClosed;
+        private bool _isHurried;
 
         public MatchSeating(
             NetworkRunnerEvents events,
@@ -47,7 +53,10 @@ namespace PlowParty.Gameplay.Match.Network
             _matchmakingResults = matchmakingResults;
             _participants = participants;
             _rules = new WaitingRules(config.ToSettings());
+            _turnAwayGraceSeconds = config.TurnAwayGraceSeconds;
         }
+
+        public IReadOnlyList<PlayerRef> TurnedAwayPlayers => _turnedAwayPlayers;
 
         public int PlayerCount => _playerSlots.Count;
 
@@ -65,7 +74,22 @@ namespace PlowParty.Gameplay.Match.Network
             }
         }
 
-        public bool AllSlotsFilled => _isPlanned && WaitingRules.AllSlotsFilled(_plan, PlayerCount, BotCount);
+        public bool IsWaitingOver(float waitingElapsed)
+        {
+            return _isPlanned && _rules.IsWaitingOver(_plan, PlayerCount, BotCount, waitingElapsed);
+        }
+
+        public bool TryGetChosenDifficulty(int slot, out BotDifficulty difficulty)
+        {
+            difficulty = default;
+            if (_setup == null || slot < 0 || slot >= _setup.Slots.Count || !_setup.Slots[slot].IsBot)
+            {
+                return false;
+            }
+
+            difficulty = _setup.Slots[slot].Difficulty;
+            return true;
+        }
 
         public void Start()
         {
@@ -85,9 +109,10 @@ namespace PlowParty.Gameplay.Match.Network
         {
             var hasMatchmakingResult = _matchmakingResults.TryGet(out var matchmakingResult);
             _plan = _rules.PlanSeats(hasMatchmakingResult, matchmakingResult, _arrivals.Count + PlayerCount, _spawner.SlotCount);
+            _setup = hasMatchmakingResult ? matchmakingResult.Setup : null;
             _botArrivals = _rules.ScheduleBotArrivals(_plan.PlannedBots, _random);
             _isPlanned = true;
-            Debug.Log($"[Match] Waiting for {_plan.ExpectedPlayers} Player(s) in {_plan.SlotCount} Slots ({(hasMatchmakingResult ? "matchmaking result" : "fallback")}); {_plan.PlannedBots} Bot(s) planned");
+            Debug.Log($"[Match] Waiting for {_plan.ExpectedPlayers} Player(s) in {_plan.SlotCount} Slots ({(_setup != null ? "Custom Game" : hasMatchmakingResult ? "matchmaking result" : "fallback")}); {_plan.PlannedBots} Bot(s) planned");
         }
 
         public void Tick(NetworkRunner runner, MatchPhase phase, float phaseElapsed)
@@ -103,11 +128,13 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             SeatArrivals(runner);
+            DisconnectTurnedAway(runner);
             if (phase != MatchPhase.WaitingForPlayers)
             {
                 return;
             }
 
+            HurryBotsOnceEveryoneIsIn(phaseElapsed);
             var bots = _rules.BotsToSeat(_plan, PlayerCount, BotCount, phaseElapsed, _botArrivals);
             for (var i = 0; i < bots; i++)
             {
@@ -121,12 +148,21 @@ namespace PlowParty.Gameplay.Match.Network
             Debug.Log($"[Match] Countdown starts with {PlayerCount} Player(s) and {BotCount} Bot(s)");
         }
 
-        public void FillFreeSlots(NetworkRunner runner)
+        private void HurryBotsOnceEveryoneIsIn(float waitingElapsed)
         {
-            while (_isPlanned && WaitingRules.HasFreeSlot(_plan, PlayerCount, BotCount))
+            if (_isHurried || !WaitingRules.AllExpectedPlayersSeated(_plan, PlayerCount))
             {
-                SeatBot(runner);
+                return;
             }
+
+            _isHurried = true;
+            _botArrivals = _rules.HurryBotArrivals(_botArrivals, BotCount, waitingElapsed, _random);
+            Debug.Log($"[Match] Every expected Player is in after {waitingElapsed:0.0} s; the remaining Bots arrive by {LastArrival():0.0} s");
+        }
+
+        private float LastArrival()
+        {
+            return _botArrivals.Length > 0 ? _botArrivals[_botArrivals.Length - 1] : 0f;
         }
 
         private void SeatArrivals(NetworkRunner runner)
@@ -149,30 +185,82 @@ namespace PlowParty.Gameplay.Match.Network
 
         private void SeatPlayer(NetworkRunner runner, PlayerRef player)
         {
-            var slot = FirstFreeSlot();
+            var slot = _setup != null ? _setup.SlotOfPlayer(player.RawEncoded) : FirstFreeSlot();
+            if (slot < 0 || slot >= _plan.SlotCount || !IsSlotFree(slot))
+            {
+                TurnAway(runner, player);
+                return;
+            }
+
             var token = ParticipantToken.TryFromBytes(runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
             var nickname = ParticipantProfiles.PlayerNickname(token?.Nickname, slot);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), false);
+            var species = _setup != null ? SpeciesOf(_setup.Slots[slot].Critter) : ParticipantProfiles.PickSpecies(TakenSpecies(), _random);
+            var preferred = _setup != null ? _setup.Slots[slot].Color : ParticipantColors.NoPreference;
+            var profile = new ParticipantProfile(nickname, species, FreeColor(preferred, slot), false);
             _playerSlots[player] = slot;
             _roster.Seat(slot, profile, token?.AccountId);
             _spawner.Spawn(runner, slot, player);
-            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname}");
+            Debug.Log($"[Match] Player {player} seated in Slot {slot} as {nickname} with Participant Color {profile.Color}");
         }
 
         private void SeatBot(NetworkRunner runner)
         {
-            var slot = RandomFreeSlot();
+            var slot = _setup != null ? CustomGameSeats.BotSlot(_setup, BotCount) : RandomFreeSlot();
+            if (slot < 0 || !IsSlotFree(slot))
+            {
+                return;
+            }
+
             var nickname = ParticipantProfiles.BotNickname(_participants.BotNicknames, TakenNicknames(), slot, _random);
-            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), true);
+            var profile = new ParticipantProfile(nickname, ParticipantProfiles.PickSpecies(TakenSpecies(), _random), FreeColor(ParticipantColors.NoPreference, slot), true);
             _botSlots[slot] = true;
             _roster.Seat(slot, profile, null);
             _spawner.Spawn(runner, slot, PlayerRef.None);
+            if (_setup != null)
+            {
+                Debug.Log($"[Match] Custom Game Bot {nickname} seated in Slot {slot} as {_setup.Slots[slot].Difficulty} with Participant Color {profile.Color}");
+            }
+        }
+
+        private static CritterSpecies SpeciesOf(int critter)
+        {
+            return critter >= 0 && critter < ParticipantProfiles.SpeciesCount ? (CritterSpecies)critter : CritterSpecies.Fox;
         }
 
         private void TurnAway(NetworkRunner runner, PlayerRef player)
         {
-            Debug.LogWarning($"[Match] Player {player} arrived after the Match started or with every Slot taken; disconnecting");
-            runner.Disconnect(player);
+            Debug.LogWarning($"[Match] Player {player} arrived after the Match started or with every Slot taken; turned away");
+            _turnedAway[player] = TickTimer.CreateFromSeconds(runner, _turnAwayGraceSeconds);
+            _turnedAwayPlayers.Add(player);
+        }
+
+        private void DisconnectTurnedAway(NetworkRunner runner)
+        {
+            if (_turnedAway.Count == 0)
+            {
+                return;
+            }
+
+            _expiredTurnAways.Clear();
+            foreach (var turnedAway in _turnedAway)
+            {
+                if (turnedAway.Value.Expired(runner))
+                {
+                    _expiredTurnAways.Add(turnedAway.Key);
+                }
+            }
+
+            foreach (var player in _expiredTurnAways)
+            {
+                Forget(player);
+                runner.Disconnect(player);
+            }
+        }
+
+        private void Forget(PlayerRef player)
+        {
+            _turnedAway.Remove(player);
+            _turnedAwayPlayers.Remove(player);
         }
 
         private void OnConnectRequested(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request)
@@ -200,6 +288,7 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             _arrivals.Remove(player);
+            Forget(player);
             if (!_playerSlots.Remove(player, out var slot))
             {
                 return;
@@ -254,6 +343,33 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             return taken;
+        }
+
+        private int FreeColor(int preferred, int seatingSlot)
+        {
+            return ParticipantColors.Assign(preferred, TakenColors(seatingSlot), _participants.ColorCount, _random);
+        }
+
+        private List<int> TakenColors(int seatingSlot)
+        {
+            var taken = new List<int>(ParticipantRoster.MaxSlots);
+            var seated = new List<int>(ParticipantRoster.MaxSlots) { seatingSlot };
+            for (var slot = 0; slot < ParticipantRoster.MaxSlots; slot++)
+            {
+                if (_roster.TryGetProfile(slot, out var profile))
+                {
+                    taken.Add(profile.Color);
+                    seated.Add(slot);
+                }
+            }
+
+            if (_setup != null)
+            {
+                taken.AddRange(CustomGameSeats.ReservedColors(_setup, seated));
+            }
+
+            return taken;
+
         }
 
         private List<CritterSpecies> TakenSpecies()

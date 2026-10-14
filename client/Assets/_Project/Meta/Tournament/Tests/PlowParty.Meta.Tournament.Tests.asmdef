@@ -3,6 +3,7 @@
     "rootNamespace": "PlowParty.Meta.Tournament.Tests",
     "references": [
         "PlowParty.Meta.Tournament",
+        "PlowParty.Shared",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

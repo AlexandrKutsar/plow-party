@@ -23,9 +23,9 @@ Host-side utility AI that drives the Vehicles of Bot Participants through the sa
 - Ram aims at the target's position led by `RamLeadTime`, ignores it in avoidance, and only targets a loaded rival in sight and outside the Drop-Off Zone. Evade sidesteps perpendicular to a rival closing fast inside its cone.
 - Unstuck: on a stuck verdict the bot drives `UnstuckDuration` toward open space (away from nearby blocked cells, ±45°) and replans. The hay-bale ring around the cauldron is walled off in the grid except its four lanes, so paths into the zone go through a lane.
 - Path replans are throttled to `ReplanInterval` and happen only when the goal moved more than 1.5 m or the path is gone; the shared pathfinder runs on one thread on the Host.
-- Difficulty: exactly one Strong Bot per Session as long as there is a Bot; Bots and their difficulty persist across "Play again", so every Match keeps one.
+- Difficulty: a Custom Game Bot takes the Difficulty the Party Leader chose (Match's `IBotChoices`); otherwise exactly one Strong Bot per Session as long as there is a Bot (Quick Play). `BotDifficulty` lives in Shared because the Matchmaking Result carries it.
 - Tuning (lobby-bots integration, Host idle, 180 s Matches): Strong 2022 vs Weak average 1745 (+16 %) before; after the profile changes Strong 2408 vs 1248 (+93 %) and 2339 vs 1390 (+68 %), Medium in between. Two Matches only; balance stays a playtest follow-up.
 
 ## Depends on
 
-Participants (`ParticipantRoster`), Match (`IMatchClock`, `IMatchResults`), DropOff (`DropOffZone`, `DropOffConfig`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowGridDriver`, `SnowConfig`), Vehicle (`NetworkVehicle`, `VehicleRegistry`, `VehicleArenaReader`, `VehicleInput`), Fusion, VContainer. Nothing depends on Bots but Bootstrap. The assembly is in Fusion's `AssembliesToWeave`.
+Shared (`BotDifficulty`), Participants (`ParticipantRoster`), Match (`IMatchClock`, `IMatchResults`, `IBotChoices`), DropOff (`DropOffZone`, `DropOffConfig`), Bucket (`BucketRegistry`, `BucketConfig`), Snow (`SnowGridDriver`, `SnowConfig`), Vehicle (`NetworkVehicle`, `VehicleRegistry`, `VehicleArenaReader`, `VehicleInput`), Fusion, VContainer. Nothing depends on Bots but Bootstrap. The assembly is in Fusion's `AssembliesToWeave`.

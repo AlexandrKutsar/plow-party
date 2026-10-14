@@ -14,3 +14,11 @@ Who sits in a Slot is its own networked record, `ParticipantRoster` (Nickname, C
 ## Consequences
 
 Match now depends on Infrastructure (`MatchmakingResultStore`, runner events), Shared and Participants; `VehicleSpawner` became a plain spawn-by-Slot service and lost its join handling. A late Player is refused at the connection request, so a client's session start fails with `SessionStartOutcome.Refused` and Meta brings that Player to the Menu with "Матч уже начался". The Match scene started on its own (no Matchmaking Result) expects only the Players already connected and fills six Slots, which keeps the Editor quick start playable with Bots.
+
+## Amendment: one Match per Session, quick Bots (Party work)
+
+"Play again" is gone: a Session plays exactly one Match, and Results stays, with no timer, until each Player presses "В меню" (`.scratch/party/spec.md`, stories 69–73). An automatic restart kept away-from-phone Players looping through zero-Score Matches, and the Party now gathers again in the Menu after every Match. The restart request, the Results timer, the respawn of every Vehicle and the Snow Grid reset on a new Match went with it.
+
+The wait no longer runs the full Bot window when nobody else is coming: the tick every expected Player is seated, the Bots not seated yet are rescheduled to random times 0.5–2.5 s from then (`MatchConfig`), and the 15 s cap only fills the Slots while an expected Player is still missing. A solo Player reaches Countdown in about 2.5 s instead of about 8.
+
+When the Host leaves mid-Match there is still no host migration: clients lose the Session, Tournament votes the Match Interrupted when it was Playing (ADR-0013), and Meta's `SessionExit` brings them back with "Хост вышел, матч прерван"; after Results it brings them back without a notice.

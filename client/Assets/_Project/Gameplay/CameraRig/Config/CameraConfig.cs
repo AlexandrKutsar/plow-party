@@ -6,7 +6,6 @@ namespace PlowParty.Gameplay.CameraRig.Config
     [CreateAssetMenu(menuName = "Plow Party/Camera Config", fileName = nameof(CameraConfig))]
     public sealed class CameraConfig : ScriptableObject
     {
-        [SerializeField] private CameraPreset _defaultPreset = CameraPreset.Follow;
         [SerializeField] private OverviewPresetConfig _overview = new OverviewPresetConfig();
         [SerializeField] private FollowPresetConfig _follow = new FollowPresetConfig(false);
         [SerializeField] private FollowPresetConfig _followRotating = new FollowPresetConfig(true);
@@ -17,8 +16,6 @@ namespace PlowParty.Gameplay.CameraRig.Config
         [SerializeField, Range(0f, 1f)] private float _ramVictimShake = 0.5f;
         [SerializeField, Range(0f, 1f)] private float _ramRammerShake = 0.25f;
         [SerializeField, Range(0f, 1f)] private float _pilePlowShake = 0.4f;
-
-        public CameraPreset DefaultPreset => _defaultPreset;
 
         public float RamVictimShake => _ramVictimShake;
 

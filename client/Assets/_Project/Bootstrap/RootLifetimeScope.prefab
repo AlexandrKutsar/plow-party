@@ -59,5 +59,6 @@ MonoBehaviour:
   _botConfig: {fileID: 11400000, guid: d637cd88866e10b43a1cc31a73602737, type: 2}
   _backendConfig: {fileID: 11400000, guid: 8a4e6f602266c824eaafde099ad296f7, type: 2}
   _matchmakingConfig: {fileID: 11400000, guid: 0fbd680db68a53d4e88a179b88bb9417, type: 2}
+  _partyConfig: {fileID: 11400000, guid: ad14931b327a18c4c9768947a6145ea5, type: 2}
   _tournamentConfig: {fileID: 11400000, guid: 74827b67746bd82418af5936b8e641aa, type: 2}
   _targetFrameRate: 60

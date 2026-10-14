@@ -2,6 +2,7 @@
     "name": "PlowParty.Gameplay.Bots",
     "rootNamespace": "PlowParty.Gameplay.Bots",
     "references": [
+        "PlowParty.Shared",
         "PlowParty.Gameplay.Participants",
         "PlowParty.Gameplay.Match",
         "PlowParty.Gameplay.DropOff",

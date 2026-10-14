@@ -48,12 +48,6 @@ namespace PlowParty.Gameplay.Hud.Tests
         }
 
         [Test]
-        public void NextMatchIn_Seconds_NamesThem()
-        {
-            Assert.That(HudText.NextMatchIn(7), Is.EqualTo("Следующий матч через 7"));
-        }
-
-        [Test]
         public void BlizzardIn_Seconds_NamesThem()
         {
             Assert.That(HudText.BlizzardIn(3), Is.EqualTo("Метель через 3!"));

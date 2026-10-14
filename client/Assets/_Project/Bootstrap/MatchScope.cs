@@ -39,9 +39,9 @@ namespace PlowParty.Bootstrap
             builder.Register<DropOffSnowFreeArea>(Lifetime.Singleton).As<ISnowFreeArea>();
             builder.Register<DeliveryRegistry>(Lifetime.Singleton).AsSelf().As<IScoreReader>();
             builder.RegisterEntryPoint<DropOffHost>();
-            builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().As<ISnowClock>().AsSelf();
+            builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().As<ISnowClock>().As<IMatchAdmission>().AsSelf();
             builder.RegisterComponentInHierarchy<ParticipantRoster>();
-            builder.RegisterEntryPoint<MatchSeating>().AsSelf();
+            builder.RegisterEntryPoint<MatchSeating>().AsSelf().As<IBotChoices>();
             builder.RegisterComponentInHierarchy<BotDriver>();
             RegisterHud(builder);
             RegisterCamera(builder);
@@ -77,7 +77,9 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<ResultsView>();
             builder.RegisterComponentInHierarchy<VirtualStickView>();
             builder.RegisterComponentInHierarchy<WaitingForPlayersView>();
+            builder.RegisterComponentInHierarchy<NicknameLabelsView>();
             builder.Register<MatchExitAdapter>(Lifetime.Singleton).As<IMatchExit>();
+            builder.RegisterEntryPoint<MatchStandingFeed>();
         }
     }
 }

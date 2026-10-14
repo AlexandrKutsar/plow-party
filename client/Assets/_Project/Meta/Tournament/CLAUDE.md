@@ -16,6 +16,7 @@ The daily Tournament screen and the client side of Match reporting: register the
 
 ## Rules worth knowing
 
+- A Custom Game is never registered, so it is never confirmed or voted: the Host reads the mode from the `MatchmakingResultStore` and logs "Match N is a Custom Game: not reported" (`MatchReportRules.IsReported`).
 - A Match is reported only when the Host is online and the Roster has 4–6 Slots; offline Players are seated as Bots; nothing is retried or queued.
 - The backend refuses a Vote earlier than registration + Countdown + played seconds (5 s tolerance), so Matches shortened in `MatchConfig` for testing are rejected as "too early".
 - The Roster comes from Participants' `ParticipantRoster` through `ParticipantRosterAdapter`: every open Slot, with the Account Id of a seated Player and a Bot otherwise. It is read at Countdown, after WaitingForPlayers has seated every Slot (`MatchProgressAdapter` maps WaitingForPlayers to `Waiting`).

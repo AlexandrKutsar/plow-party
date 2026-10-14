@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using PlowParty.Infrastructure.Network;
 using PlowParty.Meta.Account;
 using PlowParty.Meta.Session;
+using PlowParty.Meta.Session.Simulation;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -45,7 +46,7 @@ namespace PlowParty.Bootstrap
             }
 
             Debug.LogWarning($"Dev session failed to start: {outcome}; returning to the Menu");
-            _exit.LeaveToMenu(outcome == SessionStartOutcome.Refused ? Matchmaker.MatchStartedText : Matchmaker.ConnectFailedText);
+            _exit.LeaveToMenu(outcome == SessionStartOutcome.Refused ? SessionNotice.MatchStarted : SessionNotice.ConnectFailed);
         }
     }
 }

@@ -5,7 +5,8 @@
         "PlowParty.Shared",
         "UniTask",
         "VContainer",
-        "Fusion.Unity"
+        "Fusion.Unity",
+        "Photon.Realtime"
     ],
     "autoReferenced": false
 }

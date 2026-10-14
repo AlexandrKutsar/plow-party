@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using PlowParty.Meta.Tournament.Simulation;
+using PlowParty.Shared;
 
 namespace PlowParty.Meta.Tournament.Tests
 {
@@ -49,7 +50,20 @@ namespace PlowParty.Meta.Tournament.Tests
         }
 
         [Test]
+        public void IsReported_QuickPlay_IsTrue()
+        {
+            Assert.That(MatchReportRules.IsReported(PartyMode.QuickPlay), Is.True);
+        }
+
+        [Test]
+        public void IsReported_CustomGame_IsFalse()
+        {
+            Assert.That(MatchReportRules.IsReported(PartyMode.CustomGame), Is.False);
+        }
+
+        [Test]
         public void CanRegister_HostSeatedInFourSlots_IsTrue()
+
         {
             var roster = MatchReportRules.BuildRoster(new[] { Seat(0, Host), Seat(1, null), Seat(2, null), Seat(3, null) });
 

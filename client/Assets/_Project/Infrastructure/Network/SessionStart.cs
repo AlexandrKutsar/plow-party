@@ -16,5 +16,7 @@ namespace PlowParty.Infrastructure.Network
         public int MaxPlayers { get; set; }
 
         public bool IncludeActiveScene { get; set; }
+
+        public bool IsVisible { get; set; } = true;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using PlowParty.Infrastructure.Network;
+using PlowParty.Infrastructure.Session;
 using PlowParty.Meta.Tournament.Config;
 using PlowParty.Meta.Tournament.Simulation;
 using VContainer.Unity;
@@ -16,6 +17,7 @@ namespace PlowParty.Meta.Tournament.Network
         private readonly MatchReportApi _api;
         private readonly NetworkSession _session;
         private readonly TournamentConfig _config;
+        private readonly MatchmakingResultStore _matchmakingResults;
         private readonly Dictionary<int, int> _scores = new Dictionary<int, int>();
         private int _joinedMatch;
         private int _reportedMatch;
@@ -25,8 +27,9 @@ namespace PlowParty.Meta.Tournament.Network
         private MatchProgressPhase _lastPhase = MatchProgressPhase.Waiting;
         private float _lastPlayingElapsed;
 
-        public MatchReporter(IMatchProgress progress, IMatchRoster roster, MatchReportLinks links, MatchReportApi api, NetworkSession session, TournamentConfig config)
+        public MatchReporter(IMatchProgress progress, IMatchRoster roster, MatchReportLinks links, MatchReportApi api, NetworkSession session, TournamentConfig config, MatchmakingResultStore matchmakingResults)
         {
+            _matchmakingResults = matchmakingResults;
             _progress = progress;
             _roster = roster;
             _links = links;
@@ -73,7 +76,14 @@ namespace PlowParty.Meta.Tournament.Network
             }
 
             _joinedMatch = match;
+            if (_matchmakingResults.TryGet(out var result) && !MatchReportRules.IsReported(result.Mode))
+            {
+                UnityEngine.Debug.Log($"[Tournament] Match {match} is a Custom Game: not reported");
+                return;
+            }
+
             RegisterAsync(match).Forget();
+
         }
 
         private async UniTask RegisterAsync(int match)

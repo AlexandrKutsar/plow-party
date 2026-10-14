@@ -20,7 +20,7 @@ namespace PlowParty.Gameplay.CameraRig.View
         private ArenaVolume _arena;
         private bool _hasArena;
 
-        public CameraPreset ActivePreset { get; private set; }
+        public CameraPreset ActivePreset { get; private set; } = CameraPreset.Follow;
 
         [Inject]
         public void Construct(CameraConfig config, VehicleRegistry vehicles, CameraShake shake)
@@ -28,7 +28,6 @@ namespace PlowParty.Gameplay.CameraRig.View
             _config = config;
             _vehicles = vehicles;
             _shake = shake;
-            ActivePreset = config.DefaultPreset;
         }
 
         public void CyclePreset()

@@ -11,9 +11,10 @@ using VContainer;
 namespace PlowParty.Gameplay.Match.Network
 {
     [DefaultExecutionOrder(-100)]
-    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults, ISnowClock
+    public sealed class MatchDriver : NetworkBehaviour, IMatchClock, IMatchResults, ISnowClock, IMatchAdmission
     {
         private const int MaxPlacements = VehicleWorldDriver.MaxVehicles;
+        private const int MaxTurnedAway = 8;
 
         private readonly int[] _rankSlots = new int[MaxPlacements];
         private readonly int[] _rankScores = new int[MaxPlacements];
@@ -21,7 +22,6 @@ namespace PlowParty.Gameplay.Match.Network
 
         private MatchConfig _config;
         private VehicleRegistry _vehicles;
-        private VehicleSpawner _spawner;
         private MatchSeating _seating;
         private IScoreReader _scoreReader;
         private MatchRules _rules;
@@ -32,8 +32,6 @@ namespace PlowParty.Gameplay.Match.Network
 
         [Networked] private int PhaseStartTick { get; set; }
 
-        [Networked] private NetworkBool RestartRequested { get; set; }
-
         [Networked] public int PlacementCount { get; private set; }
 
         [Networked, Capacity(MaxPlacements)] private NetworkArray<int> PlacementSlots { get; }
@@ -42,9 +40,11 @@ namespace PlowParty.Gameplay.Match.Network
 
         [Networked, Capacity(MaxPlacements)] private NetworkArray<int> PlacementPlaces { get; }
 
-        public event Action MatchRestarted;
+        [Networked, Capacity(MaxTurnedAway)] private NetworkArray<PlayerRef> TurnedAway { get; }
 
         public bool IsRunning => _rules != null;
+
+        public bool IsLocalPlayerTurnedAway => IsRunning && IsTurnedAway(Runner.LocalPlayer);
 
         public bool IsPlaying => IsRunning && Phase == MatchPhase.Playing;
 
@@ -54,18 +54,13 @@ namespace PlowParty.Gameplay.Match.Network
 
         public float PlayingRemaining => IsRunning ? _rules.PlayingRemaining(Phase, PhaseElapsed) : 0f;
 
-        public bool WaitsForHost => IsRunning && _rules.WaitsForRestartRequest;
-
-        public bool CanRequestRestart => IsRunning && Runner.IsServer && Phase == MatchPhase.Results;
-
         private float PhaseElapsed => MatchRules.PhaseElapsed(Runner.Tick, PhaseStartTick, Runner.DeltaTime);
 
         [Inject]
-        public void Construct(MatchConfig config, VehicleRegistry vehicles, VehicleSpawner spawner, MatchSeating seating, IScoreReader scores)
+        public void Construct(MatchConfig config, VehicleRegistry vehicles, MatchSeating seating, IScoreReader scores)
         {
             _config = config;
             _vehicles = vehicles;
-            _spawner = spawner;
             _seating = seating;
             _scoreReader = scores;
         }
@@ -91,14 +86,6 @@ namespace PlowParty.Gameplay.Match.Network
             return new MatchPlacement(PlacementSlots[index], PlacementScores[index], PlacementPlaces[index]);
         }
 
-        public void RequestRestart()
-        {
-            if (CanRequestRestart)
-            {
-                RestartRequested = true;
-            }
-        }
-
         public override void FixedUpdateNetwork()
         {
             if (!Runner.IsServer)
@@ -107,7 +94,8 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             _seating.Tick(Runner, Phase, PhaseElapsed);
-            var next = _rules.NextPhase(Phase, PhaseElapsed, RestartRequested, _seating.AllSlotsFilled);
+            PublishTurnedAway();
+            var next = _rules.NextPhase(Phase, PhaseElapsed, _seating.IsWaitingOver(PhaseElapsed));
             if (next != Phase)
             {
                 Enter(next);
@@ -122,10 +110,6 @@ namespace PlowParty.Gameplay.Match.Network
             {
                 RecordPlacements();
             }
-            else if (MatchRules.StartsNextMatch(Phase, phase))
-            {
-                StartNextMatch();
-            }
             else if (Phase == MatchPhase.WaitingForPlayers && phase == MatchPhase.Countdown)
             {
                 _seating.Close();
@@ -133,16 +117,6 @@ namespace PlowParty.Gameplay.Match.Network
 
             Phase = phase;
             PhaseStartTick = Runner.Tick;
-        }
-
-        private void StartNextMatch()
-        {
-            MatchNumber++;
-            RestartRequested = false;
-            PlacementCount = 0;
-            _spawner.RespawnAll(Runner);
-            _seating.FillFreeSlots(Runner);
-            MatchRestarted?.Invoke();
         }
 
         private void RecordPlacements()
@@ -161,6 +135,32 @@ namespace PlowParty.Gameplay.Match.Network
                 PlacementSlots.Set(i, _placements[i].Slot);
                 PlacementScores.Set(i, _placements[i].Score);
                 PlacementPlaces.Set(i, _placements[i].Place);
+            }
+        }
+
+        private bool IsTurnedAway(PlayerRef player)
+        {
+            for (var i = 0; i < MaxTurnedAway; i++)
+            {
+                if (TurnedAway[i] == player)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void PublishTurnedAway()
+        {
+            var players = _seating.TurnedAwayPlayers;
+            for (var i = 0; i < MaxTurnedAway; i++)
+            {
+                var player = i < players.Count ? players[i] : PlayerRef.None;
+                if (TurnedAway[i] != player)
+                {
+                    TurnedAway.Set(i, player);
+                }
             }
         }
 

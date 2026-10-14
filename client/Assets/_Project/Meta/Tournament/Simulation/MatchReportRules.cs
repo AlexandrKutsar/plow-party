@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using PlowParty.Meta.Tournament.Api;
+using PlowParty.Shared;
+
 
 namespace PlowParty.Meta.Tournament.Simulation
 {
@@ -32,6 +34,11 @@ namespace PlowParty.Meta.Tournament.Simulation
             }
 
             return request;
+        }
+
+        public static bool IsReported(PartyMode mode)
+        {
+            return mode == PartyMode.QuickPlay;
         }
 
         public static bool CanRegister(RegisterMatchRequest roster, string hostAccountId)

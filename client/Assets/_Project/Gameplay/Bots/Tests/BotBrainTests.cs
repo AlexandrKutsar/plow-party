@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using PlowParty.Gameplay.Bots.Simulation;
+using PlowParty.Shared;
 using PlowParty.Gameplay.Vehicle.Simulation;
 using UnityEngine;
 

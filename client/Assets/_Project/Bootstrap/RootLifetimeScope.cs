@@ -1,4 +1,5 @@
 using System;
+using PlowParty.Bootstrap.Adapters;
 using PlowParty.Gameplay.Bots.Config;
 using PlowParty.Gameplay.Bucket.Config;
 using PlowParty.Gameplay.CameraRig.Config;
@@ -14,6 +15,8 @@ using PlowParty.Infrastructure.Scenes;
 using PlowParty.Infrastructure.Session;
 using PlowParty.Infrastructure.Storage;
 using PlowParty.Meta.Account;
+using PlowParty.Meta.Party;
+using PlowParty.Meta.Party.Config;
 using PlowParty.Meta.Session;
 using PlowParty.Meta.Session.Config;
 using PlowParty.Meta.Tournament;
@@ -37,6 +40,7 @@ namespace PlowParty.Bootstrap
         [SerializeField] private BotConfig _botConfig;
         [SerializeField] private BackendConfig _backendConfig;
         [SerializeField] private MatchmakingConfig _matchmakingConfig;
+        [SerializeField] private PartyConfig _partyConfig;
         [SerializeField] private TournamentConfig _tournamentConfig;
         [SerializeField, Min(30)] private int _targetFrameRate = 60;
 
@@ -53,6 +57,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(_botConfig);
             builder.RegisterInstance(_backendConfig);
             builder.RegisterInstance(_matchmakingConfig);
+            builder.RegisterInstance(_partyConfig);
             builder.RegisterInstance(_tournamentConfig);
             builder.Register<SceneLoader>(Lifetime.Singleton);
             builder.Register<MatchmakingResultStore>(Lifetime.Singleton);
@@ -67,6 +72,8 @@ namespace PlowParty.Bootstrap
             builder.RegisterInstance(new LocalFileStore(StorageFolder.For(Application.dataPath, Application.persistentDataPath, Application.isEditor)));
             builder.Register<AccountService>(Lifetime.Singleton);
             builder.RegisterInstance(new MatchmakingPool(PoolName()));
+            builder.Register<PartyMemory>(Lifetime.Singleton);
+            builder.Register<ParticipantPaletteAdapter>(Lifetime.Singleton).As<IParticipantPalette>();
             builder.RegisterEntryPoint<SessionExit>().AsSelf();
             builder.Register<MatchReportApi>(Lifetime.Singleton);
         }

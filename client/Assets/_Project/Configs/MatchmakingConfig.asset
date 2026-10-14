@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _searchSeconds: 10
   _maxSlots: 6
-  _roomCodeAttempts: 3
-  _hostJitterMinSeconds: 0.3
-  _hostJitterMaxSeconds: 1.5
+  _minSecondsBeforeStart: 3
+  _listWaitSeconds: 3
+  _mergeCheckSeconds: 1
+  _moveGraceSeconds: 0.3
+  _lobbyLinkPrefab: {fileID: 7180086038905102276, guid: 053617630b6242e4932d11957f5c43a7, type: 3}

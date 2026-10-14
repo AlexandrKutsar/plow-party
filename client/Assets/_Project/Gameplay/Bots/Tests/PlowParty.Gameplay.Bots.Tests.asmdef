@@ -3,6 +3,7 @@
     "rootNamespace": "PlowParty.Gameplay.Bots.Tests",
     "references": [
         "PlowParty.Gameplay.Bots",
+        "PlowParty.Shared",
         "PlowParty.Gameplay.Vehicle",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

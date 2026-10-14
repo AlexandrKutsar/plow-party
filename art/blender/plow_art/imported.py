@@ -4,7 +4,7 @@ import re
 import bpy
 from mathutils import Matrix, Vector
 
-from . import palette
+from . import palette, shapes
 
 SOURCES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "sources")
 
@@ -13,7 +13,7 @@ def load(name, source, collection, parent, colors, size):
     meshes = _import(source, collection)
     for obj in meshes:
         _paint_faces(obj, colors)
-    obj = _join(meshes, name)
+    obj = shapes.join(meshes, name)
     _normalize(obj, size)
     obj.parent = parent
     return obj
@@ -95,16 +95,6 @@ def _nearest(color, candidates):
 
 def _to_srgb(value):
     return 12.92 * value if value <= 0.0031308 else 1.055 * value ** (1 / 2.4) - 0.055
-
-
-def _join(meshes, name):
-    target = meshes[0]
-    if len(meshes) > 1:
-        with bpy.context.temp_override(active_object=target, selected_editable_objects=meshes, selected_objects=meshes):
-            bpy.ops.object.join()
-    target.name = name
-    target.data.name = name
-    return target
 
 
 def _normalize(obj, size):

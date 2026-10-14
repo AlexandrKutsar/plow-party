@@ -1,3 +1,5 @@
+using PlowParty.Shared;
+
 namespace PlowParty.Gameplay.Bots.Simulation
 {
     public static class BotDifficultyRules
