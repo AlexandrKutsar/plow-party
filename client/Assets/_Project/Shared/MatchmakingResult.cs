@@ -19,10 +19,20 @@ namespace PlowParty.Shared
             ExpectedHumans = expectedHumans;
             MaxSlots = maxSlots;
             Mode = mode;
+            Setup = null;
+        }
+
+        public MatchmakingResult(CustomGameSetup setup)
+        {
+            Setup = setup ?? throw new ArgumentNullException(nameof(setup));
+            ExpectedHumans = setup.PlayerCount;
+            MaxSlots = setup.Slots.Count;
+            Mode = PartyMode.CustomGame;
         }
 
         public int ExpectedHumans { get; }
         public int MaxSlots { get; }
         public PartyMode Mode { get; }
+        public CustomGameSetup Setup { get; }
     }
 }

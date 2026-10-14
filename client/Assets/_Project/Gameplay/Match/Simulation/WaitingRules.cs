@@ -28,8 +28,24 @@ namespace PlowParty.Gameplay.Match.Simulation
             return players >= plan.ExpectedPlayers;
         }
 
+        public bool IsWaitingOver(SeatPlan plan, int players, int bots, float waitingElapsed)
+        {
+            if (AllSlotsFilled(plan, players, bots))
+            {
+                return true;
+            }
+
+            return !plan.ReplacesMissingPlayers && waitingElapsed >= _settings.WaitingDuration && bots >= plan.PlannedBots;
+        }
+
         public SeatPlan PlanSeats(bool hasMatchmakingResult, MatchmakingResult matchmakingResult, int playersPresent, int slotLimit)
         {
+            if (hasMatchmakingResult && matchmakingResult.Setup != null)
+            {
+                var customSlots = Math.Min(matchmakingResult.Setup.Slots.Count, slotLimit);
+                return new SeatPlan(customSlots, Math.Min(matchmakingResult.Setup.PlayerCount, customSlots), false);
+            }
+
             var slotCount = Math.Min(hasMatchmakingResult ? matchmakingResult.MaxSlots : _settings.FallbackSlotCount, slotLimit);
             var expectedPlayers = hasMatchmakingResult ? matchmakingResult.ExpectedHumans : Math.Max(1, playersPresent);
             return new SeatPlan(slotCount, Math.Min(expectedPlayers, slotCount));
@@ -71,8 +87,9 @@ namespace PlowParty.Gameplay.Match.Simulation
 
             if (waitingElapsed >= _settings.WaitingDuration && !AllExpectedPlayersSeated(plan, players))
             {
-                return free;
+                return plan.ReplacesMissingPlayers ? free : Math.Max(0, Math.Min(free, plan.PlannedBots - bots));
             }
+
 
             var reservedForPlayers = Math.Max(0, plan.ExpectedPlayers - players);
             var botRoom = free - reservedForPlayers;

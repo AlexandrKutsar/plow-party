@@ -1,4 +1,5 @@
 using PlowParty.Gameplay.Bots.Simulation;
+using PlowParty.Shared;
 using UnityEngine;
 
 namespace PlowParty.Gameplay.Bots.Config

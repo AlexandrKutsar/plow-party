@@ -9,5 +9,11 @@ namespace PlowParty.Meta.Party.Network
         public NetworkString<_16> Nickname { get; set; }
 
         public NetworkBool IsReady { get; set; }
+
+        public byte Slot { get; set; }
+
+        public byte Color { get; set; }
+
+        public byte Critter { get; set; }
     }
 }

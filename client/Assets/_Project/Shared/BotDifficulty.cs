@@ -1,4 +1,4 @@
-namespace PlowParty.Gameplay.Bots.Simulation
+namespace PlowParty.Shared
 {
     public enum BotDifficulty
     {

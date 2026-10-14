@@ -41,7 +41,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterEntryPoint<DropOffHost>();
             builder.RegisterComponentInHierarchy<MatchDriver>().As<IMatchClock>().As<IMatchResults>().As<ISnowClock>().AsSelf();
             builder.RegisterComponentInHierarchy<ParticipantRoster>();
-            builder.RegisterEntryPoint<MatchSeating>().AsSelf();
+            builder.RegisterEntryPoint<MatchSeating>().AsSelf().As<IBotChoices>();
             builder.RegisterComponentInHierarchy<BotDriver>();
             RegisterHud(builder);
             RegisterCamera(builder);

@@ -117,11 +117,11 @@ namespace PlowParty.Meta.Lobby.Tests
         }
 
         [Test]
-        public void For_Leader_CustomGameIsNotAvailableYet()
+        public void For_Leader_MayPickCustomGame()
         {
             var state = PartyPanelState.For(PartyStage.InParty, "AB3XZ", Party(), Leader, true);
 
-            Assert.That(state.CanPickCustomGame, Is.False);
+            Assert.That(state.CanPickCustomGame, Is.True);
         }
 
         private static PartyState Party()

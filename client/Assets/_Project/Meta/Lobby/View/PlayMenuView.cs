@@ -9,12 +9,15 @@ namespace PlowParty.Meta.Lobby.View
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private Button _quickPlayButton;
+        [SerializeField] private Button _customGameButton;
         [SerializeField, FormerlySerializedAs("_createRoomButton")] private Button _createPartyButton;
         [SerializeField] private InputField _codeInput;
         [SerializeField] private Button _joinButton;
         [SerializeField] private Text _failureLabel;
 
         public event Action QuickPlayRequested;
+
+        public event Action CustomGameRequested;
 
         public event Action CreatePartyRequested;
 
@@ -29,6 +32,7 @@ namespace PlowParty.Meta.Lobby.View
         private void Awake()
         {
             _quickPlayButton.onClick.AddListener(OnQuickPlayClicked);
+            _customGameButton.onClick.AddListener(OnCustomGameClicked);
             _createPartyButton.onClick.AddListener(OnCreatePartyClicked);
             _joinButton.onClick.AddListener(OnJoinClicked);
         }
@@ -36,6 +40,7 @@ namespace PlowParty.Meta.Lobby.View
         private void OnDestroy()
         {
             _quickPlayButton.onClick.RemoveListener(OnQuickPlayClicked);
+            _customGameButton.onClick.RemoveListener(OnCustomGameClicked);
             _createPartyButton.onClick.RemoveListener(OnCreatePartyClicked);
             _joinButton.onClick.RemoveListener(OnJoinClicked);
         }
@@ -45,7 +50,13 @@ namespace PlowParty.Meta.Lobby.View
             QuickPlayRequested?.Invoke();
         }
 
+        private void OnCustomGameClicked()
+        {
+            CustomGameRequested?.Invoke();
+        }
+
         private void OnCreatePartyClicked()
+
         {
             CreatePartyRequested?.Invoke();
         }

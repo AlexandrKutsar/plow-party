@@ -1,6 +1,7 @@
 using Fusion;
 using PlowParty.Gameplay.Bots.Config;
 using PlowParty.Gameplay.Bots.Simulation;
+using PlowParty.Shared;
 using PlowParty.Gameplay.Bucket.Config;
 using PlowParty.Gameplay.Bucket.Network;
 using PlowParty.Gameplay.DropOff.Config;
@@ -40,6 +41,7 @@ namespace PlowParty.Gameplay.Bots.Network
         private SnowConfig _snowConfig;
         private IMatchClock _clock;
         private IMatchResults _results;
+        private IBotChoices _choices;
         private BotSettings _settings;
         private BotWorld _world;
         private SnowDepthsReader _depths;
@@ -60,8 +62,10 @@ namespace PlowParty.Gameplay.Bots.Network
             SnowGridDriver snow,
             SnowConfig snowConfig,
             IMatchClock clock,
-            IMatchResults results)
+            IMatchResults results,
+            IBotChoices choices)
         {
+            _choices = choices;
             _config = config;
             _vehicles = vehicles;
             _roster = roster;
@@ -133,7 +137,10 @@ namespace PlowParty.Gameplay.Bots.Network
                     continue;
                 }
 
-                var difficulty = BotDifficultyRules.Choose(HasStrongBot(), _random.NextDouble(), _settings.WeakShare);
+                var difficulty = _choices.TryGetChosenDifficulty(slot, out var chosen)
+                    ? chosen
+                    : BotDifficultyRules.Choose(HasStrongBot(), _random.NextDouble(), _settings.WeakShare);
+
                 _brains[slot] = new BotBrain(_config.ProfileFor(difficulty), _settings, _random.Next(), MaxSlots);
                 _brains[slot].Reset(time);
                 Debug.Log($"[Bots] {_roster.NicknameOf(slot)} takes Slot {slot} as a {difficulty} Bot");
