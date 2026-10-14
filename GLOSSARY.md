@@ -44,6 +44,14 @@ _Avoid_: Room Code, invite code
 A Party member's own mark that they are set to play; the Party Leader can start only when every other member is Ready, and a new member joins Not Ready.
 _Avoid_: Confirmed (that is the Confirmed Player), accepted
 
+**Member Look** (облик участника группы):
+A Party member's Participant Color and Critter as the Menu shows them on the member row dot and the Podium; the solo Player has one too.
+_Avoid_: Skin, avatar, Participant Profile (that is the Match's)
+
+**Menu Tab** (вкладка меню):
+One of the two bottom tabs of the Menu: Игра (play panels and the Podium) and Турнир (the Tournament).
+_Avoid_: Page, screen (a tab holds several screens)
+
 **Podium** (подиум):
 The 3D stage on the Menu's Игра tab showing the tractor and Critter of the Player, or of every Party member side by side in join order.
 _Avoid_: Garage (a future screen), showcase, lineup
@@ -63,6 +71,14 @@ _Avoid_: Room, waiting room, Party (that is the friends' group)
 **Search** (поиск игры):
 The time from pressing Quick Play until the Match loads, shown as "Поиск игры…" with a stopwatch from the local clock; any searching Party member can stop it, which brings the whole Party back to its hidden Session.
 _Avoid_: Queue, search timer (the start time belongs to the Lobby Host)
+
+**Lobby Listing** (запись лобби):
+One open Lobby as the Quick Play search reads it from its Matchmaking Pool's session list: name, Player count, capacity, start and open time, and the Party Codes whose Party Leader is inside.
+_Avoid_: Room info, session entry
+
+**Lobby Pick** (выбор лобби):
+The rule that orders Lobby Listings into the candidates a Search tries (room for the whole Party, at least 3 s before the start; most Players, then soonest start) and picks the Lobby Merge target.
+_Avoid_: Matchmaking algorithm, best room
 
 **Lobby Merge** (слияние лобби):
 A Lobby holding only its own Party moving, Party and all, into an older open Lobby that fits it, so that two Parties searching at once end up together; the older Lobby never moves.
