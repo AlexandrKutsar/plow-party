@@ -31,6 +31,7 @@ namespace PlowParty.Bootstrap
             builder.RegisterComponentInHierarchy<PlayMenuView>();
             builder.RegisterComponentInHierarchy<PartyPanelView>();
             builder.RegisterComponentInHierarchy<SearchView>();
+            builder.RegisterComponentInHierarchy<CustomGameSetupView>();
             builder.RegisterComponentInHierarchy<PodiumView>();
             builder.Register<MemberLooks>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LobbyPresenter>();

@@ -19,7 +19,9 @@ namespace PlowParty.Meta.Lobby.View
         [SerializeField] private Button _readyButton;
         [SerializeField] private Text _readyLabel;
         [SerializeField] private Button _searchButton;
+        [SerializeField] private Text _searchLabel;
         [SerializeField] private Button _leaveButton;
+        [SerializeField] private GameObject _membersRoot;
 
         private string _code;
 
@@ -51,6 +53,10 @@ namespace PlowParty.Meta.Lobby.View
             _readyLabel.text = state.ReadyLabel;
             _searchButton.gameObject.SetActive(state.ShowSearch);
             _searchButton.interactable = state.CanSearch;
+            _searchLabel.text = state.SearchLabel;
+            _leaveButton.gameObject.SetActive(state.ShowLeave);
+            _membersRoot.SetActive(!state.ShowSetup);
+
         }
 
         public void ShowRow(int index, PartyRow row, Color color)

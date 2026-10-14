@@ -18,6 +18,7 @@ namespace PlowParty.Meta.Lobby
         private readonly PlayMenuView _playMenu;
         private readonly PartyPanelView _partyPanel;
         private readonly SearchView _search;
+        private readonly CustomGameSetupView _setup;
         private readonly PodiumView _podium;
         private readonly MemberLooks _looks;
         private readonly List<MemberLook> _lineup = new List<MemberLook>();
@@ -30,9 +31,11 @@ namespace PlowParty.Meta.Lobby
             PlayMenuView playMenu,
             PartyPanelView partyPanel,
             SearchView search,
+            CustomGameSetupView setup,
             PodiumView podium,
             MemberLooks looks)
         {
+            _setup = setup;
             _matchmaker = matchmaker;
             _party = party;
             _playMenu = playMenu;
@@ -47,6 +50,12 @@ namespace PlowParty.Meta.Lobby
             _matchmaker.Changed += Refresh;
             _party.Changed += Refresh;
             _playMenu.QuickPlayRequested += OnSearchRequested;
+            _playMenu.CustomGameRequested += OnCustomGameRequested;
+            _setup.AddBotRequested += OnAddBotRequested;
+            _setup.DifficultyRequested += OnDifficultyRequested;
+            _setup.RemoveBotRequested += OnRemoveBotRequested;
+            _setup.ColorRequested += OnColorRequested;
+            _setup.CritterStepRequested += OnCritterStepRequested;
             _playMenu.CreatePartyRequested += OnCreatePartyRequested;
             _playMenu.JoinRequested += OnJoinRequested;
             _partyPanel.RemoveRequested += OnRemoveRequested;
@@ -71,6 +80,12 @@ namespace PlowParty.Meta.Lobby
             _matchmaker.Changed -= Refresh;
             _party.Changed -= Refresh;
             _playMenu.QuickPlayRequested -= OnSearchRequested;
+            _playMenu.CustomGameRequested -= OnCustomGameRequested;
+            _setup.AddBotRequested -= OnAddBotRequested;
+            _setup.DifficultyRequested -= OnDifficultyRequested;
+            _setup.RemoveBotRequested -= OnRemoveBotRequested;
+            _setup.ColorRequested -= OnColorRequested;
+            _setup.CritterStepRequested -= OnCritterStepRequested;
             _playMenu.CreatePartyRequested -= OnCreatePartyRequested;
             _playMenu.JoinRequested -= OnJoinRequested;
             _partyPanel.RemoveRequested -= OnRemoveRequested;
@@ -85,7 +100,7 @@ namespace PlowParty.Meta.Lobby
 
         private void Refresh()
         {
-            var screen = LobbyScreens.For(_party.Stage, _matchmaker.Stage);
+            var screen = LobbyScreens.For(_party.Stage, _matchmaker.Stage, _party.Party.Mode);
             _playMenu.Show(screen == LobbyScreen.Solo, _party.Failure ?? _matchmaker.Failure);
             _partyPanel.SetVisible(screen == LobbyScreen.Party);
             _search.SetVisible(screen == LobbyScreen.Search);
@@ -93,7 +108,12 @@ namespace PlowParty.Meta.Lobby
             {
                 RefreshParty();
             }
-            else if (screen == LobbyScreen.Search)
+            else
+            {
+                _setup.Hide();
+            }
+
+            if (screen == LobbyScreen.Search)
             {
                 RefreshSearch();
             }
@@ -105,6 +125,7 @@ namespace PlowParty.Meta.Lobby
         {
             var state = PartyPanelState.For(_party.Stage, _party.Code, _party.Party, _party.LocalId, _matchmaker.CanSearch);
             _partyPanel.Show(state);
+            _setup.Show(state, _looks.ColorOf);
             for (var i = 0; i < _partyPanel.RowCount; i++)
             {
                 if (i < state.Rows.Count)
@@ -159,7 +180,45 @@ namespace PlowParty.Meta.Lobby
             _matchmaker.Search();
         }
 
+        private void OnCustomGameRequested()
+        {
+            _party.SetMode(PartyMode.CustomGame);
+        }
+
+        private void OnAddBotRequested(int slot)
+        {
+            _party.SetBot(slot, BotDifficulty.Medium);
+        }
+
+        private void OnDifficultyRequested(int slot)
+        {
+            if (_party.Party.TryGetBot(slot, out var bot))
+            {
+                _party.SetBot(slot, PartyPanelState.NextDifficulty(bot.Difficulty));
+            }
+        }
+
+        private void OnRemoveBotRequested(int slot)
+        {
+            _party.RemoveBot(slot);
+        }
+
+        private void OnColorRequested(int color)
+        {
+            _party.PickColor(color);
+        }
+
+        private void OnCritterStepRequested(int step)
+        {
+            if (_party.Party.TryGetMember(_party.LocalId, out var local) && _party.Party.CritterCount > 0)
+            {
+                var count = _party.Party.CritterCount;
+                _party.PickCritter(((local.Critter + step) % count + count) % count);
+            }
+        }
+
         private void OnStopRequested()
+
         {
             _matchmaker.StopSearch();
         }

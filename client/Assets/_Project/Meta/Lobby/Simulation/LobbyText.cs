@@ -1,5 +1,6 @@
 using System;
 using PlowParty.Meta.Session;
+using PlowParty.Shared;
 
 namespace PlowParty.Meta.Lobby.Simulation
 {
@@ -14,6 +15,56 @@ namespace PlowParty.Meta.Lobby.Simulation
         private const string NotReadyButtonText = "Не готов";
         private const string ReadyMark = "Готов";
         private const string NotReadyMark = "Не готов";
+        private const string CustomGameTitleText = "Своя игра";
+        private const string NotCountedText = "Не в зачёт турнира";
+        private const string SearchButtonText = "Искать матч";
+        private const string StartButtonText = "Начать";
+        private const string EmptySlotText = "Пусто";
+        private static readonly string[] CritterNames = { "Лиса", "Медведь", "Заяц", "Енот", "Пингвин", "Бобр" };
+
+        public static string CustomGameTitle()
+        {
+            return CustomGameTitleText;
+        }
+
+        public static string NotCounted()
+        {
+            return NotCountedText;
+        }
+
+        public static string SearchButton(PartyMode mode)
+        {
+            return mode == PartyMode.CustomGame ? StartButtonText : SearchButtonText;
+        }
+
+        public static string EmptySlot()
+        {
+            return EmptySlotText;
+        }
+
+        public static string BotSlot(BotDifficulty difficulty)
+        {
+            return $"Бот · {Difficulty(difficulty)}";
+        }
+
+        public static string Difficulty(BotDifficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case BotDifficulty.Weak:
+                    return "слабый";
+                case BotDifficulty.Strong:
+                    return "сильный";
+                default:
+                    return "средний";
+            }
+        }
+
+        public static string CritterName(int critter)
+        {
+            return critter >= 0 && critter < CritterNames.Length ? CritterNames[critter] : string.Empty;
+        }
+
 
         public static string SearchTitle()
         {
