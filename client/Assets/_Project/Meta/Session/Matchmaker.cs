@@ -78,12 +78,20 @@ namespace PlowParty.Meta.Session
 
         public int MaxSlots => _config.MaxSlots;
 
+        public bool IsCustomGame => _party.Party.Mode == PartyMode.CustomGame;
+
         private int PartySize => _party.Stage == PartyStage.InParty ? Math.Max(1, _party.Party.Count) : 1;
 
         public void Search()
         {
             if (!CanSearch)
             {
+                return;
+            }
+
+            if (IsCustomGame)
+            {
+                StartCustomGameAsync().Forget();
                 return;
             }
 
@@ -374,12 +382,47 @@ namespace PlowParty.Meta.Session
             CancelSearch();
             _hostsLobby = false;
             Enter(LobbyStage.Starting, null);
-            _matchmakingResults.Set(LobbyRules.MatchmakingResultFor(players, MaxSlots, PartyMode.QuickPlay));
+            LoadMatch(LobbyRules.MatchmakingResultFor(players, MaxSlots, PartyMode.QuickPlay));
+        }
+
+        private async UniTaskVoid StartCustomGameAsync()
+        {
+            Enter(LobbyStage.Starting, null);
+            if (_party.Stage != PartyStage.InParty)
+            {
+                var outcome = await _session.StartAsync(new SessionStart
+                {
+                    Mode = GameMode.Host,
+                    ConnectionToken = _account.ToParticipantToken().ToBytes(),
+                    MaxPlayers = 1,
+                    IsVisible = false,
+                }, _lifetime.Token);
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (outcome != SessionStartOutcome.Started)
+                {
+                    Enter(LobbyStage.Idle, ConnectFailedText);
+                    return;
+                }
+            }
+
+            var setup = _party.CustomGameSetupFor(_session.Runner.LocalPlayer.RawEncoded);
+            Debug.Log($"[Session] Custom Game starts with {setup.PlayerCount} Player(s) and {setup.BotCount} Bot(s)");
+            LoadMatch(new MatchmakingResult(setup));
+        }
+
+        private void LoadMatch(MatchmakingResult result)
+        {
+            _matchmakingResults.Set(result);
             _party.CloseForMatch();
             _lobbyLinks.Despawn(_session.Runner);
             _session.Close();
             _session.LoadScene(SceneNames.Match);
         }
+
 
         private void HideOwnLobby()
         {

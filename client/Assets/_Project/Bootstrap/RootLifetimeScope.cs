@@ -1,4 +1,5 @@
 using System;
+using PlowParty.Bootstrap.Adapters;
 using PlowParty.Gameplay.Bots.Config;
 using PlowParty.Gameplay.Bucket.Config;
 using PlowParty.Gameplay.CameraRig.Config;
@@ -72,6 +73,7 @@ namespace PlowParty.Bootstrap
             builder.Register<AccountService>(Lifetime.Singleton);
             builder.RegisterInstance(new MatchmakingPool(PoolName()));
             builder.Register<PartyMemory>(Lifetime.Singleton);
+            builder.Register<ParticipantPaletteAdapter>(Lifetime.Singleton).As<IParticipantPalette>();
             builder.RegisterEntryPoint<SessionExit>().AsSelf();
             builder.Register<MatchReportApi>(Lifetime.Singleton);
         }

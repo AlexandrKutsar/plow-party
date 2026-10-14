@@ -89,7 +89,7 @@ namespace PlowParty.Gameplay.Match.Network
             }
 
             _seating.Tick(Runner, Phase, PhaseElapsed);
-            var next = _rules.NextPhase(Phase, PhaseElapsed, _seating.AllSlotsFilled);
+            var next = _rules.NextPhase(Phase, PhaseElapsed, _seating.IsWaitingOver(PhaseElapsed));
             if (next != Phase)
             {
                 Enter(next);

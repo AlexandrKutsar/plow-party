@@ -52,6 +52,10 @@ _Avoid_: Garage (a future screen), showcase, lineup
 The mode that counts for the Tournament: the Player or the whole Party joins the best open Lobby of its Matchmaking Pool (room for everyone, at least 3 s before its start; most Players, then soonest start), or opens its own Lobby when none fits, and moves into an older fitting Lobby while waiting alone.
 _Avoid_: Random match, auto match
 
+**Custom Game** (своя игра):
+The mode that does not count for the Tournament: only the Party (or a solo Player) plus the Bots the Party Leader places in the 6 Slots with their Bot Difficulty; each member picks a free Participant Color and any Critter, the Leader's Start loads the Match straight from the Party Session, and nothing is sent to the backend. A member who has not loaded by the wait cap leaves an empty Slot.
+_Avoid_: Private match, friendly match, practice
+
 **Lobby** (лобби):
 A Session open to Quick Play, listed in its Matchmaking Pool with its start time; only its Host's clock starts the Match when the search time ends or 6 Players are in. A Party Session becomes one when Quick Play finds nothing to join.
 _Avoid_: Room, waiting room, Party (that is the friends' group)
@@ -115,7 +119,7 @@ One of the 8 palette colours, unique within a Match, that marks a Participant's 
 _Avoid_: Team color, skin, tint
 
 **Bot Difficulty** (сложность бота):
-How well a Bot plays: Strong, Medium, or Weak; every Match with Bots has exactly one Strong Bot.
+How well a Bot plays: Strong, Medium, or Weak; every Quick Play Match with Bots has exactly one Strong Bot, while Custom Game Bots keep the Difficulty the Party Leader chose.
 _Avoid_: Level, skill
 
 **Bot Profile** (профиль бота):

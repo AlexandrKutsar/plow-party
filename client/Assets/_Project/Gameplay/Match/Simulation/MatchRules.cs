@@ -21,12 +21,12 @@ namespace PlowParty.Gameplay.Match.Simulation
             return Mathf.Max(0, tick - phaseStartTick) * deltaTime;
         }
 
-        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool allSlotsFilled)
+        public MatchPhase NextPhase(MatchPhase phase, float phaseElapsed, bool waitingOver)
         {
             switch (phase)
             {
                 case MatchPhase.WaitingForPlayers:
-                    return allSlotsFilled ? MatchPhase.Countdown : phase;
+                    return waitingOver ? MatchPhase.Countdown : phase;
                 case MatchPhase.Countdown:
                     return phaseElapsed >= _settings.CountdownDuration ? MatchPhase.Playing : phase;
                 case MatchPhase.Playing:

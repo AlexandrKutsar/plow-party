@@ -32,11 +32,13 @@ namespace PlowParty.Meta.Party
         private readonly PartyLinks _links;
         private readonly Random _random = new Random();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
+        private readonly PartyLooks _looks;
         private int _shownRevision = -1;
         private bool _restoreReady;
+        private bool _restoreSetup;
         private bool _disposed;
 
-        public PartyService(NetworkSession session, AccountService account, MatchmakingPool pool, PartyConfig config, PartyMemory memory, PartyLinks links)
+        public PartyService(NetworkSession session, AccountService account, MatchmakingPool pool, PartyConfig config, PartyMemory memory, PartyLinks links, IParticipantPalette palette)
         {
             _session = session;
             _account = account;
@@ -44,7 +46,8 @@ namespace PlowParty.Meta.Party
             _config = config;
             _memory = memory;
             _links = links;
-            Party = new PartyState(config.Capacity);
+            _looks = new PartyLooks(palette.ColorCount, palette.CritterCount);
+            Party = SoloParty();
         }
 
         public event Action Changed;
@@ -103,8 +106,13 @@ namespace PlowParty.Meta.Party
             }
 
             _shownRevision = link.Revision;
-            Party = link.Read(_config.Capacity);
+            Party = link.Read(_config.Capacity, _looks);
             RestoreReady(link);
+            if (!RestoreSetup(link))
+            {
+                RememberSetup();
+            }
+
             Remember();
             Changed?.Invoke();
         }
@@ -255,10 +263,68 @@ namespace PlowParty.Meta.Party
 
         public void SetMode(PartyMode mode)
         {
-            if (IsLeader)
+            if (Stage == PartyStage.None)
+            {
+                _memory.RememberSoloMode(mode);
+                EditSolo(solo => solo.SetMode(PartyState.SoloId, mode));
+            }
+            else if (IsLeader)
             {
                 _links.Current?.RequestMode(mode);
             }
+        }
+
+        public void SetBot(int slot, BotDifficulty difficulty)
+        {
+            if (Stage == PartyStage.None)
+            {
+                EditSolo(solo => solo.SetBot(PartyState.SoloId, slot, difficulty));
+            }
+            else if (IsLeader)
+            {
+                _links.Current?.RequestBot(slot, difficulty);
+            }
+        }
+
+        public void RemoveBot(int slot)
+        {
+            if (Stage == PartyStage.None)
+            {
+                EditSolo(solo => solo.RemoveBot(PartyState.SoloId, slot));
+            }
+            else if (IsLeader)
+            {
+                _links.Current?.RequestRemoveBot(slot);
+            }
+        }
+
+        public void PickColor(int color)
+        {
+            if (Stage == PartyStage.None)
+            {
+                EditSolo(solo => solo.PickColor(PartyState.SoloId, color));
+            }
+            else if (Stage == PartyStage.InParty)
+            {
+                _links.Current?.RequestColor(color);
+            }
+        }
+
+        public void PickCritter(int critter)
+        {
+            if (Stage == PartyStage.None)
+            {
+                EditSolo(solo => solo.PickCritter(PartyState.SoloId, critter));
+            }
+            else if (Stage == PartyStage.InParty)
+            {
+                _links.Current?.RequestCritter(critter);
+            }
+        }
+
+        public CustomGameSetup CustomGameSetupFor(int localPlayerId)
+        {
+            return Party.CustomGameSetup(LocalId, localPlayerId);
         }
 
         public void CloseForMatch()
@@ -347,9 +413,11 @@ namespace PlowParty.Meta.Party
         {
             Code = code;
             LocalId = _session.Runner.LocalPlayer.RawEncoded;
-            Party = new PartyState(_config.Capacity, _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay);
+            Party = new PartyState(_config.Capacity, _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay, _looks);
+
             _shownRevision = -1;
             _restoreReady = !hosting && _memory.HasParty && _memory.IsReady;
+            _restoreSetup = true;
             if (hosting)
             {
                 _links.Spawn(_session.Runner, _config.PartyLinkPrefab);
@@ -365,6 +433,74 @@ namespace PlowParty.Meta.Party
             if (Code != null)
             {
                 _memory.Remember(Code, IsLeader ? PartyRole.Leader : PartyRole.Member, Party.Mode, IsReady);
+            }
+        }
+
+        private bool RestoreSetup(PartyLink link)
+        {
+            if (!_restoreSetup || !Party.TryGetMember(LocalId, out var local))
+            {
+                return false;
+            }
+
+            _restoreSetup = false;
+            if (!_memory.HasLook)
+            {
+                return false;
+            }
+
+            if (local.Color != _memory.Color)
+            {
+                link.RequestColor(_memory.Color);
+            }
+
+            if (local.Critter != _memory.Critter)
+            {
+                link.RequestCritter(_memory.Critter);
+            }
+
+            if (IsLeader && Party.Bots.Count == 0)
+            {
+                foreach (var bot in _memory.Bots)
+                {
+                    link.RequestBot(bot.Slot, bot.Difficulty);
+                }
+            }
+
+            return true;
+        }
+
+        private void RememberSetup()
+        {
+            if (Party.TryGetMember(LocalId, out var local))
+            {
+                _memory.RememberSetup(local.Color, local.Critter, IsLeader || Stage == PartyStage.None ? Party.Bots : _memory.Bots);
+            }
+        }
+
+        private PartyState SoloParty()
+        {
+            var solo = new PartyState(_config.Capacity, _memory.SoloMode, _looks);
+            solo.Join(PartyState.SoloId, _account.Nickname, _random.Next(Math.Max(1, _looks.CritterCount)));
+            if (_memory.HasLook)
+            {
+                solo.PickColor(PartyState.SoloId, _memory.Color);
+                solo.PickCritter(PartyState.SoloId, _memory.Critter);
+                foreach (var bot in _memory.Bots)
+                {
+                    solo.SetBot(PartyState.SoloId, bot.Slot, bot.Difficulty);
+                }
+            }
+
+            return solo;
+        }
+
+        private void EditSolo(Func<PartyState, bool> edit)
+        {
+            if (edit(Party))
+            {
+                RememberSetup();
+                Changed?.Invoke();
             }
         }
 
@@ -395,8 +531,8 @@ namespace PlowParty.Meta.Party
             if (stage == PartyStage.None)
             {
                 Code = null;
-                LocalId = -1;
-                Party = new PartyState(_config.Capacity);
+                LocalId = PartyState.SoloId;
+                Party = SoloParty();
             }
 
             Stage = stage;

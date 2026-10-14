@@ -11,16 +11,22 @@ namespace PlowParty.Meta.Party.Network
     public sealed class PartyLink : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
         public const int MaxMembers = 6;
+        private const byte NoBot = 0;
 
         private readonly List<PartyMember> _readMembers = new List<PartyMember>(MaxMembers);
+        private readonly List<PartyBot> _readBots = new List<PartyBot>(MaxMembers);
         private readonly Dictionary<PlayerRef, TickTimer> _pendingRemovals = new Dictionary<PlayerRef, TickTimer>();
         private readonly List<PlayerRef> _expiredRemovals = new List<PlayerRef>();
+        private readonly System.Random _random = new System.Random();
         private PartyLinks _links;
         private PartyConfig _config;
         private PartyMemory _memory;
+        private PartyLooks _looks;
         private PartyState _hostState;
 
         [Networked, Capacity(MaxMembers)] private NetworkArray<PartySeat> Seats { get; }
+
+        [Networked, Capacity(MaxMembers)] private NetworkArray<byte> BotSlots { get; }
 
         [Networked] private int MemberCount { get; set; }
 
@@ -31,11 +37,12 @@ namespace PlowParty.Meta.Party.Network
         [Networked] public int Revision { get; private set; }
 
         [Inject]
-        public void Construct(PartyLinks links, PartyConfig config, PartyMemory memory)
+        public void Construct(PartyLinks links, PartyConfig config, PartyMemory memory, IParticipantPalette palette)
         {
             _links = links;
             _config = config;
             _memory = memory;
+            _looks = new PartyLooks(palette.ColorCount, palette.CritterCount);
         }
 
         public override void Spawned()
@@ -46,7 +53,7 @@ namespace PlowParty.Meta.Party.Network
                 return;
             }
 
-            _hostState = new PartyState(Mathf.Min(_config.Capacity, MaxMembers), _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay);
+            _hostState = new PartyState(Mathf.Min(_config.Capacity, MaxMembers), _memory.HasParty ? _memory.Mode : PartyMode.QuickPlay, _looks);
             Admit(Runner.LocalPlayer);
             foreach (var player in Runner.ActivePlayers)
             {
@@ -112,17 +119,27 @@ namespace PlowParty.Meta.Party.Network
             }
         }
 
-        public PartyState Read(int capacity)
+        public PartyState Read(int capacity, PartyLooks looks)
         {
             _readMembers.Clear();
             var count = Mathf.Min(MemberCount, MaxMembers);
             for (var i = 0; i < count; i++)
             {
                 var seat = Seats[i];
-                _readMembers.Add(new PartyMember(seat.Player.RawEncoded, seat.Nickname.ToString(), seat.IsReady));
+                _readMembers.Add(new PartyMember(seat.Player.RawEncoded, seat.Nickname.ToString(), seat.IsReady, seat.Slot, seat.Color, seat.Critter));
             }
 
-            return PartyState.Restore(capacity, Mode, _readMembers, IsSearching);
+            _readBots.Clear();
+            for (var slot = 0; slot < MaxMembers; slot++)
+            {
+                var bot = BotSlots[slot];
+                if (bot != NoBot)
+                {
+                    _readBots.Add(new PartyBot(slot, (BotDifficulty)(bot - 1)));
+                }
+            }
+
+            return PartyState.Restore(capacity, Mode, looks, _readMembers, IsSearching, _readBots);
         }
 
         public void RequestReady(bool isReady)
@@ -156,6 +173,26 @@ namespace PlowParty.Meta.Party.Network
         public void RequestMode(PartyMode mode)
         {
             RPC_SetMode(mode);
+        }
+
+        public void RequestBot(int slot, BotDifficulty difficulty)
+        {
+            RPC_SetBot(slot, (int)difficulty);
+        }
+
+        public void RequestRemoveBot(int slot)
+        {
+            RPC_RemoveBot(slot);
+        }
+
+        public void RequestColor(int color)
+        {
+            RPC_PickColor(color);
+        }
+
+        public void RequestCritter(int critter)
+        {
+            RPC_PickCritter(critter);
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
@@ -218,6 +255,42 @@ namespace PlowParty.Meta.Party.Network
             }
         }
 
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        private void RPC_SetBot(int slot, int difficulty, RpcInfo info = default)
+        {
+            if (_hostState != null && _hostState.SetBot(info.Source.RawEncoded, slot, (BotDifficulty)difficulty))
+            {
+                Publish();
+            }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        private void RPC_RemoveBot(int slot, RpcInfo info = default)
+        {
+            if (_hostState != null && _hostState.RemoveBot(info.Source.RawEncoded, slot))
+            {
+                Publish();
+            }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        private void RPC_PickColor(int color, RpcInfo info = default)
+        {
+            if (_hostState != null && _hostState.PickColor(info.Source.RawEncoded, color))
+            {
+                Publish();
+            }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        private void RPC_PickCritter(int critter, RpcInfo info = default)
+        {
+            if (_hostState != null && _hostState.PickCritter(info.Source.RawEncoded, critter))
+            {
+                Publish();
+            }
+        }
+
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_Removed([RpcTarget] PlayerRef member)
         {
@@ -238,7 +311,7 @@ namespace PlowParty.Meta.Party.Network
         private PartyJoinOutcome Admit(PlayerRef player)
         {
             var token = ParticipantToken.TryFromBytes(Runner.GetPlayerConnectionToken(player), out var decoded) ? decoded : null;
-            return _hostState.Join(player.RawEncoded, token?.Nickname);
+            return _hostState.Join(player.RawEncoded, token?.Nickname, _random.Next(_looks.CritterCount));
         }
 
         private void Publish()
@@ -247,6 +320,7 @@ namespace PlowParty.Meta.Party.Network
             for (var i = 0; i < MaxMembers; i++)
             {
                 Seats.Set(i, i < members.Count ? SeatOf(members[i]) : default);
+                BotSlots.Set(i, _hostState.TryGetBot(i, out var bot) ? (byte)((int)bot.Difficulty + 1) : NoBot);
             }
 
             MemberCount = members.Count;
@@ -262,6 +336,9 @@ namespace PlowParty.Meta.Party.Network
                 Player = PlayerRef.FromEncoded(member.Id),
                 Nickname = member.Nickname,
                 IsReady = member.IsReady,
+                Slot = (byte)member.Slot,
+                Color = (byte)member.Color,
+                Critter = (byte)member.Critter,
             };
         }
     }
